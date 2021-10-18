@@ -1,0 +1,280 @@
+% !TeX root = bodeplot.tex
+
+\NeedsTeXFormat{LaTeX2e}[1999/01/01]
+\ProvidesPackage{bodeplot}[2021/10/17]
+% 2021/10/15 Initial Release - Rushikesh Kamalapurkar
+% Based on `bodegraph` by Robert Papanicola
+\RequirePackage{tikz}
+\RequirePackage{ifsym}
+\RequirePackage{pgfplots}
+	\pgfplotsset{compat=1.18}
+	\usepgfplotslibrary{groupplots}
+\newenvironment{MagBodePlot}[3][]{
+\begin{tikzpicture}
+	\begin{semilogxaxis}[
+		grid=both,
+		major grid style={color=black},
+		minor grid style={color=gray!50},
+		xmin={#2},
+		xmax={#3},
+		domain={#2}:{#3},
+		width=6cm,
+		height=3cm,
+		ytick distance=20,
+		x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+		y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+		xlabel={Frequency (rad/s)},
+		ylabel={Gain (dB)},
+		scale only axis,
+		#1
+	]
+}{
+	\end{semilogxaxis}
+\end{tikzpicture}
+}
+
+\newenvironment{PhBodePlot}[3][]{
+\begin{tikzpicture}
+	\begin{semilogxaxis}[
+		grid=both,
+		major grid style={color=black},
+		minor grid style={color=gray!50},
+		xmin={#2},
+		xmax={#3},
+		domain={#2}:{#3},
+		width=6cm,
+		height=3cm,
+		ytick distance=45,
+		x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+		y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+		xlabel={Frequency (rad/s)},
+		ylabel={Phase ($^{\circ}$)},
+		scale only axis,
+		#1
+	]
+}{
+	\end{semilogxaxis}
+\end{tikzpicture}
+}
+
+\newenvironment{BodePlot}[3][]{
+\begin{tikzpicture}
+	\begin{groupplot}[
+		grid=both,
+		major grid style={color=black},
+		minor grid style={color=gray!50},
+		xmin={#2},
+		xmax={#3},
+		domain={#2}:{#3},
+		width=6cm,
+		height=3cm,
+		x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+		y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+		scale only axis,
+		xmode=log,
+		group style = {group size = 1 by 2},
+		#1,
+	]
+}{
+	\end{groupplot}
+\end{tikzpicture}
+}
+\newcommand{\addBodePlot}[3][]{
+	\nextgroupplot[ytick distance=20,ylabel={Gain (dB)}]
+		\addplot[red,very thick,samples=100,#1]{#2};
+
+	\nextgroupplot[ytick distance=45,ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},]
+		\addplot[red,very thick,samples=100,#1]{#3};
+}
+
+\newenvironment{NicholsChart}[3][]{
+\begin{tikzpicture}
+	\begin{axis}[
+		grid=both,
+		major grid style={color=black},
+		minor grid style={color=gray!50},
+		scale only axis,
+		domain={#2}:{#3},
+		width=6cm,
+		height=6cm,
+		ytick distance=20,
+		xtick distance=15,
+		x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+		y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+		xlabel={Phase (degrees)},
+		ylabel={Gain (dB)},
+		#1
+	]
+}{
+	\end{axis}
+\end{tikzpicture}
+}
+
+\newcommand{\addNicholsPlot}[3][]{
+	\addplot [#1] ( {#3} , {#2} )
+}
+
+\newenvironment{NyquistPlot}[3][]{
+\begin{tikzpicture}
+	\begin{axis}[
+		grid=both,
+		major grid style={color=black},
+		minor grid style={color=gray!50},
+		scale only axis,
+		domain={#2}:{#3},
+		width=6cm,
+		height=6cm,
+		ytick distance=1,
+		xtick distance=1,
+		x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+		y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+		xlabel={$\Re$},
+		ylabel={$\Im$},
+		#1
+	]
+	\addplot [only marks,mark=+,thick,red] (-1 , 0);
+}{
+	\end{axis}
+\end{tikzpicture}
+}
+
+\newcommand{\addNyquistPlot}[3][]{
+	\addplot [#1] ( {10^((#2)/20)*cos(#3)} , {10^((#2)/20)*sin(#3)} );
+}
+
+% Constant
+\newcommand{\MagK}[1]{(20*log10(abs(#1)))}
+\newcommand{\MagKAsymp}{\MagK}
+\newcommand{\MagKLin}{\MagK}
+\newcommand{\PhK}[1]{(#1<0?-180:0)}
+\newcommand{\PhKAsymp}{\PhK}
+\newcommand{\PhKLin}{\PhK}
+
+%% Complex pole at s = #1 + i#2: G(s) = 1/(s-#1-#2i)
+% Magnitude
+\newcommand{\MagPole}[2]{(-20*log10(sqrt((#1)^2 + (\x - #2)^2)))}
+\newcommand{\MagPoleLin}[2]{(\x < sqrt((#1)^2 + (#2)^2) ?
+	-20*log10(sqrt((#1)^2 + (#2)^2)) :
+	-20*log10(\x)
+)}
+\newcommand{\MagPoleAsymp}{\MagPoleLin}
+% Phase
+\newcommand{\PhPole}[2]{(#1 > 0 ? (#2 > 0 ? (mod(-atan2((\x - #2),-(#1))+360,360)) : (-atan2((\x - #2),-(#1)))) : (-atan2((\x - #2),-(#1))))}
+\newcommand{\PhPoleLin}[2]{(\x < (sqrt((#1)^2 + (#2)^2) / (10^sqrt((#1)^2/((#1)^2 + (#2)^2)))) ? 
+	(-atan2(-(#2),-(#1))) :
+	(\x >= (sqrt((#1)^2 + (#2)^2) * (10^sqrt((#1)^2/((#1)^2 + (#2)^2)))) ? 
+		(#2>0?(#1>0?270:-90):-90) :
+		(-atan2(-(#2),-(#1)) + (log10(\x/(sqrt((#1)^2 + (#2)^2) / (10^sqrt((#1)^2/((#1)^2 + (#2)^2))))))*((#2>0?(#1>0?270:-90):-90) + atan2(-(#2),-(#1)))/(log10(10^sqrt((4*(#1)^2)/((#1)^2 + (#2)^2)))))
+	)
+)}
+\newcommand{\PhPoleAsymp}[2]{(\x < (sqrt((#1)^2 + (#2)^2)) ? 
+	(-atan2(-(#2),-(#1))) :
+	(#2>0?(#1>0?270:-90):-90)
+)}
+
+%% Complex zero at s = #1 + i#2: G(s) = (s-#1-#2i)
+% Magnitude
+\newcommand{\MagZero}{-\MagPole}
+\newcommand{\MagZeroLin}{-\MagPoleLin}
+\newcommand{\MagZeroAsymp}{-\MagPoleAsymp}
+%Phase
+\newcommand{\PhZero}{-\PhPole}
+\newcommand{\PhZeroLin}{-\PhPoleLin}
+\newcommand{\PhZeroAsymp}{-\PhPoleAsymp}
+
+%% Real pole at s = #1 G(s) = 1/(s-#1)
+% Magnitude
+\newcommand{\MagRePole}[1]{\MagPole{#1}{0}}
+\newcommand{\MagRePoleLin}[1]{\MagPoleLin{#1}{0}}
+\newcommand{\MagRePoleAsymp}{\MagRePoleLin}
+
+% Phase
+\newcommand{\PhRePole}[1]{\PhPole{#1}{0}}
+\newcommand{\PhRePoleLin}[1]{\PhPoleLin{#1}{0}}
+\newcommand{\PhRePoleAsymp}[1]{\PhPoleAsymp{#1}{0}}
+%% Real zero at s = #1 G(s) = s-#1
+% Magnitude
+\newcommand{\MagReZero}{-\MagRePole}
+\newcommand{\MagReZeroLin}{-\MagRePoleLin}
+\newcommand{\MagReZeroAsymp}{-\MagRePoleAsymp}
+%Phase
+\newcommand{\PhReZero}{-\PhRePole}
+\newcommand{\PhReZeroLin}{-\PhRePoleLin}
+\newcommand{\PhReZeroAsymp}{-\PhRePoleAsymp}
+
+%% Complex conjugate poles at #1 \pm #2i
+% Magnitude
+\newcommand{\MagCCPoles}[2]{(\MagPole{#1}{#2}+\MagPole{#1}{-#2})}
+\newcommand{\MagCCPolesLin}[2]{(\MagPoleLin{#1}{#2}+\MagPoleLin{#1}{-#2})}
+\newcommand{\MagCCPolesAsymp}{\MagCCPolesLin}
+\newcommand{\MagCCPolesPeak}[3][]{
+	\draw[#1,->] (axis cs:{sqrt((#2)^2 + (#3)^2)},{-40*log10(sqrt((#2)^2 + (#3)^2))}) -- (axis cs:{sqrt((#2)^2 + (#3)^2)},{-20*log10(((#2)^2 + (#3)^2)/(2*abs(#2)))})
+}
+% Phase
+\newcommand{\PhCCPoles}[2]{(\PhPole{#1}{#2}+\PhPole{#1}{-#2})}
+\newcommand{\PhCCPolesLin}[2]{(\PhPoleLin{#1}{#2}+\PhPoleLin{#1}{-#2})}
+\newcommand{\PhCCPolesAsymp}[2]{(\PhPoleAsymp{#1}{#2}+\PhPoleAsymp{#1}{-#2})}
+
+%% Complex conjugate zeros at #1 \pm #2i
+% Magnitude
+\newcommand{\MagCCZeros}{-\MagCCPoles}
+\newcommand{\MagCCZerosLin}{-\MagCCPolesLin}
+\newcommand{\MagCCZerosAsymp}{-\MagCCPolesAsymp}
+\newcommand{\MagCCZerosPeak}[3][]{
+	\draw[#1,->] (axis cs:{sqrt((#2)^2 + (#3)^2)},{40*log10(sqrt((#2)^2 + (#3)^2))}) -- (axis cs:{sqrt((#2)^2 + (#3)^2)},{20*log10(((#2)^2 + (#3)^2)/(2*abs(#2)))})
+}
+%Phase
+\newcommand{\PhCCZeros}{-\PhCCPoles}
+\newcommand{\PhCCZerosLin}{-\PhCCPolesLin}
+\newcommand{\PhCCZerosAsymp}{-\PhCCPolesAsymp}
+
+%% Second order transfer function G(s) = 1/(s^2 + 2 z wn s + wn^2)
+% Magnitude
+\newcommand{\MagSOPoles}[2]{(-20*log10(sqrt((#2^2 - \x^2)^2 + (2*#1*#2*\x)^2)))}
+\newcommand{\MagSOPolesLin}[2]{(\x < #2 ? -40*log10(#2) : - 40*log10(\x))}
+\newcommand{\MagSOPolesPeak}[3][]{
+	\draw[#1,->] (axis cs:{#3},{-40*log10(#3)}) -- (axis cs:{#3},{-40*log10(#3)-20*log10(2*abs(#2))})
+}
+% Phase
+\newcommand{\PhSOPoles}[2]{(-atan2((2*(#1)*(#2)*\x),((#2)^2 - (\x)^2)))}
+\newcommand{\PhSOPolesLin}[2]{(\x < (#2 / (10^abs(#1))) ? 
+	0 :
+	(\x >= (#2 * (10^abs(#1))) ? 
+		(#1>0?-180:180) :
+		(#1>0 ? mod((180*(log10(\x)/log10(2*abs(#1)))),360) : mod((-180*(log10(\x)/log10(2*abs(#1)))),-360))
+	)
+)}
+\newcommand{\PhSOPolesAsymp}[2]{(#1>0?(\x<#2?0:-180):(\x<#2?0:180))}
+
+%% Second order transfer function G(s) = s^2 + 2 z wn s + wn^2
+% Magnitude
+\newcommand{\MagSOZeros}{-\MagSOPoles}
+\newcommand{\MagSOZerosLin}{-\MagSOPolesLin}
+\newcommand{\MagSOZerosAsymp}{-\MagSOPolesAsymp}
+\newcommand{\MagSOZerosPeak}[3][]{
+	\draw[#1,->] (axis cs:{#3},{40*log10(#3)}) -- (axis cs:{#3},{40*log10(#3)+20*log10(2*abs(#2))})
+}
+%Phase
+\newcommand{\PhSOZeros}{-\PhSOPoles}
+\newcommand{\PhSOZerosLin}{-\PhSOPolesLin}
+\newcommand{\PhSOZerosAsymp}{-\PhSOPolesAsymp}
+
+%% Integrator
+\newcommand{\MagInt}[1]{(20*log10(abs(#1/\x)))}
+\newcommand{\MagIntLin}{\MagInt}
+\newcommand{\MagIntAsymp}{\MagInt}
+\newcommand{\PhInt}[1]{-90}
+\newcommand{\PhIntLin}{\PhInt}
+\newcommand{\PhIntAsymp}{\PhInt}
+
+%% Differentiator
+\newcommand{\MagDiff}[1]{(-20*log10(abs(#1/\x)))}
+\newcommand{\MagDiffAsymp}{\MagDiff}
+\newcommand{\MagDiffLin}{\MagDiff}
+\newcommand{\PhDiff}[1]{90}
+\newcommand{\PhDiffLin}{\PhDiff}
+\newcommand{\PhDiffAsymp}{\PhDiff}
+
+%Delay D(s)=exp(-T*s)
+\newcommand{\MagDel}[1]{0}
+\newcommand{\PhDel}[1]{-#1*180*\x/pi}
