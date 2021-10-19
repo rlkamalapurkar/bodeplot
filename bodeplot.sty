@@ -5,7 +5,6 @@
 % 2021/10/15 Initial Release - Rushikesh Kamalapurkar
 % Based on `bodegraph` by Robert Papanicola
 \RequirePackage{tikz}
-\RequirePackage{ifsym}
 \RequirePackage{pgfplots}
 	\pgfplotsset{compat=1.18}
 	\usepgfplotslibrary{groupplots}
@@ -228,31 +227,58 @@
 \newcommand{\PhCCZerosLin}{-\PhCCPolesLin}
 \newcommand{\PhCCZerosAsymp}{-\PhCCPolesAsymp}
 
-%% Second order transfer function G(s) = 1/(s^2 + 2 z wn s + wn^2)
+%% Canonical second order transfer function G(s) = 1/(s^2 + 2 z wn s + wn^2)
 % Magnitude
-\newcommand{\MagSOPoles}[2]{(-20*log10(sqrt((#2^2 - \x^2)^2 + (2*#1*#2*\x)^2)))}
-\newcommand{\MagSOPolesLin}[2]{(\x < #2 ? -40*log10(#2) : - 40*log10(\x))}
-\newcommand{\MagSOPolesPeak}[3][]{
+\newcommand{\MagCSPoles}[2]{(-20*log10(sqrt((#2^2 - \x^2)^2 + (2*#1*#2*\x)^2)))}
+\newcommand{\MagCSPolesLin}[2]{(\x < #2 ? -40*log10(#2) : - 40*log10(\x))}
+\newcommand{\MagCSPolesAsymp}{\MagCSPolesLin}
+\newcommand{\MagCSPolesPeak}[3][]{
 	\draw[#1,->] (axis cs:{#3},{-40*log10(#3)}) -- (axis cs:{#3},{-40*log10(#3)-20*log10(2*abs(#2))})
 }
 % Phase
-\newcommand{\PhSOPoles}[2]{(-atan2((2*(#1)*(#2)*\x),((#2)^2 - (\x)^2)))}
-\newcommand{\PhSOPolesLin}[2]{(\x < (#2 / (10^abs(#1))) ? 
+\newcommand{\PhCSPoles}[2]{(-atan2((2*(#1)*(#2)*\x),((#2)^2 - (\x)^2)))}
+\newcommand{\PhCSPolesLin}[2]{(\x < (#2 / (10^abs(#1))) ? 
 	0 :
 	(\x >= (#2 * (10^abs(#1))) ? 
-		(#1>0?-180:180) :
-		(#1>0 ? mod((180*(log10(\x)/log10(2*abs(#1)))),360) : mod((-180*(log10(\x)/log10(2*abs(#1)))),-360))
+		(#1>0 ? -180 : 180) :
+		(#1>0 ? (-180*(log10(\x*(10^#1)/#2))/(2*#1)) : (180*(log10(\x*(10^abs(#1))/#2))/(2*abs(#1))))
 	)
 )}
-\newcommand{\PhSOPolesAsymp}[2]{(#1>0?(\x<#2?0:-180):(\x<#2?0:180))}
+\newcommand{\PhCSPolesAsymp}[2]{(#1>0?(\x<#2?0:-180):(\x<#2?0:180))}
 
-%% Second order transfer function G(s) = s^2 + 2 z wn s + wn^2
+%% Canonical second order transfer function G(s) = s^2 + 2 z wn s + wn^2
+% Magnitude
+\newcommand{\MagCSZeros}{-\MagCSPoles}
+\newcommand{\MagCSZerosLin}{-\MagCSPolesLin}
+\newcommand{\MagCSZerosAsymp}{-\MagCSPolesAsymp}
+\newcommand{\MagCSZerosPeak}[3][]{
+	\draw[#1,->] (axis cs:{#3},{40*log10(#3)}) -- (axis cs:{#3},{40*log10(#3)+20*log10(2*abs(#2))})
+}
+%Phase
+\newcommand{\PhCSZeros}{-\PhCSPoles}
+\newcommand{\PhCSZerosLin}{-\PhCSPolesLin}
+\newcommand{\PhCSZerosAsymp}{-\PhCSPolesAsymp}
+
+%% General second order transfer function G(s) = 1/(s^2 + as + b)
+% Magnitude
+\newcommand{\MagSOPoles}[2]{(-20*log10(sqrt((#2 - \x^2)^2 + (#1*\x)^2)))}
+\newcommand{\MagSOPolesLin}[2]{(\x < sqrt(abs(#2)) ? -20*log10(abs(#2)) : - 40*log10(\x))}
+\newcommand{\MagSOPolesAsymp}{\MagSOPolesLin}
+\newcommand{\MagSOPolesPeak}[3][]{
+	\draw[#1,->] (axis cs:{sqrt(abs(#3))},{-20*log10(abs(#3))}) -- (axis cs:{sqrt(abs(#3))},{-20*log10(abs(#3)) - 20*log10(abs(#2/sqrt(abs(#3))))})
+}
+% Phase
+\newcommand{\PhSOPoles}[2]{(-atan2((#1)*\x,((#2) - (\x)^2)))}
+\newcommand{\PhSOPolesLin}[2]{#2>0 ? \PhCSPolesLin{(#1/(2*sqrt(#2)))}{(sqrt(#2))} : (#1>0 ? -180 : 180)}
+\newcommand{\PhSOPolesAsymp}[2]{#2>0 ? \PhCSPolesAsymp{(#1/(2*sqrt(#2)))}{(sqrt(#2))} : (#1>0 ? -180 : 180)}
+
+%% General second order transfer function G(s) = s^2 + as + b
 % Magnitude
 \newcommand{\MagSOZeros}{-\MagSOPoles}
 \newcommand{\MagSOZerosLin}{-\MagSOPolesLin}
 \newcommand{\MagSOZerosAsymp}{-\MagSOPolesAsymp}
 \newcommand{\MagSOZerosPeak}[3][]{
-	\draw[#1,->] (axis cs:{#3},{40*log10(#3)}) -- (axis cs:{#3},{40*log10(#3)+20*log10(2*abs(#2))})
+	\draw[#1,->] (axis cs:{sqrt(abs(#3))},{20*log10(abs(#3))}) -- (axis cs:{sqrt(abs(#3))},{20*log10(abs(#3)) + 20*log10(abs(#2/sqrt(abs(#3))))})
 }
 %Phase
 \newcommand{\PhSOZeros}{-\PhSOPoles}
