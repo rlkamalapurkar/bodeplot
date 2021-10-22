@@ -1,0 +1,45 @@
+% !TeX TS-program = lualatex
+\documentclass{report}
+\usepackage[gnuplot]{bodeplot}
+
+\begin{document}
+	Simplest form
+	\begin{center}
+		\Bode{{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10}{0.01}{100}
+	\end{center}
+
+	Plot with delay and customization
+	\begin{center}
+		\Bode[{},{{ytick distance=40},{ytick distance=90}},{{red,thick},{blue,thick}}] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10,0.1} {0.01} {100}
+	\end{center}
+
+	Linear approximation with customization
+	\begin{center}
+		\Bode[asymptotic,{{ytick distance=40},{ytick distance=90}},{{red,thick},{blue,thick}}] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10} {0.01} {100}
+	\end{center}
+
+	Individual gain and phase plots with more customization
+	\begin{center}
+		\begin{BodePlot}[ylabel={Gain (dB)},
+			ytick distance=40, height=2cm, width=4cm]{0.01}{100}
+			\addBodePlots[true/{black,thick},linear/{red,dashed,thick},asymptotic/{blue,dotted,thick}]{magnitude}{{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10}
+		\end{BodePlot}
+		\begin{BodePlot}[ylabel={Phase ($^{\circ}$)},height=2cm,width=4cm,ytick distance=90,]{0.01}{100}
+			\addBodePlots[true/{black,thick},linear/{red,dashed,thick},asymptotic/{blue,dotted,thick}]{phase}{{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10}
+		\end{BodePlot}
+	\end{center}
+
+	Nichols chart
+	\begin{center}
+		\begin{NicholsChart}[ytick distance = 20,xtick distance=30]{0.001}{100}
+			\addNicholsPlot [red,samples=1000, parametric] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10};
+		\end{NicholsChart}
+	\end{center}
+
+	Nyquist plot
+	\begin{center}
+		\begin{NyquistPlot}{-10}{10}
+			\addNyquistPlot [red,samples=2000] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10};
+		\end{NyquistPlot}
+	\end{center}
+\end{document}
