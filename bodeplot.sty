@@ -140,8 +140,8 @@
 }
 % Phase
 \newcommand*{\PhSOPoles}[2]{(-atan2((#1)*t,((#2) - \n@pow{t}{2})))}
-\newcommand*{\PhSOPolesLin}[2]{#2>0 ? \PhCSPolesLin{(#1/(2*sqrt(#2)))}{(sqrt(#2))} : (#1>0 ? -180 : 180)}
-\newcommand*{\PhSOPolesAsymp}[2]{#2>0 ? \PhCSPolesAsymp{(#1/(2*sqrt(#2)))}{(sqrt(#2))} : (#1>0 ? -180 : 180)}
+\newcommand*{\PhSOPolesLin}[2]{(#2>0 ? \PhCSPolesLin{(#1/(2*sqrt(#2)))}{(sqrt(#2))} : (#1>0 ? -180 : 180))}
+\newcommand*{\PhSOPolesAsymp}[2]{(#2>0 ? \PhCSPolesAsymp{(#1/(2*sqrt(#2)))}{(sqrt(#2))} : (#1>0 ? -180 : 180))}
 
 %% General second order transfer function G(s) = s^2 + as + b
 % Magnitude
