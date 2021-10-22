@@ -46,24 +46,24 @@
 \fi
 
 % Constant
-\newcommand{\MagK}[2]{(20*log10(abs(#1)))}
-\newcommand{\MagKAsymp}{\MagK}
-\newcommand{\MagKLin}{\MagK}
-\newcommand{\PhK}[2]{(#1<0?-180:0)}
-\newcommand{\PhKAsymp}{\PhK}
-\newcommand{\PhKLin}{\PhK}
+\newcommand*{\MagK}[2]{(20*log10(abs(#1)))}
+\newcommand*{\MagKAsymp}{\MagK}
+\newcommand*{\MagKLin}{\MagK}
+\newcommand*{\PhK}[2]{(#1<0?-180:0)}
+\newcommand*{\PhKAsymp}{\PhK}
+\newcommand*{\PhKLin}{\PhK}
 
 %% Complex pole at s = #1 + i#2: G(s) = 1/(s-#1-#2i)
 % Magnitude
-\newcommand{\MagPole}[2]{(-20*log10(sqrt(\n@pow{#1}{2} + \n@pow{t - (#2)}{2})))}
-\newcommand{\MagPoleLin}[2]{(t < sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) ?
+\newcommand*{\MagPole}[2]{(-20*log10(sqrt(\n@pow{#1}{2} + \n@pow{t - (#2)}{2})))}
+\newcommand*{\MagPoleLin}[2]{(t < sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) ?
 	-20*log10(sqrt(\n@pow{#1}{2} + \n@pow{#2}{2})) :
 	-20*log10(t)
 )}
-\newcommand{\MagPoleAsymp}{\MagPoleLin}
+\newcommand*{\MagPoleAsymp}{\MagPoleLin}
 % Phase
-\newcommand{\PhPole}[2]{(#1 > 0 ? (#2 > 0 ? (\n@mod{-atan2((t - (#2)),-(#1))+360}{360}) : (-atan2((t - (#2)),-(#1)))) : (-atan2((t - (#2)),-(#1))))}
-\newcommand{\PhPoleLin}[2]{((#1*#2) == 0 ? -90 :
+\newcommand*{\PhPole}[2]{(#1 > 0 ? (#2 > 0 ? (\n@mod{-atan2((t - (#2)),-(#1))+360}{360}) : (-atan2((t - (#2)),-(#1)))) : (-atan2((t - (#2)),-(#1))))}
+\newcommand*{\PhPoleLin}[2]{((#1*#2) == 0 ? -90 :
 	(t < (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) / (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))})) ? 
 		(-atan2(-(#2),-(#1))) :
 		(t >= (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) * (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))})) ? 
@@ -72,144 +72,91 @@
 		)
 	)
 )}
-\newcommand{\PhPoleAsymp}[2]{(t < (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2})) ? 
+\newcommand*{\PhPoleAsymp}[2]{(t < (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2})) ? 
 	(-atan2(-(#2),-(#1))) :
 	(#2>0?(#1>0?270:-90):-90)
 )}
 
 %% Complex zero at s = #1 + i#2: G(s) = (s-#1-#2i)
 % Magnitude
-\newcommand{\MagZero}{0-\MagPole}
-\newcommand{\MagZeroLin}{0-\MagPoleLin}
-\newcommand{\MagZeroAsymp}{0-\MagPoleAsymp}
+\newcommand*{\MagZero}{0-\MagPole}
+\newcommand*{\MagZeroLin}{0-\MagPoleLin}
+\newcommand*{\MagZeroAsymp}{0-\MagPoleAsymp}
 %Phase
-\newcommand{\PhZero}{0-\PhPole}
-\newcommand{\PhZeroLin}{0-\PhPoleLin}
-\newcommand{\PhZeroAsymp}{0-\PhPoleAsymp}
+\newcommand*{\PhZero}{0-\PhPole}
+\newcommand*{\PhZeroLin}{0-\PhPoleLin}
+\newcommand*{\PhZeroAsymp}{0-\PhPoleAsymp}
 
-%% Real pole at s = #1 G(s) = 1/(s-#1)
-% Magnitude
-\newcommand{\MagRePole}[1]{\MagPole{#1}{0}}
-\newcommand{\MagRePoleLin}[1]{\MagPoleLin{#1}{0}}
-\newcommand{\MagRePoleAsymp}{\MagRePoleLin}
-
-% Phase
-\newcommand{\PhRePole}[1]{\PhPole{#1}{0}}
-\newcommand{\PhRePoleLin}[1]{\PhPoleLin{#1}{0}}
-\newcommand{\PhRePoleAsymp}[1]{\PhPoleAsymp{#1}{0}}
-%% Real zero at s = #1 G(s) = s-#1
-% Magnitude
-\newcommand{\MagReZero}{0-\MagRePole}
-\newcommand{\MagReZeroLin}{0-\MagRePoleLin}
-\newcommand{\MagReZeroAsymp}{0-\MagRePoleAsymp}
-%Phase
-\newcommand{\PhReZero}{0-\PhRePole}
-\newcommand{\PhReZeroLin}{0-\PhRePoleLin}
-\newcommand{\PhReZeroAsymp}{0-\PhRePoleAsymp}
-
-%% Complex conjugate poles at #1 \pm #2i
-% Magnitude
-\newcommand{\MagCCPoles}[2]{(\MagPole{#1}{#2}+\MagPole{#1}{-#2})}
-\newcommand{\MagCCPolesLin}[2]{(\MagPoleLin{#1}{#2}+\MagPoleLin{#1}{-#2})}
-\newcommand{\MagCCPolesAsymp}{\MagCCPolesLin}
-\newcommand{\MagCCPolesPeak}[3][]{
+%% Resonance - complex conjugate poles at #1 \pm #2i
+\newcommand*{\MagCCPolesPeak}[3][]{
 	\draw[#1,->] (axis cs:{sqrt(\n@pow{#2}{2} + \n@pow{#3}{2})},{-40*log10(sqrt(\n@pow{#2}{2} + \n@pow{#3}{2}))}) -- (axis cs:{sqrt(\n@pow{#2}{2} + \n@pow{#3}{2})},{-20*log10((\n@pow{#2}{2} + \n@pow{#3}{2})/(2*abs(#2)))})
 }
-% Phase
-\newcommand{\PhCCPoles}[2]{(\PhPole{#1}{#2}+\PhPole{#1}{-#2})}
-\newcommand{\PhCCPolesLin}[2]{(\PhPoleLin{#1}{#2}+\PhPoleLin{#1}{-#2})}
-\newcommand{\PhCCPolesAsymp}[2]{(\PhPoleAsymp{#1}{#2}+\PhPoleAsymp{#1}{-#2})}
-
-%% Complex conjugate zeros at #1 \pm #2i
-% Magnitude
-\newcommand{\MagCCZeros}{0-\MagCCPoles}
-\newcommand{\MagCCZerosLin}{0-\MagCCPolesLin}
-\newcommand{\MagCCZerosAsymp}{0-\MagCCPolesAsymp}
-\newcommand{\MagCCZerosPeak}[3][]{
+%% Resonance - complex conjugate zeros at #1 \pm #2i
+\newcommand*{\MagCCZerosPeak}[3][]{
 	\draw[#1,->] (axis cs:{sqrt(\n@pow{#2}{2} + \n@pow{#3}{2})},{40*log10(sqrt(\n@pow{#2}{2} + \n@pow{#3}{2}))}) -- (axis cs:{sqrt(\n@pow{#2}{2} + \n@pow{#3}{2})},{20*log10((\n@pow{#2}{2} + \n@pow{#3}{2})/(2*abs(#2)))})
 }
-%Phase
-\newcommand{\PhCCZeros}{0-\PhCCPoles}
-\newcommand{\PhCCZerosLin}{0-\PhCCPolesLin}
-\newcommand{\PhCCZerosAsymp}{0-\PhCCPolesAsymp}
 
 %% Canonical second order transfer function G(s) = 1/(s^2 + 2 z wn s + wn^2)
 % Magnitude
-\newcommand{\MagCSPoles}[2]{(-20*log10(sqrt(\n@pow{\n@pow{#2}{2} - \n@pow{t}{2}}{2} + \n@pow{2*#1*#2*t}{2})))}
-\newcommand{\MagCSPolesLin}[2]{(t < #2 ? -40*log10(#2) : - 40*log10(t))}
-\newcommand{\MagCSPolesAsymp}{\MagCSPolesLin}
-\newcommand{\MagCSPolesPeak}[3][]{
+\newcommand*{\MagCSPoles}[2]{(-20*log10(sqrt(\n@pow{\n@pow{#2}{2} - \n@pow{t}{2}}{2} + \n@pow{2*#1*#2*t}{2})))}
+\newcommand*{\MagCSPolesLin}[2]{(t < #2 ? -40*log10(#2) : - 40*log10(t))}
+\newcommand*{\MagCSPolesAsymp}{\MagCSPolesLin}
+\newcommand*{\MagCSPolesPeak}[3][]{
 	\draw[#1,->] (axis cs:{#3},{-40*log10(#3)}) -- (axis cs:{#3},{-40*log10(#3)-20*log10(2*abs(#2))})
 }
 % Phase
-\newcommand{\PhCSPoles}[2]{(-atan2((2*(#1)*(#2)*t),(\n@pow{#2}{2} - \n@pow{t}{2})))}
-\newcommand{\PhCSPolesLin}[2]{(t < (#2 / (\n@pow{10}{abs(#1)})) ? 
+\newcommand*{\PhCSPoles}[2]{(-atan2((2*(#1)*(#2)*t),(\n@pow{#2}{2} - \n@pow{t}{2})))}
+\newcommand*{\PhCSPolesLin}[2]{(t < (#2 / (\n@pow{10}{abs(#1)})) ? 
 	0 :
 	(t >= (#2 * (\n@pow{10}{abs(#1)})) ? 
 		(#1>0 ? -180 : 180) :
 		(#1>0 ? (-180*(log10(t*(\n@pow{10}{#1})/#2))/(2*#1)) : (180*(log10(t*(\n@pow{10}{abs(#1)})/#2))/(2*abs(#1))))
 	)
 )}
-\newcommand{\PhCSPolesAsymp}[2]{(#1>0?(t<#2?0:-180):(t<#2?0:180))}
+\newcommand*{\PhCSPolesAsymp}[2]{(#1>0?(t<#2?0:-180):(t<#2?0:180))}
 
 %% Canonical second order transfer function G(s) = s^2 + 2 z wn s + wn^2
 % Magnitude
-\newcommand{\MagCSZeros}{0-\MagCSPoles}
-\newcommand{\MagCSZerosLin}{0-\MagCSPolesLin}
-\newcommand{\MagCSZerosAsymp}{0-\MagCSPolesAsymp}
-\newcommand{\MagCSZerosPeak}[3][]{
+\newcommand*{\MagCSZeros}{0-\MagCSPoles}
+\newcommand*{\MagCSZerosLin}{0-\MagCSPolesLin}
+\newcommand*{\MagCSZerosAsymp}{0-\MagCSPolesAsymp}
+\newcommand*{\MagCSZerosPeak}[3][]{
 	\draw[#1,->] (axis cs:{#3},{40*log10(#3)}) -- (axis cs:{#3},{40*log10(#3)+20*log10(2*abs(#2))})
 }
 %Phase
-\newcommand{\PhCSZeros}{0-\PhCSPoles}
-\newcommand{\PhCSZerosLin}{0-\PhCSPolesLin}
-\newcommand{\PhCSZerosAsymp}{0-\PhCSPolesAsymp}
+\newcommand*{\PhCSZeros}{0-\PhCSPoles}
+\newcommand*{\PhCSZerosLin}{0-\PhCSPolesLin}
+\newcommand*{\PhCSZerosAsymp}{0-\PhCSPolesAsymp}
 
 %% General second order transfer function G(s) = 1/(s^2 + as + b)
 % Magnitude
-\newcommand{\MagSOPoles}[2]{(-20*log10(sqrt(\n@pow{#2 - \n@pow{t}{2}}{2} + \n@pow{#1*t}{2})))}
-\newcommand{\MagSOPolesLin}[2]{(t < sqrt(abs(#2)) ? -20*log10(abs(#2)) : - 40*log10(t))}
-\newcommand{\MagSOPolesAsymp}{\MagSOPolesLin}
-\newcommand{\MagSOPolesPeak}[3][]{
+\newcommand*{\MagSOPoles}[2]{(-20*log10(sqrt(\n@pow{#2 - \n@pow{t}{2}}{2} + \n@pow{#1*t}{2})))}
+\newcommand*{\MagSOPolesLin}[2]{(t < sqrt(abs(#2)) ? -20*log10(abs(#2)) : - 40*log10(t))}
+\newcommand*{\MagSOPolesAsymp}{\MagSOPolesLin}
+\newcommand*{\MagSOPolesPeak}[3][]{
 	\draw[#1,->] (axis cs:{sqrt(abs(#3))},{-20*log10(abs(#3))}) -- (axis cs:{sqrt(abs(#3))},{-20*log10(abs(#3)) - 20*log10(abs(#2/sqrt(abs(#3))))})
 }
 % Phase
-\newcommand{\PhSOPoles}[2]{(-atan2((#1)*t,((#2) - \n@pow{t}{2})))}
-\newcommand{\PhSOPolesLin}[2]{#2>0 ? \PhCSPolesLin{(#1/(2*sqrt(#2)))}{(sqrt(#2))} : (#1>0 ? -180 : 180)}
-\newcommand{\PhSOPolesAsymp}[2]{#2>0 ? \PhCSPolesAsymp{(#1/(2*sqrt(#2)))}{(sqrt(#2))} : (#1>0 ? -180 : 180)}
+\newcommand*{\PhSOPoles}[2]{(-atan2((#1)*t,((#2) - \n@pow{t}{2})))}
+\newcommand*{\PhSOPolesLin}[2]{#2>0 ? \PhCSPolesLin{(#1/(2*sqrt(#2)))}{(sqrt(#2))} : (#1>0 ? -180 : 180)}
+\newcommand*{\PhSOPolesAsymp}[2]{#2>0 ? \PhCSPolesAsymp{(#1/(2*sqrt(#2)))}{(sqrt(#2))} : (#1>0 ? -180 : 180)}
 
 %% General second order transfer function G(s) = s^2 + as + b
 % Magnitude
-\newcommand{\MagSOZeros}{0-\MagSOPoles}
-\newcommand{\MagSOZerosLin}{0-\MagSOPolesLin}
-\newcommand{\MagSOZerosAsymp}{0-\MagSOPolesAsymp}
-\newcommand{\MagSOZerosPeak}[3][]{
+\newcommand*{\MagSOZeros}{0-\MagSOPoles}
+\newcommand*{\MagSOZerosLin}{0-\MagSOPolesLin}
+\newcommand*{\MagSOZerosAsymp}{0-\MagSOPolesAsymp}
+\newcommand*{\MagSOZerosPeak}[3][]{
 	\draw[#1,->] (axis cs:{sqrt(abs(#3))},{20*log10(abs(#3))}) -- (axis cs:{sqrt(abs(#3))},{20*log10(abs(#3)) + 20*log10(abs(#2/sqrt(abs(#3))))})
 }
 %Phase
-\newcommand{\PhSOZeros}{0-\PhSOPoles}
-\newcommand{\PhSOZerosLin}{0-\PhSOPolesLin}
-\newcommand{\PhSOZerosAsymp}{0-\PhSOPolesAsymp}
-
-%% Integrator
-\newcommand{\MagInt}[1]{(20*log10(abs(#1/t)))}
-\newcommand{\MagIntLin}{\MagInt}
-\newcommand{\MagIntAsymp}{\MagInt}
-\newcommand{\PhInt}[1]{-90}
-\newcommand{\PhIntLin}{\PhInt}
-\newcommand{\PhIntAsymp}{\PhInt}
-
-%% Differentiator
-\newcommand{\MagDiff}[1]{(-20*log10(abs(#1/t)))}
-\newcommand{\MagDiffAsymp}{\MagDiff}
-\newcommand{\MagDiffLin}{\MagDiff}
-\newcommand{\PhDiff}[1]{90}
-\newcommand{\PhDiffLin}{\PhDiff}
-\newcommand{\PhDiffAsymp}{\PhDiff}
+\newcommand*{\PhSOZeros}{0-\PhSOPoles}
+\newcommand*{\PhSOZerosLin}{0-\PhSOPolesLin}
+\newcommand*{\PhSOZerosAsymp}{0-\PhSOPolesAsymp}
 
 %Delay D(s)=exp(-T*s)
-\newcommand{\MagDel}[2]{0}
-\newcommand{\PhDel}[2]{-#1*180*t/pi}
+\newcommand*{\MagDel}[2]{0}
+\newcommand*{\PhDel}[2]{-#1*180*t/pi}
 
 % The Bode command
 % \Bode[plot_type,{{Magnitude_axis_options},{Phase_axis_options}},{{Magnitude_plot_options},{Phase_plot_options}}]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
@@ -312,7 +259,7 @@
 }
 
 % Command to add Bode plots
-%\addBodePlots[{approximation_1/{plot_options_1}},{approximation_2/{plot_options_2}},...]{plot_type (phase or magnitude)}{{zeros},{poles},gain}
+%\addBodePlots[{approximation_1/{plot_options_1}},{approximation_2/{plot_options_2}},...]{plot_type (phase or magnitude)}{{zeros},{poles},gain,delay}
 \newcommand{\addBodePlots}[3][{true/{red,thick}}]{%%%
 	\foreach \approx/\attrib in {#1} {
 		\gdef\plot@macro{}%
@@ -349,7 +296,7 @@
 		\end{axis}
 	\end{tikzpicture}
 }
-% \addNicholsChart[plot_options]{{zeros},{poles},gain}
+% \addNicholsChart[plot_options]{{zeros},{poles},gain,delay}
 \newcommand{\addNicholsPlot}[2][]{
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
@@ -385,7 +332,7 @@
 		\end{axis}
 	\end{tikzpicture}
 }
-% \addNyquistPlot[plot_options]{{zeros},{poles},gain}
+% \addNyquistPlot[plot_options]{{zeros},{poles},gain,delay}
 \newcommand{\addNyquistPlot}[2][]{
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
@@ -502,8 +449,8 @@
 }%
 
 
-% Internal command to add pole/zero/gain to a parametric function
-\newcommand{\add@feature}[3]{
+% Internal command to add pole/zero/gain/delay to a parametric function
+\newcommand*{\add@feature}[3]{
 	\ifcat$\detokenize\expandafter{#1}$%
 		\xdef#1{\unexpanded\expandafter{#1 0+#2}}%
 	\else
@@ -517,3 +464,60 @@
 		\xdef#1{\unexpanded\expandafter{#1}{0}}%
 	\fi
 }
+
+% Extra commands
+% %% Real pole at s = #1 G(s) = 1/(s-#1)
+% % Magnitude
+% \newcommand*{\MagRePole}[1]{\MagPole{#1}{0}}
+% \newcommand*{\MagRePoleLin}[1]{\MagPoleLin{#1}{0}}
+% \newcommand*{\MagRePoleAsymp}{\MagRePoleLin}
+% 
+% % Phase
+% \newcommand*{\PhRePole}[1]{\PhPole{#1}{0}}
+% \newcommand*{\PhRePoleLin}[1]{\PhPoleLin{#1}{0}}
+% \newcommand*{\PhRePoleAsymp}[1]{\PhPoleAsymp{#1}{0}}
+% %% Real zero at s = #1 G(s) = s-#1
+% % Magnitude
+% \newcommand*{\MagReZero}{0-\MagRePole}
+% \newcommand*{\MagReZeroLin}{0-\MagRePoleLin}
+% \newcommand*{\MagReZeroAsymp}{0-\MagRePoleAsymp}
+% %Phase
+% \newcommand*{\PhReZero}{0-\PhRePole}
+% \newcommand*{\PhReZeroLin}{0-\PhRePoleLin}
+% \newcommand*{\PhReZeroAsymp}{0-\PhRePoleAsymp}
+% 
+% %% Integrator
+% \newcommand*{\MagInt}[1]{(20*log10(abs(#1/t)))}
+% \newcommand*{\MagIntLin}{\MagInt}
+% \newcommand*{\MagIntAsymp}{\MagInt}
+% \newcommand*{\PhInt}[1]{-90}
+% \newcommand*{\PhIntLin}{\PhInt}
+% \newcommand*{\PhIntAsymp}{\PhInt}
+% 
+% %% Differentiator
+% \newcommand*{\MagDiff}[1]{(-20*log10(abs(#1/t)))}
+% \newcommand*{\MagDiffAsymp}{\MagDiff}
+% \newcommand*{\MagDiffLin}{\MagDiff}
+% \newcommand*{\PhDiff}[1]{90}
+% \newcommand*{\PhDiffLin}{\PhDiff}
+% \newcommand*{\PhDiffAsymp}{\PhDiff}
+% 
+% %% Complex conjugate poles at #1 \pm #2i
+% % Magnitude
+% \newcommand*{\MagCCPoles}[2]{(\MagPole{#1}{#2}+\MagPole{#1}{-#2})}
+% \newcommand*{\MagCCPolesLin}[2]{(\MagPoleLin{#1}{#2}+\MagPoleLin{#1}{-#2})}
+% \newcommand*{\MagCCPolesAsymp}{\MagCCPolesLin}
+% % Phase
+% \newcommand*{\PhCCPoles}[2]{(\PhPole{#1}{#2}+\PhPole{#1}{-#2})}
+% \newcommand*{\PhCCPolesLin}[2]{(\PhPoleLin{#1}{#2}+\PhPoleLin{#1}{-#2})}
+% \newcommand*{\PhCCPolesAsymp}[2]{(\PhPoleAsymp{#1}{#2}+\PhPoleAsymp{#1}{-#2})}
+% 
+% %% Complex conjugate zeros at #1 \pm #2i
+% % Magnitude
+% \newcommand*{\MagCCZeros}{0-\MagCCPoles}
+% \newcommand*{\MagCCZerosLin}{0-\MagCCPolesLin}
+% \newcommand*{\MagCCZerosAsymp}{0-\MagCCPolesAsymp}
+% %Phase
+% \newcommand*{\PhCCZeros}{0-\PhCCPoles}
+% \newcommand*{\PhCCZerosLin}{0-\PhCCPolesLin}
+% \newcommand*{\PhCCZerosAsymp}{0-\PhCCPolesAsymp}
