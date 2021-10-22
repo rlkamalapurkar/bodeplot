@@ -63,15 +63,17 @@
 \newcommand*{\MagPoleAsymp}{\MagPoleLin}
 % Phase
 \newcommand*{\PhPole}[2]{(#1 > 0 ? (#2 > 0 ? (\n@mod{-atan2((t - (#2)),-(#1))+360}{360}) : (-atan2((t - (#2)),-(#1)))) : (-atan2((t - (#2)),-(#1))))}
-\newcommand*{\PhPoleLin}[2]{((#1*#2) == 0 ? -90 :
-	(t < (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) / (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))})) ? 
-		(-atan2(-(#2),-(#1))) :
-		(t >= (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) * (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))})) ? 
-			(#2>0?(#1>0?270:-90):-90) :
-			(-atan2(-(#2),-(#1)) + (log10(t/(sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) / (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))}))))*((#2>0?(#1>0?270:-90):-90) + atan2(-(#2),-(#1)))/(log10(\n@pow{10}{sqrt((4*\n@pow{#1}{2})/(\n@pow{#1}{2} + \n@pow{#2}{2}))})))
+\newcommand*{\PhPoleLin}[2]{
+	(abs(#1)+abs(#2) == 0 ? -90 :
+		(t < (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) / (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))})) ? 
+			(-atan2(-(#2),-(#1))) :
+			(t >= (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) * (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))})) ? 
+				(#2>0?(#1>0?270:-90):-90) :
+				(-atan2(-(#2),-(#1)) + (log10(t/(sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) / (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))}))))*((#2>0?(#1>0?270:-90):-90) + atan2(-(#2),-(#1)))/(log10(\n@pow{10}{sqrt((4*\n@pow{#1}{2})/(\n@pow{#1}{2} + \n@pow{#2}{2}))})))
+			)
 		)
 	)
-)}
+}
 \newcommand*{\PhPoleAsymp}[2]{(t < (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2})) ? 
 	(-atan2(-(#2),-(#1))) :
 	(#2>0?(#1>0?270:-90):-90)
@@ -134,7 +136,7 @@
 \newcommand*{\MagSOPolesLin}[2]{(t < sqrt(abs(#2)) ? -20*log10(abs(#2)) : - 40*log10(t))}
 \newcommand*{\MagSOPolesAsymp}{\MagSOPolesLin}
 \newcommand*{\MagSOPolesPeak}[3][]{
-	\draw[#1,->] (axis cs:{sqrt(abs(#3))},{-20*log10(abs(#3))}) -- (axis cs:{sqrt(abs(#3))},{-20*log10(abs(#3)) - 20*log10(abs(#2/sqrt(abs(#3))))})
+	\draw[#1,->] (axis cs:{sqrt(abs(#3))},{-20*log10(abs(#3))}) -- (axis cs:{sqrt(abs(#3))},{-20*log10(abs(#3)) - 20*log10(abs(#2/sqrt(abs(#3))))});
 }
 % Phase
 \newcommand*{\PhSOPoles}[2]{(-atan2((#1)*t,((#2) - \n@pow{t}{2})))}
@@ -147,7 +149,7 @@
 \newcommand*{\MagSOZerosLin}{0-\MagSOPolesLin}
 \newcommand*{\MagSOZerosAsymp}{0-\MagSOPolesAsymp}
 \newcommand*{\MagSOZerosPeak}[3][]{
-	\draw[#1,->] (axis cs:{sqrt(abs(#3))},{20*log10(abs(#3))}) -- (axis cs:{sqrt(abs(#3))},{20*log10(abs(#3)) + 20*log10(abs(#2/sqrt(abs(#3))))})
+	\draw[#1,->] (axis cs:{sqrt(abs(#3))},{20*log10(abs(#3))}) -- (axis cs:{sqrt(abs(#3))},{20*log10(abs(#3)) + 20*log10(abs(#2/sqrt(abs(#3))))});
 }
 %Phase
 \newcommand*{\PhSOZeros}{0-\PhSOPoles}
@@ -264,6 +266,7 @@
 	\foreach \approx/\attrib in {#1} {
 		\gdef\plot@macro{}%
 		\build@plot{\plot@macro}{#2}{\approx}{#3}
+		\typeout{\meaning\plot@macro}
 		\if@gnuarg
 			\stepcounter{idGnuplot}
 			\expandafter\addplot\expandafter[\attrib] gnuplot[gnuplot degrees,gnuplot def] {\plot@macro};
@@ -271,6 +274,15 @@
 			\expandafter\addplot\expandafter[\attrib]{\plot@macro};
 		\fi
 	}%
+}
+
+\newcommand{\addBodeComponentPlot}[2][red,thick]{%%%
+	\if@gnuarg
+		\stepcounter{idGnuplot}
+		\expandafter\addplot\expandafter[#1] gnuplot[gnuplot degrees,gnuplot def] {#2};
+	\else
+		\expandafter\addplot\expandafter[#1]{#2};
+	\fi
 }
 
 %\begin{NicholsChart}[axis options]{frequency_min}{frequency_max}
