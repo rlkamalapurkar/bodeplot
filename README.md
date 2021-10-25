@@ -30,11 +30,11 @@ Other new environments and associated commands:
     - `\addBodeTFPlot[plot_options]{plot_type (phase or magnitude)}{{numerator coefficients},{denominator coefficients},delay}`
     - `\addBodeComponentPlot[plot_options]{basic_component_plot_command}`
       - Basic component plot commands: ***(append `Lin` to get linear approximation and `Asymp` to get asymptotic approximation)*** ***(change `Pole` to `Zero` to get inverse plots)*** ***(change `Mag` to `Ph` to get phase plots)***
-      - `\MagK{a}`
-      - `\MagPole{a}{b}`
-      - `\MagCSPoles{z}{w}`
-      - `\MagSOPoles{a}{b}`
-      - `\MagDel{T}` (does not admit asymptotic approximation)
+      - `\MagK{a}` - Pure gain, G(s) = a.
+      - `\MagPole{a}{b}` - Single pole at s = a+bi, G(s) = 1/(s - a-bi).
+      - `\MagCSPoles{z}{w}` - Cannonical Second order system, G(s) = 1/(s^2 + 2*z*wn*s + wn^2).
+      - `\MagSOPoles{a}{b}` - Second Order system, G(s) = 1/(s^2 + as + b).
+      - `\MagDel{T}` - Pure delay, G(s) = exp(-Ts) (does not admit asymptotic approximation).
  - `NicholsChart` environment
     - `\addNicholsZPKChart[plot_options]{{zeros},{poles},gain,delay}`
     - `\addNicholsTFChart[plot_options]{{numerator coefficients},{denominator coefficients},delay}`
