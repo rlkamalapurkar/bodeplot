@@ -10,7 +10,7 @@ Added functionality:
  - Support for linear and asymptotic approximation of magnitude and phase plots of any transfer function given poles, zeros, and gain.
 
 Main Bode/Nyquist/Nichols commands:
-Given Zeros, Poles, Gain, and Delay (supports asymptotic and linear approximation):
+Given Zeros, Poles, Gain, and Delay (Bode plots support asymptotic and linear approximation for systems without delays):
  - `\BodeZPK[{{magnitude_plot_options},{phase_plot_options}},{{magnitude_axis_options},{phase_axis_options}},{group_options},approximation_type]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}`
  - `\NicholsZPK[{plot_options},{axis_options}]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}`
  - `\NyquistZPK[{plot_options},{axis_options}]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}`
