@@ -161,12 +161,13 @@
 \newcommand*{\PhDel}[2]{-#1*180*t/pi}
 
 % The BodeZPK command
-% \BodeZPK[{{Magnitude_plot_options},{Phase_plot_options}},{{Magnitude_axis_options},{Phase_axis_options}},plot_type]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
+%\BodeZPK[{{Magnitude_plot_options},{Phase_plot_options}},{{Magnitude_axis_options},{Phase_axis_options}},{group_options},plot_type]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
 \newcommand{\BodeZPK}[4][{},{},{}]{%
 	\gdef\optmag@axes{}%
 	\gdef\optph@axes{}%
 	\gdef\optph@plot{}%
 	\gdef\optmag@plot{}%
+	\gdef\opt@group{}%
 	\gdef\opt@approx{}%
 	\foreach \opt [count=\n] in {#1} {%
 		\ifnum\n=1
@@ -191,68 +192,65 @@
 					\fi
 				}
 			\else
-				\xdef\opt@approx{\opt}
+				\ifnum\n=3
+					\xdef\opt@group{\opt}
+				\else
+					\xdef\opt@approx{\opt}
+				\fi
 			\fi
 		\fi
 	}%
-	\typeout{\meaning\optmag@axes}
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
 	\build@ZPK@plot{\func@mag}{\func@ph}{\opt@approx}{#2}
-	\begin{tikzpicture}
-		\begin{groupplot}[
-			grid=both,
-			major grid style={color=gray!80},
-			minor grid style={color=gray!20},
-			xmin={#3},
-			xmax={#4},
-			domain=#3:#4,
-			width=6cm,
-			height=3cm,
-			x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
-			y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
-			scale only axis,
-			xmode=log,
-			group style = {group size = 1 by 2,vertical sep=0.25cm,},
-			samples=200,
-			]
-			
+	\edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{groupplot}[
+				grid=both,
+				major grid style={color=gray!80},
+				minor grid style={color=gray!20},
+				xmin={#3},
+				xmax={#4},
+				domain=#3:#4,
+				width=6cm,
+				height=3cm,
+				x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+				y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+				scale only axis,
+				xmode=log,
+				group style = {group size = 1 by 2,vertical sep=0.25cm,},
+				samples=200,
+				\opt@group,]}
+	\temp@cmd
 			\if@gnuarg
 				\stepcounter{idGnuplot}
 				\expandafter\nextgroupplot\expandafter[ytick distance=20,ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-					\expandafter\addplot\expandafter[\optmag@plot] gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
+					\edef\temp@cmd{\noexpand\addplot[red,thick,\optmag@plot]}
+					\temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
 				\stepcounter{idGnuplot}
 				\expandafter\nextgroupplot\expandafter[ytick distance=45,ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-					\expandafter\addplot\expandafter[\optph@plot] gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
+					\edef\temp@cmd{\noexpand\addplot[red,thick,\optph@plot]}
+					\temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
 			\else
 				\expandafter\nextgroupplot\expandafter[ytick distance=20,ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-					\expandafter\addplot\expandafter[\optmag@plot]{\func@mag};
+					\edef\temp@cmd{\noexpand\addplot[red,thick,\optmag@plot]}
+					\temp@cmd {\func@mag};
 				\expandafter\nextgroupplot\expandafter[ytick distance=45,ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-					\expandafter\addplot\expandafter[\optph@plot]{\func@ph};
+					\edef\temp@cmd{\noexpand\addplot[red,thick,\optph@plot]}
+					\temp@cmd {\func@ph};
 			\fi
 		\end{groupplot}
 	\end{tikzpicture}
 }
 
 % The BodeTF command
-% \BodeTF[{{Magnitude_plot_options},{Phase_plot_options}},{{Magnitude_axis_options},{Phase_axis_options}}]{{numerator coefficients},{denominator coefficients},delay}{min_frequency}{max_frequency}
+% \BodeTF[{{Magnitude_plot_options},{Phase_plot_options}},{{Magnitude_axis_options},{Phase_axis_options}},{group_options}]{{numerator coefficients},{denominator coefficients},delay}{min_frequency}{max_frequency}
 \newcommand{\BodeTF}[4][{},{},{}]{%
 	\gdef\optmag@axes{}%
 	\gdef\optph@axes{}%
 	\gdef\optph@plot{}%
 	\gdef\optmag@plot{}%
+	\gdef\opt@group{}%
 	\foreach \opt [count=\n] in {#1} {%
-		\ifnum\n=2
-			\foreach \subopt [count=\m] in \opt {%
-				\ifnum\m=1
-					\xdef\optmag@axes{\subopt}
-					\xdef\optph@axes{\subopt}
-				\fi
-				\ifnum\m=2
-					\xdef\optph@axes{\subopt}
-				\fi
-			}
-		\else
+		\ifnum\n=1
 			\foreach \subopt [count=\m] in \opt {%
 				\ifnum\m=1
 					\xdef\optmag@plot{\subopt}
@@ -262,41 +260,58 @@
 					\xdef\optph@plot{\subopt}
 				\fi
 			}
+		\else
+			\ifnum\n=2
+				\foreach \subopt [count=\m] in \opt {%
+					\ifnum\m=1
+						\xdef\optmag@axes{\subopt}
+						\xdef\optph@axes{\subopt}
+					\fi
+					\ifnum\m=2
+						\xdef\optph@axes{\subopt}
+					\fi
+				}
+			\else
+				\xdef\opt@group{\opt}
+			\fi
 		\fi
 	}%
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
 	\build@TF@plot{\func@mag}{\func@ph}{#2}
-	\begin{tikzpicture}
-		\begin{groupplot}[
-			grid=both,
-			major grid style={color=gray!80},
-			minor grid style={color=gray!20},
-			xmin={#3},
-			xmax={#4},
-			domain=#3:#4,
-			width=6cm,
-			height=3cm,
-			x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
-			y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
-			scale only axis,
-			xmode=log,
-			group style = {group size = 1 by 2,vertical sep=0.25cm,},
-			samples=200,
-			]
-			
+	\edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{groupplot}[
+				grid=both,
+				major grid style={color=gray!80},
+				minor grid style={color=gray!20},
+				xmin={#3},
+				xmax={#4},
+				domain=#3:#4,
+				width=6cm,
+				height=3cm,
+				x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+				y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+				scale only axis,
+				xmode=log,
+				group style = {group size = 1 by 2,vertical sep=0.25cm,},
+				samples=200,
+				\opt@group,]}
+	\temp@cmd
 			\if@gnuarg
 				\stepcounter{idGnuplot}
 				\expandafter\nextgroupplot\expandafter[ytick distance=20,ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-					\expandafter\addplot\expandafter[\optmag@plot] gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
+					\edef\temp@cmd{\noexpand\addplot[red,thick,\optmag@plot]}
+					\temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
 				\stepcounter{idGnuplot}
 				\expandafter\nextgroupplot\expandafter[ytick distance=45,ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-					\expandafter\addplot\expandafter[\optph@plot] gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
+					\edef\temp@cmd{\noexpand\addplot[red,thick,\optph@plot]}
+					\temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
 			\else
 				\expandafter\nextgroupplot\expandafter[ytick distance=20,ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-					\expandafter\addplot\expandafter[\optmag@plot]{\func@mag};
+					\edef\temp@cmd{\noexpand\addplot[red,thick,\optmag@plot]}
+					\temp@cmd {\func@mag};
 				\expandafter\nextgroupplot\expandafter[ytick distance=45,ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-					\expandafter\addplot\expandafter[\optph@plot]{\func@ph};
+					\edef\temp@cmd{\noexpand\addplot[red,thick,\optph@plot]}
+					\temp@cmd {\func@ph};
 			\fi
 		\end{groupplot}
 	\end{tikzpicture}
@@ -329,8 +344,8 @@
 
 % Command to add Bode plots using ZPK data
 %\addBodeZPKPlots[{approximation_1/{plot_options_1}},{approximation_2/{plot_options_2}},...]{plot_type (phase or magnitude)}{{zeros},{poles},gain,delay}
-\newcommand{\addBodeZPKPlots}[3][{true/{red,thick}}]{%%%
-	\foreach \approx/\attrib in {#1} {
+\newcommand{\addBodeZPKPlots}[3][{}]{%%%
+	\foreach \approx/\opt in {#1} {
 		\gdef\plot@macro{}%
 		\gdef\temp@macro{}%
 		\ifnum\pdfstrcmp{#2}{phase}=0
@@ -340,9 +355,11 @@
 		\fi
 		\if@gnuarg
 			\stepcounter{idGnuplot}
-			\expandafter\addplot\expandafter[\attrib] gnuplot[gnuplot degrees,gnuplot def] {\plot@macro};
+			\edef\temp@cmd{\noexpand\addplot[red,thick,\opt]}
+			\temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\plot@macro};
 		\else
-			\expandafter\addplot\expandafter[\attrib]{\plot@macro};
+			\edef\temp@cmd{\noexpand\addplot[red,thick,\opt]}
+			\temp@cmd {\plot@macro};
 		\fi
 	}%
 }
@@ -374,6 +391,90 @@
 	\else
 		\addplot[#1]{#2};
 	\fi
+}
+
+%%%%%%%%%%%%%%%%%%%%%%% Nichols Charts %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% The NicholsZPK command
+%\NicholsZPK[{Plot_options},{Axis_options}]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
+\newcommand{\NicholsZPK}[4][{},{}]{%
+	\gdef\opt@axes{}%
+	\gdef\opt@plot{}%
+	\foreach \opt [count=\n] in {#1} {%
+		\ifnum\n=1
+			\xdef\opt@plot{\opt}
+		\else
+			\xdef\opt@axes{\opt}
+		\fi
+	}%
+	\gdef\func@mag{}%
+	\gdef\func@ph{}%
+	\build@ZPK@plot{\func@mag}{\func@ph}{}{#2}
+	\edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[
+				grid=both,
+				major grid style={color=gray!80},
+				minor grid style={color=gray!20},
+				scale only axis,
+				domain=#3:#4,
+				width=6cm,
+				height=6cm,
+				x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+				y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+				xlabel={Phase (degrees)},
+				ylabel={Gain (dB)},
+				samples=500,
+				\opt@axes,]}
+	\temp@cmd
+			\edef\temp@cmd{\noexpand\addplot[red,thick,\opt@plot]}
+			\if@gnuarg
+				\stepcounter{idGnuplot}
+				\temp@cmd gnuplot[parametric, gnuplot degrees, gnuplot def] { \func@ph , \func@mag };
+			\else
+				\temp@cmd ( {\func@ph} , {\func@mag} );
+			\fi
+		\end{axis}
+	\end{tikzpicture}
+}
+
+% The NicholsTF command
+%\NicholsTF[{Plot_options},{Axis_options}]{{numerator coefficients},{denominator coefficients},delay}
+\newcommand{\NicholsTF}[4][{},{}]{%
+	\gdef\opt@axes{}%
+	\gdef\opt@plot{}%
+	\foreach \opt [count=\n] in {#1} {%
+		\ifnum\n=1
+			\xdef\opt@plot{\opt}
+		\else
+			\xdef\opt@axes{\opt}
+		\fi
+	}%
+	\gdef\func@mag{}%
+	\gdef\func@ph{}%
+	\build@TF@plot{\func@mag}{\func@ph}{#2}
+	\edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[
+				grid=both,
+				major grid style={color=gray!80},
+				minor grid style={color=gray!20},
+				scale only axis,
+				domain=#3:#4,
+				width=6cm,
+				height=6cm,
+				x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+				y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+				xlabel={Phase (degrees)},
+				ylabel={Gain (dB)},
+				samples=500,
+				\opt@axes,]}
+	\temp@cmd
+			\edef\temp@cmd{\noexpand\addplot[red,thick,\opt@plot]}
+			\if@gnuarg
+				\stepcounter{idGnuplot}
+				\temp@cmd gnuplot[parametric, gnuplot degrees, gnuplot def] { \func@ph , \func@mag };
+			\else
+				\temp@cmd ( {\func@ph} , {\func@mag} );
+			\fi
+		\end{axis}
+	\end{tikzpicture}
 }
 
 %\begin{NicholsChart}[axis options]{frequency_min}{frequency_max}
@@ -423,6 +524,93 @@
 		\addplot [#1] ( {\func@ph} , {\func@mag} );
 	\fi
 }
+
+%%%%%%%%%%%%%%%%%%%%%%% Nyquist Plots %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% The NyquistZPK command
+%\NyquistZPK[{Plot_options},{Axis_options}]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
+\newcommand{\NyquistZPK}[4][{},{}]{%
+	\gdef\opt@axes{}%
+	\gdef\opt@plot{}%
+	\foreach \opt [count=\n] in {#1} {%
+		\ifnum\n=1
+			\xdef\opt@plot{\opt}
+		\else
+			\xdef\opt@axes{\opt}
+		\fi
+	}%
+	\gdef\func@mag{}%
+	\gdef\func@ph{}%
+	\build@ZPK@plot{\func@mag}{\func@ph}{}{#2}
+	\edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[
+				grid=both,
+				major grid style={color=gray!80},
+				minor grid style={color=gray!20},
+				scale only axis,
+				domain=#3:#4,
+				width=6cm,
+				height=6cm,
+				x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+				y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+				xlabel={$\Re$},
+				ylabel={$\Im$},
+				samples=500,
+				\opt@axes,]}
+	\temp@cmd
+			\addplot [only marks,mark=+,thick,red] (-1 , 0);
+			\edef\temp@cmd{\noexpand\addplot[red,thick,\opt@plot]}
+			\if@gnuarg
+				\stepcounter{idGnuplot}
+				\temp@cmd gnuplot[parametric,gnuplot degrees,gnuplot def] { \n@pow{10}{((\func@mag)/20)}*cos(\func@ph) , \n@pow{10}{((\func@mag)/20)}*sin(\func@ph) };
+			\else
+				\temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)} , {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
+			\fi
+		\end{axis}
+	\end{tikzpicture}
+}
+
+% The NyquistTF command
+%\NyquistTF[{Plot_options},{Axis_options}]{{numerator coefficients},{denominator coefficients},delay}
+\newcommand{\NyquistTF}[4][{},{},{}]{%
+	\gdef\opt@axes{}%
+	\gdef\opt@plot{}%
+	\foreach \opt [count=\n] in {#1} {%
+		\ifnum\n=1
+			\xdef\opt@plot{\opt}
+		\else
+			\xdef\opt@axes{\opt}
+		\fi
+	}%
+	\gdef\func@mag{}%
+	\gdef\func@ph{}%
+	\build@TF@plot{\func@mag}{\func@ph}{#2}
+	\edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[
+				grid=both,
+				major grid style={color=gray!80},
+				minor grid style={color=gray!20},
+				scale only axis,
+				domain=#3:#4,
+				width=6cm,
+				height=6cm,
+				x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+				y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+				xlabel={$\Re$},
+				ylabel={$\Im$},
+				samples=500,
+				\opt@axes,]}
+	\temp@cmd
+			\addplot [only marks,mark=+,thick,red] (-1 , 0);
+			\edef\temp@cmd{\noexpand\addplot[red,thick,\opt@plot]}
+			\if@gnuarg
+				\stepcounter{idGnuplot}
+				\temp@cmd gnuplot[parametric,gnuplot degrees,gnuplot def] { \n@pow{10}{((\func@mag)/20)}*cos(\func@ph) , \n@pow{10}{((\func@mag)/20)}*sin(\func@ph) };
+			\else
+				\temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)} , {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
+			\fi
+		\end{axis}
+	\end{tikzpicture}
+}
+
 %\begin{NyquistPlot}[axis options]{frequency_min}{frequency_max}
 \newenvironment{NyquistPlot}[3][]{
 	\begin{tikzpicture}
@@ -560,10 +748,10 @@
 % Internal command to build a TF bodeplot
 %\build@TF@plot{magnitude_plot_handle}{phase_plot_handle}{{numerator coefficients},{denominator coefficients},delay}
 \newcommand{\build@TF@plot}[3]{
-	\gdef\num@real{}%
-	\gdef\num@im{}%
-	\gdef\den@real{}%
-	\gdef\den@im{}%
+	\gdef\num@real{0}%
+	\gdef\num@im{0}%
+	\gdef\den@real{0}%
+	\gdef\den@im{0}%
 	\foreach \feature [count=\n] in {#3} {
 		\xdef\num@features{\n}%
 		\ifnum\n=1
@@ -578,7 +766,7 @@
 					\ifodd\currentdegree
 						\xdef\num@im{\num@im+(\numcoeff*(\n@pow{-1}{(\currentdegree-1)/2})*(\n@pow{t}{\currentdegree}))}
 					\else
-						\xdef\num@real{\num@im+(\numcoeff*(\n@pow{-1}{(\currentdegree)/2})*(\n@pow{t}{\currentdegree}))}
+						\xdef\num@real{\num@real+(\numcoeff*(\n@pow{-1}{(\currentdegree)/2})*(\n@pow{t}{\currentdegree}))}
 					\fi
 				\fi
 			}%
@@ -607,63 +795,6 @@
 	\ifnum\num@features = 2
 		\xdef\loop@delay{0}
 	\fi
-	\xdef#2{(\n@mod{atan2((\num@im),(\num@real))-atan2((\den@im),(\den@real))}{360}-\loop@delay*180*t/pi)}
+	\xdef#2{(\n@mod{atan2((\num@im),(\num@real))-atan2((\den@im),(\den@real))+360}{360}-\loop@delay*180*t/pi)}
 	\xdef#1{(20*log10(sqrt((\n@pow{\num@real}{2})+(\n@pow{\num@im}{2}))) - 20*log10(sqrt((\n@pow{\den@real}{2})+(\n@pow{\den@im}{2}))))}
 }
-
-% Extra commands
-% %% Real pole at s = #1 G(s) = 1/(s-#1)
-% % Magnitude
-% \newcommand*{\MagRePole}[1]{\MagPole{#1}{0}}
-% \newcommand*{\MagRePoleLin}[1]{\MagPoleLin{#1}{0}}
-% \newcommand*{\MagRePoleAsymp}{\MagRePoleLin}
-% 
-% % Phase
-% \newcommand*{\PhRePole}[1]{\PhPole{#1}{0}}
-% \newcommand*{\PhRePoleLin}[1]{\PhPoleLin{#1}{0}}
-% \newcommand*{\PhRePoleAsymp}[1]{\PhPoleAsymp{#1}{0}}
-% %% Real zero at s = #1 G(s) = s-#1
-% % Magnitude
-% \newcommand*{\MagReZero}{0-\MagRePole}
-% \newcommand*{\MagReZeroLin}{0-\MagRePoleLin}
-% \newcommand*{\MagReZeroAsymp}{0-\MagRePoleAsymp}
-% %Phase
-% \newcommand*{\PhReZero}{0-\PhRePole}
-% \newcommand*{\PhReZeroLin}{0-\PhRePoleLin}
-% \newcommand*{\PhReZeroAsymp}{0-\PhRePoleAsymp}
-% 
-% %% Integrator
-% \newcommand*{\MagInt}[1]{(20*log10(abs(#1/t)))}
-% \newcommand*{\MagIntLin}{\MagInt}
-% \newcommand*{\MagIntAsymp}{\MagInt}
-% \newcommand*{\PhInt}[1]{-90}
-% \newcommand*{\PhIntLin}{\PhInt}
-% \newcommand*{\PhIntAsymp}{\PhInt}
-% 
-% %% Differentiator
-% \newcommand*{\MagDiff}[1]{(-20*log10(abs(#1/t)))}
-% \newcommand*{\MagDiffAsymp}{\MagDiff}
-% \newcommand*{\MagDiffLin}{\MagDiff}
-% \newcommand*{\PhDiff}[1]{90}
-% \newcommand*{\PhDiffLin}{\PhDiff}
-% \newcommand*{\PhDiffAsymp}{\PhDiff}
-% 
-% %% Complex conjugate poles at #1 \pm #2i
-% % Magnitude
-% \newcommand*{\MagCCPoles}[2]{(\MagPole{#1}{#2}+\MagPole{#1}{-#2})}
-% \newcommand*{\MagCCPolesLin}[2]{(\MagPoleLin{#1}{#2}+\MagPoleLin{#1}{-#2})}
-% \newcommand*{\MagCCPolesAsymp}{\MagCCPolesLin}
-% % Phase
-% \newcommand*{\PhCCPoles}[2]{(\PhPole{#1}{#2}+\PhPole{#1}{-#2})}
-% \newcommand*{\PhCCPolesLin}[2]{(\PhPoleLin{#1}{#2}+\PhPoleLin{#1}{-#2})}
-% \newcommand*{\PhCCPolesAsymp}[2]{(\PhPoleAsymp{#1}{#2}+\PhPoleAsymp{#1}{-#2})}
-% 
-% %% Complex conjugate zeros at #1 \pm #2i
-% % Magnitude
-% \newcommand*{\MagCCZeros}{0-\MagCCPoles}
-% \newcommand*{\MagCCZerosLin}{0-\MagCCPolesLin}
-% \newcommand*{\MagCCZerosAsymp}{0-\MagCCPolesAsymp}
-% %Phase
-% \newcommand*{\PhCCZeros}{0-\PhCCPoles}
-% \newcommand*{\PhCCZerosLin}{0-\PhCCPolesLin}
-% \newcommand*{\PhCCZerosAsymp}{0-\PhCCPolesAsymp}

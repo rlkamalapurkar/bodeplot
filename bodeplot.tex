@@ -10,12 +10,12 @@
 		
 	Bode plot in TF format
 	\begin{center}
-		\BodeTF[blue,thick]{{10,2,2.6000,0},{1,0.2,100.01}}{0.01}{100}
+		\BodeTF[blue,thick]{{10,2,2.6,0},{1,0.2,100}}{0.01}{100}
 	\end{center}
 
 	Linear approximation with customization
 	\begin{center}
-		\BodeZPK[{{red,thick},{blue,thick}},{{ytick distance=40},{ytick distance=90}},linear] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10} {0.01} {100}
+		\BodeZPK[{{red,thick},{blue,thick}},{{ytick distance=40},{ytick distance=90}},{},linear] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10} {0.01} {100}
 	\end{center}
 
 	Plot with delay and customization
@@ -36,15 +36,37 @@
 
 	Nichols chart
 	\begin{center}
+		\NicholsZPK[{red,thick,samples=1000},{}]{{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10}{0.001}{100}
+	\end{center}
+	
+	Nichols chart in TF format
+	\begin{center}
+			\NicholsTF[{samples=1000},{}]{{10,2,2.6,0},{1,0.2,100}}{0.001}{100}
+	\end{center}
+	
+	Multiple Nichols charts with customization
+	\begin{center}
 		\begin{NicholsChart}[ytick distance = 20, xtick distance=30]{0.001}{100}
 			\addNicholsZPKChart [red,samples=1000] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10};
+			\addNicholsZPKChart [blue,samples=1000] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},100};
 		\end{NicholsChart}
 	\end{center}
 
 	Nyquist plot
 	\begin{center}
+		\NyquistZPK[{red,thick,samples=2000},{}]{{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10}{-10}{10}
+	\end{center}
+	
+	Nyquist plot in TF format
+	\begin{center}
+		\NyquistTF[{samples=2000},{}]{{10,2,2.6000,0},{1,0.2,100.01}}{-10}{10}
+	\end{center}
+
+	Multiple Nyquist plots with customization
+	\begin{center}
 		\begin{NyquistPlot}{-10}{10}
 			\addNyquistZPKPlot [red,samples=2000] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10};
+			\addNyquistZPKPlot [blue,samples=2000] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},20};
 		\end{NyquistPlot}
 	\end{center}
 \end{document}
