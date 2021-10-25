@@ -161,7 +161,7 @@
 \newcommand*{\PhDel}[2]{-#1*180*t/pi}
 
 % The BodeZPK command
-% \BodeZPK[plot_type,{{Magnitude_axis_options},{Phase_axis_options}},{{Magnitude_plot_options},{Phase_plot_options}}]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
+% \BodeZPK[{{Magnitude_plot_options},{Phase_plot_options}},{{Magnitude_axis_options},{Phase_axis_options}},plot_type]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
 \newcommand{\BodeZPK}[4][{},{},{}]{%
 	\gdef\optmag@axes{}%
 	\gdef\optph@axes{}%
@@ -170,7 +170,15 @@
 	\gdef\opt@approx{}%
 	\foreach \opt [count=\n] in {#1} {%
 		\ifnum\n=1
-			\xdef\opt@approx{\opt}
+			\foreach \subopt [count=\m] in \opt {%
+				\ifnum\m=1
+					\xdef\optmag@plot{\subopt}
+					\xdef\optph@plot{\subopt}
+				\fi
+				\ifnum\m=2
+					\xdef\optph@plot{\subopt}
+				\fi
+			}
 		\else
 			\ifnum\n=2
 				\foreach \subopt [count=\m] in \opt {%
@@ -183,22 +191,14 @@
 					\fi
 				}
 			\else
-				\foreach \subopt [count=\m] in \opt {%
-					\ifnum\m=1
-						\xdef\optmag@plot{\subopt}
-						\xdef\optph@plot{\subopt}
-					\fi
-					\ifnum\m=2
-						\xdef\optph@plot{\subopt}
-					\fi
-				}
+				\xdef\opt@approx{\opt}
 			\fi
 		\fi
 	}%
+	\typeout{\meaning\optmag@axes}
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
 	\build@ZPK@plot{\func@mag}{\func@ph}{\opt@approx}{#2}
-	
 	\begin{tikzpicture}
 		\begin{groupplot}[
 			grid=both,
@@ -235,14 +235,14 @@
 }
 
 % The BodeTF command
-% \BodeTF[{{Magnitude_axis_options},{Phase_axis_options}},{{Magnitude_plot_options},{Phase_plot_options}}]{{numerator coefficients},{denominator coefficients},delay}{min_frequency}{max_frequency}
+% \BodeTF[{{Magnitude_plot_options},{Phase_plot_options}},{{Magnitude_axis_options},{Phase_axis_options}}]{{numerator coefficients},{denominator coefficients},delay}{min_frequency}{max_frequency}
 \newcommand{\BodeTF}[4][{},{},{}]{%
 	\gdef\optmag@axes{}%
 	\gdef\optph@axes{}%
 	\gdef\optph@plot{}%
 	\gdef\optmag@plot{}%
 	\foreach \opt [count=\n] in {#1} {%
-		\ifnum\n=1
+		\ifnum\n=2
 			\foreach \subopt [count=\m] in \opt {%
 				\ifnum\m=1
 					\xdef\optmag@axes{\subopt}
@@ -267,7 +267,6 @@
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
 	\build@TF@plot{\func@mag}{\func@ph}{#2}
-	
 	\begin{tikzpicture}
 		\begin{groupplot}[
 			grid=both,
@@ -334,10 +333,11 @@
 	\foreach \approx/\attrib in {#1} {
 		\gdef\plot@macro{}%
 		\gdef\temp@macro{}%
-		\ifnum\pdfstrcmp{#2}{phase}
+		\ifnum\pdfstrcmp{#2}{phase}=0
 			\build@ZPK@plot{\temp@macro}{\plot@macro}{\approx}{#3}
 		\else
 			\build@ZPK@plot{\plot@macro}{\temp@macro}{\approx}{#3}
+		\fi
 		\if@gnuarg
 			\stepcounter{idGnuplot}
 			\expandafter\addplot\expandafter[\attrib] gnuplot[gnuplot degrees,gnuplot def] {\plot@macro};
@@ -352,10 +352,11 @@
 \newcommand{\addBodeTFPlot}[3][red,thick]{%
 	\gdef\plot@macro{}%
 	\gdef\temp@macro{}%
-	\ifnum\pdfstrcmp{#2}{phase}
+	\ifnum\pdfstrcmp{#2}{phase}=0
 		\build@TF@plot{\temp@macro}{\plot@macro}{#3}
 	\else
 		\build@TF@plot{\plot@macro}{\temp@macro}{#3}
+	\fi
 	\if@gnuarg
 		\stepcounter{idGnuplot}
 		\addplot[#1] gnuplot[gnuplot degrees, gnuplot def] {\plot@macro};
@@ -405,7 +406,7 @@
 	\build@ZPK@plot{\func@mag}{\func@ph}{}{#2}
 	\if@gnuarg
 		\stepcounter{idGnuplot}
-		\addplot [#1] gnuplot[gnuplot degrees,gnuplot def] {\func@ph , \func@mag};
+		\addplot [#1] gnuplot[parametric,gnuplot degrees,gnuplot def] {\func@ph , \func@mag};
 	\else
 		\addplot [#1] ( {\func@ph} , {\func@mag} );
 	\fi
@@ -477,11 +478,8 @@
 		\ifnum\n=1
 			\foreach \z in \feature {
 				\ifnum\pdfstrcmp{#3}{linear}=0
-					\ifnum\pdfstrcmp{#2}{phase}=0
-						\add@feature{#1}{\PhZeroLin}{\z}
-					\else
-						\add@feature{#1}{\MagZeroLin}{\z}
-					\fi
+					\add@feature{#2}{\PhZeroLin}{\z}
+					\add@feature{#1}{\MagZeroLin}{\z}
 				\else
 					\ifnum\pdfstrcmp{#3}{asymptotic}=0
 						\add@feature{#2}{\PhZeroAsymp}{\z}
@@ -609,7 +607,7 @@
 	\ifnum\num@features = 2
 		\xdef\loop@delay{0}
 	\fi
-	\xdef#2{((atan2((\num@im),(\num@real)))-atan2((\den@im),(\den@real))-\loop@delay*180*t/pi)}
+	\xdef#2{(\n@mod{atan2((\num@im),(\num@real))-atan2((\den@im),(\den@real))}{360}-\loop@delay*180*t/pi)}
 	\xdef#1{(20*log10(sqrt((\n@pow{\num@real}{2})+(\n@pow{\num@im}{2}))) - 20*log10(sqrt((\n@pow{\den@real}{2})+(\n@pow{\den@im}{2}))))}
 }
 

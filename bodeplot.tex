@@ -3,43 +3,48 @@
 \usepackage[gnuplot]{bodeplot}
 
 \begin{document}
-	Simplest form
+	Bode plot in ZPK format
 	\begin{center}
-		\Bode{{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10}{0.01}{100}
+		\BodeZPK[red,thick]{{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10}{0.01}{100}
 	\end{center}
-
-	Plot with delay and customization
+		
+	Bode plot in TF format
 	\begin{center}
-		\Bode[{},{{ytick distance=40},{ytick distance=90}},{{red,thick},{blue,thick}}] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10,0.1} {0.01} {100}
+		\BodeTF[blue,thick]{{10,2,2.6000,0},{1,0.2,100.01}}{0.01}{100}
 	\end{center}
 
 	Linear approximation with customization
 	\begin{center}
-		\Bode[linear,{{ytick distance=40},{ytick distance=90}},{{red,thick},{blue,thick}}] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10} {0.01} {100}
+		\BodeZPK[{{red,thick},{blue,thick}},{{ytick distance=40},{ytick distance=90}},linear] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10} {0.01} {100}
+	\end{center}
+
+	Plot with delay and customization
+	\begin{center}
+		\BodeZPK[{{red,thick},{blue,thick}},{{ytick distance=40},{ytick distance=90}}] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10,0.1} {0.01} {100}
 	\end{center}
 
 	Individual gain and phase plots with more customization
 	\begin{center}
 		\begin{BodePlot}[ylabel={Gain (dB)},
 			ytick distance=40, height=2cm, width=4cm]{0.01}{100}
-			\addBodePlots[true/{black,thick},linear/{red,dashed,thick},asymptotic/{blue,dotted,thick}]{magnitude}{{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10}
+			\addBodeZPKPlots[true/{black,thick},linear/{red,dashed,thick},asymptotic/{blue,dotted,thick}]{magnitude}{{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10}
 		\end{BodePlot}
 		\begin{BodePlot}[ylabel={Phase ($^{\circ}$)},height=2cm,width=4cm,ytick distance=90,]{0.01}{100}
-			\addBodePlots[true/{black,thick},linear/{red,dashed,thick},asymptotic/{blue,dotted,thick}]{phase}{{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10}
+			\addBodeZPKPlots[true/{black,thick},linear/{red,dashed,thick},asymptotic/{blue,dotted,thick}]{phase}{{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10}
 		\end{BodePlot}
 	\end{center}
 
 	Nichols chart
 	\begin{center}
-		\begin{NicholsChart}[ytick distance = 20,xtick distance=30]{0.001}{100}
-			\addNicholsPlot [red,samples=1000, parametric] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10};
+		\begin{NicholsChart}[ytick distance = 20, xtick distance=30]{0.001}{100}
+			\addNicholsZPKChart [red,samples=1000] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10};
 		\end{NicholsChart}
 	\end{center}
 
 	Nyquist plot
 	\begin{center}
 		\begin{NyquistPlot}{-10}{10}
-			\addNyquistPlot [red,samples=2000] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10};
+			\addNyquistZPKPlot [red,samples=2000] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10};
 		\end{NyquistPlot}
 	\end{center}
 \end{document}
