@@ -161,7 +161,7 @@
 \newcommand*{\PhDel}[2]{-#1*180*t/pi}
 
 % The BodeZPK command
-%\BodeZPK[{{Magnitude_plot_options},{Phase_plot_options}},{{Magnitude_axis_options},{Phase_axis_options}},{group_options},plot_type]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
+%\BodeZPK[{{magnitude_plot_options},{phase_plot_options}},{{magnitude_axis_options},{phase_axis_options}},{group_options},approximation_type]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
 \newcommand{\BodeZPK}[4][{},{},{}]{%
 	\gdef\optmag@axes{}%
 	\gdef\optph@axes{}%
@@ -242,7 +242,7 @@
 }
 
 % The BodeTF command
-% \BodeTF[{{Magnitude_plot_options},{Phase_plot_options}},{{Magnitude_axis_options},{Phase_axis_options}},{group_options}]{{numerator coefficients},{denominator coefficients},delay}{min_frequency}{max_frequency}
+% \BodeTF[{{magnitude_plot_options},{phase_plot_options}},{{magnitude_axis_options},{phase_axis_options}},{group_options}]{{numerator coefficients},{denominator coefficients},delay}{min_frequency}{max_frequency}
 \newcommand{\BodeTF}[4][{},{},{}]{%
 	\gdef\optmag@axes{}%
 	\gdef\optph@axes{}%
@@ -396,7 +396,7 @@
 %%%%%%%%%%%%%%%%%%%%%%% Nichols Charts %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % The NicholsZPK command
-%\NicholsZPK[{Plot_options},{Axis_options}]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
+%\NicholsZPK[{plot_options},{axis_options}]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
 \newcommand{\NicholsZPK}[4][{},{}]{%
 	\gdef\opt@axes{}%
 	\gdef\opt@plot{}%
@@ -437,7 +437,7 @@
 }
 
 % The NicholsTF command
-%\NicholsTF[{Plot_options},{Axis_options}]{{numerator coefficients},{denominator coefficients},delay}
+%\NicholsTF[{plot_options},{axis_options}]{{numerator coefficients},{denominator coefficients},delay}
 \newcommand{\NicholsTF}[4][{},{}]{%
 	\gdef\opt@axes{}%
 	\gdef\opt@plot{}%
@@ -528,7 +528,7 @@
 %%%%%%%%%%%%%%%%%%%%%%% Nyquist Plots %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % The NyquistZPK command
-%\NyquistZPK[{Plot_options},{Axis_options}]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
+%\NyquistZPK[{plot_options},{axis_options}]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
 \newcommand{\NyquistZPK}[4][{},{}]{%
 	\gdef\opt@axes{}%
 	\gdef\opt@plot{}%
@@ -570,7 +570,7 @@
 }
 
 % The NyquistTF command
-%\NyquistTF[{Plot_options},{Axis_options}]{{numerator coefficients},{denominator coefficients},delay}
+%\NyquistTF[{plot_options},{axis_options}]{{numerator coefficients},{denominator coefficients},delay}
 \newcommand{\NyquistTF}[4][{},{},{}]{%
 	\gdef\opt@axes{}%
 	\gdef\opt@plot{}%

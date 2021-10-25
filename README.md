@@ -9,13 +9,17 @@ Added functionality:
  - Support for both `gnuplot` and `pgfplots`.
  - Support for linear and asymptotic approximation of magnitude and phase plots of any transfer function given poles, zeros, and gain.
 
-Main Bode plot commands:
-Given Zeros, Poles, Gain, and Delay 
- - `\BodeZPK[plot_type,{{Magnitude_axis_options},{Phase_axis_options}},{{Magnitude_plot_options},{Phase_plot_options}}]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}`
+Main Bode/Nyquist/Nichols commands:
+Given Zeros, Poles, Gain, and Delay (supports asymptotic and linear approximation):
+ - `\BodeZPK[{{magnitude_plot_options},{phase_plot_options}},{{magnitude_axis_options},{phase_axis_options}},{group_options},approximation_type]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}`
+ - `\NicholsZPK[{plot_options},{axis_options}]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}`
+ - `\NyquistZPK[{plot_options},{axis_options}]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}`
 
-Given Numerator and denominator coefficients and delay:
- - `\BodeTF[{{Magnitude_axis_options},{Phase_axis_options}},{{Magnitude_plot_options},{Phase_plot_options}}]{{numerator coefficients},{denominator coefficients},delay}{min_frequency}{max_frequency}`
-
+Given Numerator and denominator coefficients and delay (does not support approximation yet):
+ - `\BodeTF[{{magnitude_plot_options},{phase_plot_options}},{{magnitude_axis_options},{phase_axis_options}},{group_options}]{{numerator coefficients},{denominator coefficients},delay}{min_frequency}{max_frequency}`
+ - `\NicholsTF[{plot_options},{axis_options}]{{numerator coefficients},{denominator coefficients},delay}`
+ - `\NyquistTF[{plot_options},{axis_options}]{{numerator coefficients},{denominator coefficients},delay}`
+ 
 Other new environments and associated commands:
  - `BodePlot` environment
     - `\addBodeZPKPlots[{approximation_1/{plot_options_1}},{approximation_2/{plot_options_2}},...]{plot_type (phase or magnitude)}{{zeros},{poles},gain,delay}`
