@@ -32,7 +32,7 @@ Other new environments and associated commands:
       - Basic component plot commands: ***(append `Lin` to get linear approximation and `Asymp` to get asymptotic approximation)*** ***(change `Pole` to `Zero` to get inverse plots)*** ***(change `Mag` to `Ph` to get phase plots)***
       - `\MagK{a}` - Pure gain, G(s) = a.
       - `\MagPole{a}{b}` - Single pole at s = a+bi, G(s) = 1/(s - a-bi).
-      - `\MagCSPoles{z}{w}` - Cannonical Second order system, G(s) = 1/(s^2 + 2*z*wn*s + wn^2).
+      - `\MagCSPoles{z}{w}` - Cannonical Second order system, G(s) = 1/(s^2 + 2zws + w^2).
       - `\MagSOPoles{a}{b}` - Second Order system, G(s) = 1/(s^2 + as + b).
       - `\MagDel{T}` - Pure delay, G(s) = exp(-Ts) (does not admit asymptotic approximation).
  - `NicholsChart` environment
