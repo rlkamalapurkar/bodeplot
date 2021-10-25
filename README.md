@@ -1,6 +1,8 @@
 # bodeplot
 LaTeX package to plot Bode, Nichols, and Nyquist diagrams.
+
 Inspired by the `bodegraph` package.
+
 Limitation: Phase plots from TF commands are wrapped between 0 and 360 degrees.
 
 Added functionality:
