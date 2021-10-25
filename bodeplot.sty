@@ -329,7 +329,7 @@
 }
 
 % Command to add Bode plots using ZPK data
-%\addBodePlots[{approximation_1/{plot_options_1}},{approximation_2/{plot_options_2}},...]{plot_type (phase or magnitude)}{{zeros},{poles},gain,delay}
+%\addBodeZPKPlots[{approximation_1/{plot_options_1}},{approximation_2/{plot_options_2}},...]{plot_type (phase or magnitude)}{{zeros},{poles},gain,delay}
 \newcommand{\addBodeZPKPlots}[3][{true/{red,thick}}]{%%%
 	\foreach \approx/\attrib in {#1} {
 		\gdef\plot@macro{}%
@@ -348,8 +348,8 @@
 }
 
 % Command to add Bode plots using TF data
-%\addBodeTFPlots[plot_options]{plot_type (phase or magnitude)}{{numerator coefficients},{denominator coefficients},delay}
-\newcommand{\addBodeTFPlots}[3][red,thick]{%
+%\addBodeTFPlot[plot_options]{plot_type (phase or magnitude)}{{numerator coefficients},{denominator coefficients},delay}
+\newcommand{\addBodeTFPlot}[3][red,thick]{%
 	\gdef\plot@macro{}%
 	\gdef\temp@macro{}%
 	\ifnum\pdfstrcmp{#2}{phase}
@@ -410,7 +410,7 @@
 		\addplot [#1] ( {\func@ph} , {\func@mag} );
 	\fi
 }
-% \addNicholsTFChart[plot_options]{{zeros},{poles},gain,delay}
+% \addNicholsTFChart[plot_options]{{numerator coefficients},{denominator coefficients},delay}
 \newcommand{\addNicholsTFChart}[2][]{
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
@@ -456,7 +456,7 @@
 		\addplot [#1] ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)} , {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
 	\fi
 }
-% \addNyquistTFPlot[plot_options]{{zeros},{poles},gain,delay}
+% \addNyquistTFPlot[plot_options]{{numerator coefficients},{denominator coefficients},delay}
 \newcommand{\addNyquistTFPlot}[2][]{
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
@@ -562,55 +562,55 @@
 % Internal command to build a TF bodeplot
 %\build@TF@plot{magnitude_plot_handle}{phase_plot_handle}{{numerator coefficients},{denominator coefficients},delay}
 \newcommand{\build@TF@plot}[3]{
-	\gdef\numreal{}%
-	\gdef\numim{}%
-	\gdef\denreal{}%
-	\gdef\denim{}%
+	\gdef\num@real{}%
+	\gdef\num@im{}%
+	\gdef\den@real{}%
+	\gdef\den@im{}%
 	\foreach \feature [count=\n] in {#3} {
-		\xdef\numfeatures{\n}%
+		\xdef\num@features{\n}%
 		\ifnum\n=1
 			\foreach \numcoeff [count=\numpow] in \feature {%
-				\xdef\numdegree{\numpow}%
+				\xdef\num@degree{\numpow}%
 			}%
 			\foreach \numcoeff [count=\numpow] in \feature {%
-				\pgfmathtruncatemacro{\currentdegree}{\numdegree-\numpow}
+				\pgfmathtruncatemacro{\currentdegree}{\num@degree-\numpow}
 				\ifnum\currentdegree = 0
-					\xdef\numreal{\numreal+\numcoeff}
+					\xdef\num@real{\num@real+\numcoeff}
 				\else
 					\ifodd\currentdegree
-						\xdef\numim{\numim+(\numcoeff*(\n@pow{-1}{(\currentdegree-1)/2})*(\n@pow{t}{\currentdegree}))}
+						\xdef\num@im{\num@im+(\numcoeff*(\n@pow{-1}{(\currentdegree-1)/2})*(\n@pow{t}{\currentdegree}))}
 					\else
-						\xdef\numreal{\numim+(\numcoeff*(\n@pow{-1}{(\currentdegree)/2})*(\n@pow{t}{\currentdegree}))}
+						\xdef\num@real{\num@im+(\numcoeff*(\n@pow{-1}{(\currentdegree)/2})*(\n@pow{t}{\currentdegree}))}
 					\fi
 				\fi
 			}%
 		\else
 			\ifnum\n=2
 				\foreach \dencoeff [count=\denpow] in \feature {%
-					\xdef\dendegree{\denpow}%
+					\xdef\den@degree{\denpow}%
 				}%
 				\foreach \dencoeff [count=\denpow] in \feature {%
-					\pgfmathtruncatemacro{\currentdegree}{\dendegree-\denpow}
+					\pgfmathtruncatemacro{\currentdegree}{\den@degree-\denpow}
 					\ifnum\currentdegree = 0
-						\xdef\denreal{\denreal+\dencoeff}
+						\xdef\den@real{\den@real+\dencoeff}
 					\else
 						\ifodd\currentdegree
-							\xdef\denim{\denim+(\dencoeff*(\n@pow{-1}{(\currentdegree-1)/2})*(\n@pow{t}{\currentdegree}))}
+							\xdef\den@im{\den@im+(\dencoeff*(\n@pow{-1}{(\currentdegree-1)/2})*(\n@pow{t}{\currentdegree}))}
 						\else
-							\xdef\denreal{\denreal+(\dencoeff*(\n@pow{-1}{(\currentdegree)/2})*(\n@pow{t}{\currentdegree}))}
+							\xdef\den@real{\den@real+(\dencoeff*(\n@pow{-1}{(\currentdegree)/2})*(\n@pow{t}{\currentdegree}))}
 						\fi
 					\fi
 				}
 			\else
-				\xdef\loopdelay{\feature}
+				\xdef\loop@delay{\feature}
 			\fi
 		\fi
 	}%
-	\ifnum\numfeatures = 2
-		\xdef\loopdelay{0}
+	\ifnum\num@features = 2
+		\xdef\loop@delay{0}
 	\fi
-	\xdef#2{((atan2((\numim),(\numreal)))-atan2((\denim),(\denreal))-\loopdelay*180*t/pi)}
-	\xdef#1{(20*log10(sqrt((\n@pow{\numreal}{2})+(\n@pow{\numim}{2}))) - 20*log10(sqrt((\n@pow{\denreal}{2})+(\n@pow{\denim}{2}))))}
+	\xdef#2{((atan2((\num@im),(\num@real)))-atan2((\den@im),(\den@real))-\loop@delay*180*t/pi)}
+	\xdef#1{(20*log10(sqrt((\n@pow{\num@real}{2})+(\n@pow{\num@im}{2}))) - 20*log10(sqrt((\n@pow{\den@real}{2})+(\n@pow{\den@im}{2}))))}
 }
 
 % Extra commands
