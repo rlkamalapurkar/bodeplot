@@ -1,9 +1,17 @@
-% !TeX root = bodeplot.tex
-
-\NeedsTeXFormat{LaTeX2e}[1999/01/01]
-\ProvidesPackage{bodeplot}[2021/10/25]
-% 2021/10/25 Initial Release - Rushikesh Kamalapurkar
-% Inspired by `bodegraph` by Robert Papanicola
+% Copyright (C) 2021 by Rushikesh Kamalapurkar
+%
+% This file may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either
+% version 1.3c of this license or (at your option) any later
+% version. The latest version of this license is in:
+%
+% http://www.latex-project.org/lppl.txt
+%
+% and version 1.3c or later is part of all distributions of
+% LaTeX version 2005/12/01 or later.
+\NeedsTeXFormat{LaTeX2e}[2005/12/01]
+\ProvidesPackage{bodeplot}
+	[2021/10/25 v1.0 Generate Bode, Nyquist, and Nichols plots]
 \RequirePackage{tikz}
 \RequirePackage{pgfplots}
 	\pgfplotsset{compat=1.18,variable=t}
@@ -14,7 +22,7 @@
 	\let\pdfstrcmp\pdf@strcmp
 \fi
 
-% handle gnuplot option
+% Handle gnuplot option
 \newif\if@pgfarg\@pgfargfalse
 \DeclareOption{pgf}{
 	\@pgfargtrue
