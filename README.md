@@ -10,7 +10,7 @@ Added functionality:
  - Support for unstable poles and zeros.
  - Support for complex poles and zeros.
  - Support for general stable and unstable second order transfer functions.
- - Support for both `gnuplot` and `pgfplots`.
+ - Support for both `gnuplot` (default) and `pgfplots` (package option `pgf`).
  - Support for linear and asymptotic approximation of magnitude and phase plots of any transfer function given poles, zeros, and gain.
 
 Main Bode/Nyquist/Nichols commands:
