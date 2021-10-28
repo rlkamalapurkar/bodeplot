@@ -6,7 +6,7 @@ Inspired by the `bodegraph` package.
 Limitation: Phase plots from TF commands are wrapped between 0 and 360 degrees.
 
 Added functionality:
- - New `\BodeZPK` and `BodeTF` commands to generate Bode plots of any transfer function given either poles, zeros, gain, and delay, or numerator and denominator coefficients and delay
+ - New `\BodeZPK` and `\BodeTF` commands to generate Bode plots of any transfer function given either poles, zeros, gain, and delay, or numerator and denominator coefficients and delay
  - Support for unstable poles and zeros.
  - Support for complex poles and zeros.
  - Support for general stable and unstable second order transfer functions.
