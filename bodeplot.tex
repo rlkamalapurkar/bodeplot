@@ -1,72 +1,72 @@
 % !TeX TS-program = lualatex
 \documentclass{report}
-\usepackage{bodeplot}
-
+\usepackage[]{bodeplot,pgfplots}
+\usetikzlibrary{arrows.meta}
 \begin{document}
-	Bode plot in ZPK format
-	\begin{center}
-		\BodeZPK[red,thick]{{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10}{0.01}{100}
-	\end{center}
-		
-	Bode plot in TF format
-	\begin{center}
-		\BodeTF[blue,thick]{{10,2,2.6,0},{1,0.2,100}}{0.01}{100}
-	\end{center}
+%	Bode plot in ZPK format
+%	\begin{center}
+%		\BodeZPK{z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.1,-10},{-0.1,10}},k/10}{0.01}{100}
+%	\end{center}
+%		
+%	Bode plot in TF format
+%	\begin{center}
+%		\BodeTF[plot/mag/{blue,thick},plot/ph/{green,thick}]{num/{10,2,2.6,0},den/{1,0.2,100},d/0.01}{0.01}{100}
+%	\end{center}
+%
+%	Linear approximation with customization
+%	\begin{center}
+%		\BodeZPK[plot/mag/{red,thick},plot/ph/{blue,thick},axes/mag/{ytick distance=40},axes/ph/{ytick distance=90},approx/linear] {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.1,-10},{-0.1,10}},k/10} {0.01} {100}
+%	\end{center}
 
-	Linear approximation with customization
-	\begin{center}
-		\BodeZPK[{{red,thick},{blue,thick}},{{ytick distance=40},{ytick distance=90}},{},linear] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10} {0.01} {100}
-	\end{center}
-
-	Plot with delay and customization
-	\begin{center}
-		\BodeZPK[{{red,thick},{blue,thick}},{{ytick distance=40},{ytick distance=90}}] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10,0.1} {0.01} {100}
-	\end{center}
-
-	Individual gain and phase plots with more customization
-	\begin{center}
-		\begin{BodePlot}[ylabel={Gain (dB)},
-			ytick distance=40, height=2cm, width=4cm]{0.01}{100}
-			\addBodeZPKPlots[true/{black,thick},linear/{red,dashed,thick},asymptotic/{blue,dotted,thick}]{magnitude}{{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10}
-		\end{BodePlot}
-		\begin{BodePlot}[ylabel={Phase ($^{\circ}$)},height=2cm,width=4cm,ytick distance=90,]{0.01}{100}
-			\addBodeZPKPlots[true/{black,thick},linear/{red,dashed,thick},asymptotic/{blue,dotted,thick}]{phase}{{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10}
-		\end{BodePlot}
-	\end{center}
-
+%	Plot with delay and customization
+%	\begin{center}
+%		\BodeZPK[plot/mag/{blue,thick},plot/ph/{green,thick},axes/mag/ytick distance=40,axes/ph/ytick distance=90] {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.1,-10},{-0.1,10}},k/10,d/0.01} {0.01} {100}
+%	\end{center}
+%
+%	Individual gain and phase plots with more customization
+%	\begin{center}
+%		\begin{BodePlot}[ylabel={Gain (dB)},
+%			ytick distance=40, height=2cm, width=4cm]{0.01}{100}
+%			\addBodeZPKPlots[true/{black,thick},linear/{red,dashed,thick},asymptotic/{blue,dotted,thick}]{magnitude}{z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.1,-10},{-0.1,10}},k/10}
+%		\end{BodePlot}
+%		\begin{BodePlot}[ylabel={Phase ($^{\circ}$)},height=2cm,width=4cm,ytick distance=90,]{0.01}{100}
+%			\addBodeZPKPlots[true/{black,thick},linear/{red,dashed,thick},asymptotic/{blue,dotted,thick}]{phase}{z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.1,-10},{-0.1,10}},k/10}
+%		\end{BodePlot}
+%	\end{center}
+%
 	Nichols chart
 	\begin{center}
-		\NicholsZPK[{red,thick,samples=1000},{}]{{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10}{0.001}{100}
+		\NicholsZPK[samples=1000]{z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}{0.001}{100}
 	\end{center}
 	
 	Nichols chart in TF format
 	\begin{center}
-			\NicholsTF[{samples=1000},{}]{{10,2,2.6,0},{1,0.2,100}}{0.001}{100}
+			\NicholsTF[samples=1000]{num/{10,2,2.6,0},den/{1,1,100.25}}{0.001}{100}
 	\end{center}
 	
 	Multiple Nichols charts with customization
 	\begin{center}
 		\begin{NicholsChart}[ytick distance = 20, xtick distance=30]{0.001}{100}
-			\addNicholsZPKChart [red,samples=1000] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10};
-			\addNicholsZPKChart [blue,samples=1000] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},100};
+			\addNicholsZPKChart [red,samples=1000] {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10};
+			\addNicholsZPKChart [blue,samples=1000] {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/5};
 		\end{NicholsChart}
 	\end{center}
 
 	Nyquist plot
 	\begin{center}
-		\NyquistZPK[{red,thick,samples=2000},{}]{{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10}{-10}{10}
+		\NyquistZPK[plot/{red,thick,samples=2000}]{z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}{-30}{30}
 	\end{center}
 	
 	Nyquist plot in TF format
 	\begin{center}
-		\NyquistTF[{samples=2000},{}]{{10,2,2.6000,0},{1,0.2,100.01}}{-10}{10}
+		\NyquistTF[samples=2000]{num/{10,2,2.6,0},den/{1,1,100.25}}{-30}{30}
 	\end{center}
-
+%
 	Multiple Nyquist plots with customization
 	\begin{center}
-		\begin{NyquistPlot}{-10}{10}
-			\addNyquistZPKPlot [red,samples=2000] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},10};
-			\addNyquistZPKPlot [blue,samples=2000] {{0,{-0.1,-0.5},{-0.1,0.5}},{{-0.1,-10},{-0.1,10}},20};
+		\begin{NyquistPlot}{-30}{30}
+			\addNyquistZPKPlot [red,samples=2000] {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10};
+			\addNyquistZPKPlot [blue,samples=2000] {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/5};
 		\end{NyquistPlot}
 	\end{center}
 \end{document}

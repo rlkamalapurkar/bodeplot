@@ -168,64 +168,37 @@
 \newcommand*{\MagDel}[2]{0}
 \newcommand*{\PhDel}[2]{-#1*180*t/pi}
 
+% Plot styles
+\pgfplotsset{
+	bodeStyle/.style = {
+		label style={font=\footnotesize},
+		tick label style={font=\footnotesize},
+		grid=both,
+		major grid style={color=gray!80},
+		minor grid style={color=gray!20},
+		x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+		y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+		scale only axis,
+		samples=200,
+		width=5cm,
+	}
+}
+
 % The BodeZPK command
-%\BodeZPK[{{magnitude_plot_options},{phase_plot_options}},{{magnitude_axis_options},{phase_axis_options}},{group_options},approximation_type]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
-\newcommand{\BodeZPK}[4][{},{},{}]{%
-	\gdef\optmag@axes{}%
-	\gdef\optph@axes{}%
-	\gdef\optph@plot{}%
-	\gdef\optmag@plot{}%
-	\gdef\opt@group{}%
-	\gdef\opt@approx{}%
-	\foreach \opt [count=\n] in {#1} {%
-		\ifnum\n=1
-			\foreach \subopt [count=\m] in \opt {%
-				\ifnum\m=1
-					\xdef\optmag@plot{\subopt}
-					\xdef\optph@plot{\subopt}
-				\fi
-				\ifnum\m=2
-					\xdef\optph@plot{\subopt}
-				\fi
-			}
-		\else
-			\ifnum\n=2
-				\foreach \subopt [count=\m] in \opt {%
-					\ifnum\m=1
-						\xdef\optmag@axes{\subopt}
-						\xdef\optph@axes{\subopt}
-					\fi
-					\ifnum\m=2
-						\xdef\optph@axes{\subopt}
-					\fi
-				}
-			\else
-				\ifnum\n=3
-					\xdef\opt@group{\opt}
-				\else
-					\xdef\opt@approx{\opt}
-				\fi
-			\fi
-		\fi
-	}%
+%\BodeZPK[object1/type1/{options1},object2/type2/{options2},...]{z/{zeros},p/{poles},k/gain,d/delay}{min-frequency}{max-frequency}
+\newcommand{\BodeZPK}[4][]{%
+	\parse@opt{#1}
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
 	\build@ZPK@plot{\func@mag}{\func@ph}{\opt@approx}{#2}
 	\edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{groupplot}[
-				grid=both,
-				major grid style={color=gray!80},
-				minor grid style={color=gray!20},
+				bodeStyle,
 				xmin={#3},
 				xmax={#4},
 				domain=#3:#4,
-				width=6cm,
-				height=3cm,
-				x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
-				y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
-				scale only axis,
+				height=2.5cm,
 				xmode=log,
 				group style = {group size = 1 by 2,vertical sep=0.25cm,},
-				samples=200,
 				\opt@group,]}
 	\temp@cmd
 			\if@pgfarg
@@ -250,58 +223,20 @@
 }
 
 % The BodeTF command
-% \BodeTF[{{magnitude_plot_options},{phase_plot_options}},{{magnitude_axis_options},{phase_axis_options}},{group_options}]{{numerator coefficients},{denominator coefficients},delay}{min_frequency}{max_frequency}
-\newcommand{\BodeTF}[4][{},{},{}]{%
-	\gdef\optmag@axes{}%
-	\gdef\optph@axes{}%
-	\gdef\optph@plot{}%
-	\gdef\optmag@plot{}%
-	\gdef\opt@group{}%
-	\foreach \opt [count=\n] in {#1} {%
-		\ifnum\n=1
-			\foreach \subopt [count=\m] in \opt {%
-				\ifnum\m=1
-					\xdef\optmag@plot{\subopt}
-					\xdef\optph@plot{\subopt}
-				\fi
-				\ifnum\m=2
-					\xdef\optph@plot{\subopt}
-				\fi
-			}
-		\else
-			\ifnum\n=2
-				\foreach \subopt [count=\m] in \opt {%
-					\ifnum\m=1
-						\xdef\optmag@axes{\subopt}
-						\xdef\optph@axes{\subopt}
-					\fi
-					\ifnum\m=2
-						\xdef\optph@axes{\subopt}
-					\fi
-				}
-			\else
-				\xdef\opt@group{\opt}
-			\fi
-		\fi
-	}%
+% \BodeTF[object1/type1/{options1},object2/type2/{options2},...]{num/{coeff},den/{coeff},d/delay}{min-frequency}{max-frequency}
+\newcommand{\BodeTF}[4][]{%
+	\parse@opt{#1}
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
 	\build@TF@plot{\func@mag}{\func@ph}{#2}
 	\edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{groupplot}[
-				grid=both,
-				major grid style={color=gray!80},
-				minor grid style={color=gray!20},
+				bodeStyle,
 				xmin={#3},
 				xmax={#4},
 				domain=#3:#4,
-				width=6cm,
-				height=3cm,
-				x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
-				y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
-				scale only axis,
+				height=2.5cm,
 				xmode=log,
 				group style = {group size = 1 by 2,vertical sep=0.25cm,},
-				samples=200,
 				\opt@group,]}
 	\temp@cmd
 			\if@pgfarg
@@ -326,23 +261,16 @@
 }
 
 % The BodePlot environment, works in conjunction with \addZPKBodePlots and \addTFBodePlots
-%\begin{BodePlot}[axis options]{frequency_min}{frequency_max}
+%\begin{BodePlot}[axis-options]{min-frequency}{max-frequency}
 \newenvironment{BodePlot}[3][]{
 	\begin{tikzpicture}
 		\begin{semilogxaxis}[
-			grid=both,
-			major grid style={color=gray!80},
-			minor grid style={color=gray!20},
+			bodeStyle,
 			xmin={#2},
 			xmax={#3},
 			domain=#2:#3,
-			width=6cm,
-			height=3cm,
-			x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
-			y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+			height=2.5cm,
 			xlabel={Frequency (rad/s)},
-			scale only axis,
-			samples=200,
 			#1
 		]
 }{
@@ -351,7 +279,7 @@
 }
 
 % Command to add Bode plots using ZPK data
-%\addBodeZPKPlots[{approximation_1/{plot_options_1}},{approximation_2/{plot_options_2}},...]{plot_type (phase or magnitude)}{{zeros},{poles},gain,delay}
+%\addBodeZPKPlots[{approximation1/{plot-options1}},{approximation2/{plot-options2}},...]{plot-type (phase or magnitude)}{z/{zeros},p/{poles},k/gain,d/delay}
 \newcommand{\addBodeZPKPlots}[3][{}]{%%%
 	\foreach \approx/\opt in {#1} {
 		\gdef\plot@macro{}%
@@ -373,7 +301,7 @@
 }
 
 % Command to add Bode plots using TF data
-%\addBodeTFPlot[plot_options]{plot_type (phase or magnitude)}{{numerator coefficients},{denominator coefficients},delay}
+%\addBodeTFPlot[plot-options]{plot-type (phase or magnitude)}{num/{coeff},den/{coeff},d/delay}
 \newcommand{\addBodeTFPlot}[3][red,thick]{%
 	\gdef\plot@macro{}%
 	\gdef\temp@macro{}%
@@ -391,7 +319,7 @@
 }
 
 %Command to add Bode plot of component poles/zeros/delays
-%\addBodeComponentPlot[plot_options]{plot_command}
+%\addBodeComponentPlot[plot-options]{plot_command}
 \newcommand{\addBodeComponentPlot}[2][red,thick]{%%%
 	\if@pgfarg
 		\addplot[#1]{#2};
@@ -404,34 +332,20 @@
 %%%%%%%%%%%%%%%%%%%%%%% Nichols Charts %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % The NicholsZPK command
-%\NicholsZPK[{plot_options},{axis_options}]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
-\newcommand{\NicholsZPK}[4][{},{}]{%
-	\gdef\opt@axes{}%
-	\gdef\opt@plot{}%
-	\foreach \opt [count=\n] in {#1} {%
-		\ifnum\n=1
-			\xdef\opt@plot{\opt}
-		\else
-			\xdef\opt@axes{\opt}
-		\fi
-	}%
+%\NicholsZPK[plot/{options},axes/{options}]{z/{zeros},p/{poles},k/gain,d/delay}{min-frequency}{max-frequency}
+\newcommand{\NicholsZPK}[4][]{%
+	\parse@N@opt{#1}%
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
 	\build@ZPK@plot{\func@mag}{\func@ph}{}{#2}
 	\edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[
-				grid=both,
-				major grid style={color=gray!80},
-				minor grid style={color=gray!20},
-				scale only axis,
+				bodeStyle,
 				domain=#3:#4,
-				width=6cm,
-				height=6cm,
-				x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
-				y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+				height=5cm,
 				xlabel={Phase (degrees)},
 				ylabel={Gain (dB)},
 				samples=500,
-				\opt@axes,]}
+				\opt@axes]}
 	\temp@cmd
 			\edef\temp@cmd{\noexpand\addplot[red,thick,\opt@plot]}
 			\if@pgfarg
@@ -445,34 +359,20 @@
 }
 
 % The NicholsTF command
-%\NicholsTF[{plot_options},{axis_options}]{{numerator coefficients},{denominator coefficients},delay}
+%\NicholsTF[plot/{options},axes/{options}]{num/{coeff},den/{coeff},d/delay}
 \newcommand{\NicholsTF}[4][{},{}]{%
-	\gdef\opt@axes{}%
-	\gdef\opt@plot{}%
-	\foreach \opt [count=\n] in {#1} {%
-		\ifnum\n=1
-			\xdef\opt@plot{\opt}
-		\else
-			\xdef\opt@axes{\opt}
-		\fi
-	}%
+	\parse@N@opt{#1}%
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
 	\build@TF@plot{\func@mag}{\func@ph}{#2}
 	\edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[
-				grid=both,
-				major grid style={color=gray!80},
-				minor grid style={color=gray!20},
-				scale only axis,
+				bodeStyle,
 				domain=#3:#4,
-				width=6cm,
-				height=6cm,
-				x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
-				y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+				height=5cm,
 				xlabel={Phase (degrees)},
 				ylabel={Gain (dB)},
 				samples=500,
-				\opt@axes,]}
+				\opt@axes]}
 	\temp@cmd
 			\edef\temp@cmd{\noexpand\addplot[red,thick,\opt@plot]}
 			\if@pgfarg
@@ -485,21 +385,15 @@
 	\end{tikzpicture}
 }
 
-%\begin{NicholsChart}[axis options]{frequency_min}{frequency_max}
+%\begin{NicholsChart}[axis-options]{min-frequency}{max-frequency}
 \newenvironment{NicholsChart}[3][]{
 	\begin{tikzpicture}
 		\begin{axis}[
-			grid=both,
-			major grid style={color=gray!80},
-			minor grid style={color=gray!20},
-			scale only axis,
+			bodeStyle,
 			domain=#2:#3,
-			width=6cm,
-			height=6cm,
+			height=5cm,
 			ytick distance=20,
 			xtick distance=15,
-			x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
-			y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
 			xlabel={Phase (degrees)},
 			ylabel={Gain (dB)},
 			#1
@@ -508,7 +402,7 @@
 		\end{axis}
 	\end{tikzpicture}
 }
-% \addNicholsZPKChart[plot_options]{{zeros},{poles},gain,delay}
+% \addNicholsZPKChart[plot-options]{z/{zeros},p/{poles},k/gain,d/delay}
 \newcommand{\addNicholsZPKChart}[2][]{
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
@@ -520,7 +414,7 @@
 		\addplot [#1] gnuplot[parametric,gnuplot degrees,gnuplot def] {\func@ph , \func@mag};
 	\fi
 }
-% \addNicholsTFChart[plot_options]{{numerator coefficients},{denominator coefficients},delay}
+% \addNicholsTFChart[plot-options]{num/{coeff},den/{coeff},d/delay}
 \newcommand{\addNicholsTFChart}[2][]{
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
@@ -536,37 +430,26 @@
 %%%%%%%%%%%%%%%%%%%%%%% Nyquist Plots %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % The NyquistZPK command
-%\NyquistZPK[{plot_options},{axis_options}]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
+%\NyquistZPK[plot/{options},axes/{options}]{z/{zeros},p/{poles},k/gain,d/delay}{min-frequency}{max-frequency}
 \newcommand{\NyquistZPK}[4][{},{}]{%
-	\gdef\opt@axes{}%
-	\gdef\opt@plot{}%
-	\foreach \opt [count=\n] in {#1} {%
-		\ifnum\n=1
-			\xdef\opt@plot{\opt}
-		\else
-			\xdef\opt@axes{\opt}
-		\fi
-	}%
+	\parse@N@opt{#1}
+	\typeout{\meaning\opt@plot}
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
 	\build@ZPK@plot{\func@mag}{\func@ph}{}{#2}
 	\edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[
-				grid=both,
-				major grid style={color=gray!80},
-				minor grid style={color=gray!20},
-				scale only axis,
+				bodeStyle,
 				domain=#3:#4,
-				width=6cm,
-				height=6cm,
-				x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
-				y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+				height=5cm,
 				xlabel={$\Re$},
 				ylabel={$\Im$},
 				samples=500,
 				\opt@axes,]}
 	\temp@cmd
 			\addplot [only marks,mark=+,thick,red] (-1 , 0);
-			\edef\temp@cmd{\noexpand\addplot[red,thick,\opt@plot]}
+			\edef\temp@cmd{\noexpand\addplot[thick,\unexpanded\expandafter{\opt@plot}]}
+			
+			\typeout{\meaning\temp@cmd}
 			\if@pgfarg
 				\temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)} , {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
 			\else
@@ -578,37 +461,23 @@
 }
 
 % The NyquistTF command
-%\NyquistTF[{plot_options},{axis_options}]{{numerator coefficients},{denominator coefficients},delay}
+%\NyquistTF[plot/{options},axes/{options}]{num/{coeff},den/{coeff},d/delay}
 \newcommand{\NyquistTF}[4][{},{},{}]{%
-	\gdef\opt@axes{}%
-	\gdef\opt@plot{}%
-	\foreach \opt [count=\n] in {#1} {%
-		\ifnum\n=1
-			\xdef\opt@plot{\opt}
-		\else
-			\xdef\opt@axes{\opt}
-		\fi
-	}%
+	\parse@N@opt{#1}
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
 	\build@TF@plot{\func@mag}{\func@ph}{#2}
 	\edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[
-				grid=both,
-				major grid style={color=gray!80},
-				minor grid style={color=gray!20},
-				scale only axis,
+				bodeStyle,
 				domain=#3:#4,
-				width=6cm,
-				height=6cm,
-				x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
-				y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+				height=5cm,
 				xlabel={$\Re$},
 				ylabel={$\Im$},
 				samples=500,
 				\opt@axes,]}
 	\temp@cmd
 			\addplot [only marks,mark=+,thick,red] (-1 , 0);
-			\edef\temp@cmd{\noexpand\addplot[red,thick,\opt@plot]}
+			\edef\temp@cmd{\noexpand\addplot[thick,\unexpanded\expandafter{\opt@plot}]}
 			\if@pgfarg
 				\temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)} , {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
 			\else
@@ -619,19 +488,13 @@
 	\end{tikzpicture}
 }
 
-%\begin{NyquistPlot}[axis options]{frequency_min}{frequency_max}
+%\begin{NyquistPlot}[axis-options]{min-frequency}{max-frequency}
 \newenvironment{NyquistPlot}[3][]{
 	\begin{tikzpicture}
 		\begin{axis}[
-			grid=both,
-			major grid style={color=gray!80},
-			minor grid style={color=gray!20},
-			scale only axis,
-			width=6cm,
-			height=6cm,
+			bodeStyle,
+			height=5cm,
 			domain=#2:#3,
-			x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
-			y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
 			xlabel={$\Re$},
 			ylabel={$\Im$},
 			#1
@@ -641,7 +504,7 @@
 		\end{axis}
 	\end{tikzpicture}
 }
-% \addNyquistZPKPlot[plot_options]{{zeros},{poles},gain,delay}
+% \addNyquistZPKPlot[plot-options]{z/{zeros},p/{poles},k/gain,d/delay}
 \newcommand{\addNyquistZPKPlot}[2][]{
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
@@ -653,7 +516,7 @@
 		\addplot [#1] gnuplot[parametric,gnuplot degrees,gnuplot def] { \n@pow{10}{((\func@mag)/20)}*cos(\func@ph) , \n@pow{10}{((\func@mag)/20)}*sin(\func@ph) };
 	\fi
 }
-% \addNyquistTFPlot[plot_options]{{numerator coefficients},{denominator coefficients},delay}
+% \addNyquistTFPlot[plot-options]{num/{coeff},den/{coeff},d/delay}
 \newcommand{\addNyquistTFPlot}[2][]{
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
@@ -668,11 +531,11 @@
 
 %% Internal Commands
 % Internal command to build Bode parametric function from zeros, poles, gain, and delay
-%\build@ZPK@plot{magnitude_plot_handle}{phase_plot_handle}{plot_approximation}{{zeros},{poles},gain,delay}
+%\build@ZPK@plot{magnitude_plot_handle}{phase_plot_handle}{plot_approximation}{z/{zeros},p/{poles},k/gain,d/delay}
 \newcommand{\build@ZPK@plot}[4]{
-	\foreach \feature [count=\n] in {#4} {%
-		\ifnum\n=1
-			\foreach \z in \feature {
+	\foreach \feature/\values in {#4} {%
+		\ifnum\pdfstrcmp{\feature}{z}=0
+			\foreach \z in \values {
 				\ifnum\pdfstrcmp{#3}{linear}=0
 					\add@feature{#2}{\PhZeroLin}{\z}
 					\add@feature{#1}{\MagZeroLin}{\z}
@@ -686,50 +549,49 @@
 					\fi
 				\fi
 			}
-		\else
-			\ifnum\n=2
-				\foreach \p in \feature {
-					\ifnum\pdfstrcmp{#3}{linear}=0
-						\add@feature{#2}{\PhPoleLin}{\p}
-						\add@feature{#1}{\MagPoleLin}{\p}
-					\else
-						\ifnum\pdfstrcmp{#3}{asymptotic}=0
-							\add@feature{#2}{\PhPoleAsymp}{\p}
-							\add@feature{#1}{\MagPoleAsymp}{\p}
-						\else
-							\add@feature{#2}{\PhPole}{\p}
-							\add@feature{#1}{\MagPole}{\p}
-						\fi
-					\fi
-				}
-			\else
-				\ifnum\n=3
-					\ifnum\pdfstrcmp{#3}{linear}=0
-						\add@feature{#2}{\PhKLin}{\feature}
-						\add@feature{#1}{\MagKLin}{\feature}
-					\else
-						\ifnum\pdfstrcmp{#3}{asymptotic}=0
-							\add@feature{#2}{\PhKAsymp}{\feature}
-							\add@feature{#1}{\MagKAsymp}{\feature}
-						\else
-							\add@feature{#2}{\PhK}{\feature}
-							\add@feature{#1}{\MagK}{\feature}
-						\fi
-					\fi
+		\fi
+		\ifnum\pdfstrcmp{\feature}{p}=0
+			\foreach \p in \values {
+				\ifnum\pdfstrcmp{#3}{linear}=0
+					\add@feature{#2}{\PhPoleLin}{\p}
+					\add@feature{#1}{\MagPoleLin}{\p}
 				\else
-					\ifnum\pdfstrcmp{#3}{linear}=0
-						\PackageError {bodeplot} {Linear approximation for pure delays is not supported.} {Plot the true Bode plot using 'true' instead of 'linear'.}
+					\ifnum\pdfstrcmp{#3}{asymptotic}=0
+						\add@feature{#2}{\PhPoleAsymp}{\p}
+						\add@feature{#1}{\MagPoleAsymp}{\p}
 					\else
-						\ifnum\pdfstrcmp{#3}{asymptotic}=0
-							\PackageError {bodeplot} {Asymptotic approximation for pure delays is not supported.} {Plot the true Bode plot using 'true' instead of 'asymptotic'.}
-						\else
-							\ifdim\feature pt < 0pt
-								\PackageError {bodeplot} {Delay needs to be a positive number.}
-							\fi
-							\add@feature{#2}{\PhDel}{\feature}
-							\add@feature{#1}{\MagDel}{\feature}
-						\fi
+						\add@feature{#2}{\PhPole}{\p}
+						\add@feature{#1}{\MagPole}{\p}
 					\fi
+				\fi
+			}
+		\fi
+		\ifnum\pdfstrcmp{\feature}{k}=0
+			\ifnum\pdfstrcmp{#3}{linear}=0
+				\add@feature{#2}{\PhKLin}{\values}
+				\add@feature{#1}{\MagKLin}{\values}
+			\else
+				\ifnum\pdfstrcmp{#3}{asymptotic}=0
+					\add@feature{#2}{\PhKAsymp}{\values}
+					\add@feature{#1}{\MagKAsymp}{\values}
+				\else
+					\add@feature{#2}{\PhK}{\values}
+					\add@feature{#1}{\MagK}{\values}
+				\fi
+			\fi
+		\fi
+		\ifnum\pdfstrcmp{\feature}{d}=0
+			\ifnum\pdfstrcmp{#3}{linear}=0
+				\PackageError {bodeplot} {Linear approximation for pure delays is not supported.} {Plot the true Bode plot using 'true' instead of 'linear'.}
+			\else
+				\ifnum\pdfstrcmp{#3}{asymptotic}=0
+					\PackageError {bodeplot} {Asymptotic approximation for pure delays is not supported.} {Plot the true Bode plot using 'true' instead of 'asymptotic'.}
+				\else
+					\ifdim\values pt < 0pt
+						\PackageError {bodeplot} {Delay needs to be a positive number.}
+					\fi
+					\add@feature{#2}{\PhDel}{\values}
+					\add@feature{#1}{\MagDel}{\values}
 				\fi
 			\fi
 		\fi
@@ -754,55 +616,115 @@
 }
 
 % Internal command to build a TF bodeplot
-%\build@TF@plot{magnitude_plot_handle}{phase_plot_handle}{{numerator coefficients},{denominator coefficients},delay}
+%\build@TF@plot{magnitude_plot_handle}{phase_plot_handle}{num/{coeff},den/{coeff},d/delay}
 \newcommand{\build@TF@plot}[3]{
 	\gdef\num@real{0}%
 	\gdef\num@im{0}%
 	\gdef\den@real{0}%
 	\gdef\den@im{0}%
-	\foreach \feature [count=\n] in {#3} {
-		\xdef\num@features{\n}%
-		\ifnum\n=1
-			\foreach \numcoeff [count=\numpow] in \feature {%
+	\gdef\loop@delay{0}%
+	\foreach \feature/\values in {#3} {
+		\ifnum\pdfstrcmp{\feature}{num}=0
+			\foreach \numcoeff [count=\numpow] in \values {%
 				\xdef\num@degree{\numpow}%
 			}%
-			\foreach \numcoeff [count=\numpow] in \feature {%
+			\foreach \numcoeff [count=\numpow] in \values {%
 				\pgfmathtruncatemacro{\currentdegree}{\num@degree-\numpow}
 				\ifnum\currentdegree = 0
-					\xdef\num@real{\num@real+\numcoeff}
+				\xdef\num@real{\num@real+\numcoeff}
 				\else
-					\ifodd\currentdegree
-						\xdef\num@im{\num@im+(\numcoeff*(\n@pow{-1}{(\currentdegree-1)/2})*(\n@pow{t}{\currentdegree}))}
-					\else
-						\xdef\num@real{\num@real+(\numcoeff*(\n@pow{-1}{(\currentdegree)/2})*(\n@pow{t}{\currentdegree}))}
-					\fi
+				\ifodd\currentdegree
+				\xdef\num@im{\num@im+(\numcoeff*(\n@pow{-1}{(\currentdegree-1)/2})*(\n@pow{t}{\currentdegree}))}
+				\else
+				\xdef\num@real{\num@real+(\numcoeff*(\n@pow{-1}{(\currentdegree)/2})*(\n@pow{t}{\currentdegree}))}
+				\fi
 				\fi
 			}%
-		\else
-			\ifnum\n=2
-				\foreach \dencoeff [count=\denpow] in \feature {%
-					\xdef\den@degree{\denpow}%
-				}%
-				\foreach \dencoeff [count=\denpow] in \feature {%
-					\pgfmathtruncatemacro{\currentdegree}{\den@degree-\denpow}
-					\ifnum\currentdegree = 0
-						\xdef\den@real{\den@real+\dencoeff}
-					\else
-						\ifodd\currentdegree
-							\xdef\den@im{\den@im+(\dencoeff*(\n@pow{-1}{(\currentdegree-1)/2})*(\n@pow{t}{\currentdegree}))}
-						\else
-							\xdef\den@real{\den@real+(\dencoeff*(\n@pow{-1}{(\currentdegree)/2})*(\n@pow{t}{\currentdegree}))}
-						\fi
-					\fi
-				}
+		\fi
+		\ifnum\pdfstrcmp{\feature}{den}=0
+			\foreach \dencoeff [count=\denpow] in \values {%
+				\xdef\den@degree{\denpow}%
+			}%
+			\foreach \dencoeff [count=\denpow] in \values {%
+				\pgfmathtruncatemacro{\currentdegree}{\den@degree-\denpow}
+				\ifnum\currentdegree = 0
+				\xdef\den@real{\den@real+\dencoeff}
+				\else
+				\ifodd\currentdegree
+				\xdef\den@im{\den@im+(\dencoeff*(\n@pow{-1}{(\currentdegree-1)/2})*(\n@pow{t}{\currentdegree}))}
+				\else
+				\xdef\den@real{\den@real+(\dencoeff*(\n@pow{-1}{(\currentdegree)/2})*(\n@pow{t}{\currentdegree}))}
+				\fi
+				\fi
+			}%
+		\fi
+		\ifnum\pdfstrcmp{\feature}{d}=0
+			\xdef\loop@delay{\values}
+		\fi
+	}%
+	\xdef#2{(\n@mod{atan2((\num@im),(\num@real))-atan2((\den@im),(\den@real))+360}{360}-\loop@delay*180*t/pi)}
+	\xdef#1{(20*log10(sqrt((\n@pow{\num@real}{2})+(\n@pow{\num@im}{2}))) - 20*log10(sqrt((\n@pow{\den@real}{2})+(\n@pow{\den@im}{2}))))}
+}
+
+\newcommand{\parse@opt}[1]{
+	\gdef\optmag@axes{}%
+	\gdef\optph@axes{}%
+	\gdef\optph@plot{}%
+	\gdef\optmag@plot{}%
+	\gdef\opt@group{}%
+	\gdef\opt@approx{}%
+	\foreach \obj/\typ/\opt in {#1} {
+		\ifnum\pdfstrcmp{\obj}{plot}=0
+			\ifnum\pdfstrcmp{\typ}{mag}=0
+				\xdef\optmag@plot{\optmag@plot,\opt}
 			\else
-				\xdef\loop@delay{\feature}
+				\ifnum\pdfstrcmp{\typ}{ph}=0
+					\xdef\optph@plot{\optph@plot,\opt}
+				\else
+					\xdef\optmag@plot{\optmag@plot,\opt}
+					\xdef\optph@plot{\optph@plot,\opt}
+				\fi
+			\fi
+		\else
+			\ifnum\pdfstrcmp{\obj}{axes}=0
+				\ifnum\pdfstrcmp{\typ}{mag}=0
+					\xdef\optmag@axes{\optmag@axes,\opt}
+				\else
+					\ifnum\pdfstrcmp{\typ}{ph}=0
+						\xdef\optph@axes{\optph@axes,\opt}
+					\else
+						\xdef\optmag@axes{\optmag@axes,\opt}
+						\xdef\optph@axes{\optph@axes,\opt}
+					\fi
+				\fi
+			\else
+				\ifnum\pdfstrcmp{\obj}{group}=0
+					\xdef\opt@group{\opt@group,\opt}
+				\else
+					\ifnum\pdfstrcmp{\obj}{approx}=0
+						\xdef\opt@approx{\typ}
+					\else
+						\xdef\optmag@plot{\optmag@plot,\obj}
+						\xdef\optph@plot{\optph@plot,\obj}
+					\fi
+				\fi
+			\fi
+		\fi
+	}
+}
+
+\newcommand{\parse@N@opt}[1]{
+	\gdef\opt@axes{}%
+	\gdef\opt@plot{}%
+	\foreach \obj/\opt in {#1} {%
+		\ifnum\pdfstrcmp{\obj}{axes}=0
+			\xdef\opt@axes{\unexpanded\expandafter{\opt}}
+		\else
+			\ifnum\pdfstrcmp{\obj}{plot}=0
+				\xdef\opt@plot{\unexpanded\expandafter{\opt}}
+			\else
+				\xdef\opt@plot{\unexpanded\expandafter{\obj}}
 			\fi
 		\fi
 	}%
-	\ifnum\num@features = 2
-		\xdef\loop@delay{0}
-	\fi
-	\xdef#2{(\n@mod{atan2((\num@im),(\num@real))-atan2((\den@im),(\den@real))+360}{360}-\loop@delay*180*t/pi)}
-	\xdef#1{(20*log10(sqrt((\n@pow{\num@real}{2})+(\n@pow{\num@im}{2}))) - 20*log10(sqrt((\n@pow{\den@real}{2})+(\n@pow{\den@im}{2}))))}
 }
