@@ -1,0 +1,387 @@
+% \iffalse meta-comment
+%
+% Copyright (C) 2021 by Rushikesh Kamalapurkar <rlkamalapurkar@gmail.com>
+% -----------------------------------------------------------
+%
+% This file may be distributed and/or modified under the conditions of
+% the LaTeX Project Public License, either version 1.3c of this license
+% or (at your option) any later version. The latest version of this
+% license is in:
+%
+% http://www.latex-project.org/lppl.txt
+%
+% and version 1.3c or later is part of all distributions of LaTeX
+% version 2006/05/20 or later.
+%
+% \fi
+%
+% \iffalse
+%<package> \NeedsTeXFormat{LaTeX2e}[2006/05/20]
+%<package> \ProvidesPackage{bodeplot}
+%<package> \RequirePackage{tikz}
+%<package> \RequirePackage{pgfplots}
+%<package> \pgfplotsset{compat=1.18,variable=t}
+%<package> \usepgfplotslibrary{groupplots}
+%
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage{bodeplot,cprotect}
+\usetikzlibrary{decorations.markings,arrows.meta}
+\EnableCrossrefs
+\CodelineIndex
+\RecordChanges
+\begin{document}
+	\DocInput{bodeplot.dtx}
+	\PrintChanges
+	\PrintIndex
+\end{document}
+%</driver>
+% \fi
+%
+% \CheckSum{0}
+%
+% \changes{v1.0}{2021/10/25}{Initial version}
+%
+% \GetFileInfo{bodeplot.sty}
+%
+% \DoNotIndex{hlist of control sequencesi}
+%
+% \title{The \textsf{bodeplot} package\thanks{This document
+% corresponds to \textsf{bodeplot}~\fileversion,
+% dated \filedate.}}
+% \author{Rushikesh Kamalapurkar \\ \texttt{rlkamalapurkar@gmail.com}}
+%
+% \maketitle
+%
+% \section{Introduction}
+%
+% Generate Bode, Nyquist, and Nichols plots for transfer functions in the canonical (TF) form \begin{equation}G(s) = e^{-Ts}\frac{b_ms^m+\cdots+b_1s+b_0}{a_ns^n+\cdots+a_1s+a_0}\end{equation} and the zero-pole-gain (ZPK) form \begin{equation}G(s) = Ke^{-Ts}\frac{(s-z_1)(s-z_2)\cdots(s-z_m)}{(s-p_1)(s-p_2)\cdots(s-p_n)}.\end{equation} In the equations above, $b_m,\cdots,b_0$ and $a_n,\cdots,a_0$ are real coefficients, $T\geq 0$ is the loop delay, $z_1,\cdots,z_m$ and $p_1,\cdots,p_n$ are complex zeros and poles of the transfer function, respectively, and $K\in \Re$ is the loop gain.
+%
+% \section{Usage}
+% \subsection{Bode plots}
+% \DescribeMacro{\BodeZPK}
+% |\BodeZPK| \oarg{obj1/typ1/\marg{opt1},obj2/typ2/\marg{opt2},...}\\
+% \hspace*{2em}\marg{z/\marg{zeros},p/\marg{poles},k/\marg{gain},d/\marg{delay}}\\
+% \hspace*{2em}\marg{min-freq}\marg{max-freq}
+% 
+% Plots the Bode plot of a transfer function given in ZPK format using the |groupplot| environment. The three mandatory arguments include a list of tuples, comprised of the zeros, the poles, the gain, and the transport delay of the transfer function, and a frequency range for the $x-$ axis. The zeros and the poles are complex numbers, entered as a comma-separated list of comma-separated lists, of the form |{{real part 1,imaginary part 1},| |{real part 2,imaginary part 2},...}|. If the imaginary part is not provided, it is assumed to be zero.
+%
+% The optional argument is comprised of a comma separated list of tuples, either |obj/typ/{opt}|, or |obj/{opt}|, or just |{opt}|. Each tuple passes options to different |pgfplots| commands that generate the group, the axes, and the plots according to:
+% \begin{itemize}
+% \item Tupels of the form |obj/typ/{opt}|:
+% \begin{itemize}
+% 	\item |plot/typ/{opt}|: modify plot properties by adding options |{opt}| to the |\addplot| command for the magnitude plot if |\typ| is |mag| and the phase plot if |\typ| is |ph|.
+%	\item |axes/typ/{opt}|: modify axis properties by adding options |{opt}| to the |\nextgroupplot| command for the magnitude plot if |\typ| is |mag| and the phase plot if |\typ| is |ph|.
+% \end{itemize}
+% \item Tupels of the form |obj/{opt}|:
+% \begin{itemize}
+% 	\item |plot/{opt}|: adds options |{opt}| to |\addplot| commands for both the magnitude and the phase plots.
+% 	\item |axes/{opt}|: adds options |{opt}| to |\nextgroupplot| commands for both the magnitude and the phase plots.
+%	\item |group/{opt}|: adds options |{opt}| to the |groupplot| environment.
+%	\item |approx/linear|: plots linear approximation.
+%	\item |approx/asymptotic|: plots asymptotic approximation.
+% \end{itemize}
+% \item Tupels of the form |{opts}| add all of the supplied options to |\addplot| commands for both the magnitude and the phase plots.
+% \end{itemize}
+% The options |{opt}| can be any |key=value| options that are suported by the |pgfplots| commands they are added to. \textit{Linear or asymptotic approximation of transfer functions that include a transport delay is not supported.}
+
+% For example, given a transfer function \begin{equation}G(s) = 10\frac{s(s+0.1+0.5\mathrm{i})(s+0.1-0.5\mathrm{i})}{(s+0.5+10\mathrm{i})(s+0.5-10\mathrm{i})},\end{equation} its Bode plot over the frequency range $[0.01,100]$ can be generated using\\
+% |  \BodeZPK|\\
+% |    {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}|\\
+% |    {0.01}{100}|\\
+% which generates the plot in Figure \ref{simpleBode}. If a delay is not specified, it is assumed to be zero. If a gain is not specified, it is assumed to be 1. By default, each of the axes, excluding ticks and labels, are 5cm wide and 2.5cm high. The width and the height, along with other properties of the plots, the axes, and the group can be customized using native |pgf| keys as shown in the example below.
+%
+% \begin{figure}
+% \begin{center}
+% \BodeZPK{z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}{0.01}{100}
+% \label{simpleBode}
+% \cprotect\caption{Output of the default |\BodeZPK| command.}
+% \end{center}
+% \end{figure}
+%
+% A linear approximation of the Bode plot with customization of the plots, the axes, and the group can be generated using\\
+% |  \BodeZPK[plot/mag/{red,thick},plot/ph/{blue,thick},|\\
+% |    axes/mag/{ytick distance=40,xmajorticks=true,|\\
+% |    xlabel={Frequency (rad/s)}},axes/ph/{ytick distance=90},|\\
+% |    group/{group style={group size=2 by 1,horizontal sep=2cm,|\\
+% |    width=4cm,height=2cm}},approx/linear]|\\
+% |    {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}|\\
+% |    {0.01}{100}|\\
+% which generates the plot in Figure \ref{customBode}.
+%
+% \begin{figure}
+% \begin{center}
+% \BodeZPK[plot/mag/{red,thick},plot/ph/{blue,thick},axes/mag/{ytick distance=40,xmajorticks=true,xlabel={Frequency (rad/s)}},axes/ph/{ytick distance=90},approx/linear,group/{group style={group size = 2 by 1,horizontal sep=2cm},width=4cm,height=2cm},] {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},g/10} {0.01} {100}
+% \label{customBode}
+% \cprotect\caption{Customization of the default |\BodeZPK| command.}
+% \end{center}
+% \end{figure}
+%
+% \DescribeMacro{\BodeTF}
+% |\BodeTF| \oarg{obj1/typ1/\marg{opt1},obj2/typ2/\marg{opt2},...}\\
+% \hspace*{2em}\marg{num/\marg{coeffs},den/\marg{coeffs},d/\marg{delay}}\\
+% \hspace*{2em}\marg{min-freq}\marg{max-freq} \rmfamily
+% 
+% Plots the Bode plot of a transfer function given in TF format. The three mandatory arguments are a list of tuples comprised of the coefficients in the numerator and the denominator of the transfer function, respectively, and the transport delay, and the desired frequency range. The coefficients are entered as a comma-separated list, in order from the highest degree of $s$ to the lowest, with zeros for missing degrees. The optional arguments are the same as |\BodeZPK|, except that linear/asymptotic approximation is not supported, so |approx/...| is ignored.
+%
+% For example, given the same transfer function as above in TF form and with a small transport delay, \begin{equation}G(s) = e^{-0.01s}\frac{s(10s^2+2s+2.6)}{(s^2+s+100.25)},\end{equation} its Bode plot over the frequency range $[0.01,100]$ can be generated using\\
+% |  \BodeTF[blue,thick]|\\
+% |    {num/{10,2,2.6,0},den/{1,0.2,100},d/0.01}|\\
+% |    {0.01}{100}|\\
+% which generates the plot in Figure \ref{simpleBodeTF}. Note the $0$ added to the numerator coefficients to account for the fact that the numerator does not have a constant term in it. As demonstrated in this example, if a single comma-separated list of options is passed, it applies to both the magnitude and the phase plots.
+%
+% \begin{figure}
+% \begin{center}
+% \BodeTF[blue,thick]{num/{10,2,2.6,0},den/{1,1,100.25},d/0.01}{0.01}{100}
+% \label{simpleBodeTF}
+% \cprotect\caption{Output of the |\BodeTF| command.}
+% \end{center}
+% \end{figure}
+% \subsection{Nyquist plots}
+% \DescribeMacro{\NyquistZPK}
+% |\NyquistZPK| \oarg{plot/\marg{opt},axes/\marg{opt}}\\
+% \hspace*{2em}\marg{z/\marg{zeros},p/\marg{poles},k/\marg{gain},d/\marg{delay}}\\
+% \hspace*{2em}\marg{min-freq}\marg{max-freq}
+% 
+% Plots the Nyquist plot of a transfer function given in ZPK format with a thick red $+$ marking the critical point (-1,0). The mandatory arguments are the same as |\BodeZPK|. Since there is only one plot in a Nyquist diagram, the |\typ| specifier in the optional argument tuples is not needed. As such, the supported optional argument tuples are |plot/{opt}|, which passes |{opt}| to |\addplot| and |axes/{opt}|, which passes |{\opt}| to the |axis| environment. Asymptotic/linear approximations are not supported in Nyquist plots. If just |{opt}| is provided as the optional argument, it is interpreted as |plot/{opt}|. Arrows to indicate the direction of increasing $\omega$ can be added by adding |\usetikzlibrary{decorations.markings}| and |\usetikzlibrary{arrows.meta}| to the preamble and then passing a tupel of the form\\
+%|plot/{postaction=decorate,decoration={markings,|\\
+%|    mark=between positions 0.1 and 0.9 step 5em with|\\
+%|    {\arrow{Stealth| |[length=2mm, blue]}}}}|\\
+%\textbf{Caution:} with a high number of samples, adding arrows in this way may cause the error message |! Dimension too big|.
+%
+% For example, the command\\
+% |\NyquistZPK[plot/{red,thick,samples=2000},axes/{blue,thick}]|\\
+% |    {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}|\\
+% |    {-30}{30}|\\
+% generates the Nyquist plot in Figure \ref{simpleNyquistZPK}.
+%
+% \begin{figure}
+% \begin{center}
+% \NyquistZPK[plot/{red,thick,samples=2000},axes/{blue,thick}] {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10} {-30} {30}
+% \label{simpleNyquistZPK}
+% \cprotect\caption{Output of the |\NyquistZPK| command.}
+% \end{center}
+% \end{figure}
+%
+% % \DescribeMacro{\NyquistTF}
+% |\NyquistTF| \oarg{plot/\marg{opt},axes/\marg{opt}}\\
+% \hspace*{2em}\marg{num/\marg{coeffs},den/\marg{coeffs},d/\marg{delay}}\\
+% \hspace*{2em}\marg{min-freq}\marg{max-freq}
+% 
+% Nyquist plot of a transfer function given in TF format. Same mandatory arguments as |\BodeTF| and same optional arguments as |\NyquistZPK|. For example, the command\\
+% |\NyquistTF[plot/{green,thick,samples=500,postaction=decorate,|\\
+%|    decoration={markings,mark=between positions 0.1 and 0.9 step 5em with|\\
+%|    {\arrow{Stealth| |[length=2mm, blue]}}}}]|\\
+% |    {num/{10,2,2.6,0},den/{1,1,100.25}}|\\
+% |    {-30}{30}|\\
+% generates the Nyquist plot in Figure \ref{simpleNyquistTF}.
+%
+% \begin{figure}
+% \begin{center}
+% \NyquistTF[plot/{green,thick,samples=500,postaction=decorate,decoration={markings,mark=between positions 0.1 and 0.9 step 5em with {\arrow{Stealth[length=2mm, blue]}}}}] {num/{10,2,2.6,0},den/{1,1,100.25},d/0.01} {-30} {30}
+% \label{simpleNyquistTF}
+% \cprotect\caption{Output of the |\NyquistTF| command with direction arrows. Increasing the number of samples can cause |decorations.markings| to throw errors.}
+% \end{center}
+% \end{figure}
+% \subsection{Nichols charts}
+% \DescribeMacro{\NicholsZPK}
+% |\NicholsZPK| \oarg{plot/\marg{opt},axes/\marg{opt}}\\
+% \hspace*{2em}\marg{z/\marg{zeros},p/\marg{poles},k/\marg{gain},d/\marg{delay}}\\
+% \hspace*{2em}\marg{min-freq}\marg{max-freq}
+%
+% Nichols chart of a transfer function given in ZPK format. Same arguments as |\NyquistZPK|.
+%
+%% \DescribeMacro{\NicholsTF}
+% |\NicholsTF| \oarg{plot/\marg{opt},axes/\marg{opt}}\\
+% \hspace*{2em}\marg{num/\marg{coeffs},den/\marg{coeffs},d/\marg{delay}}\\
+% \hspace*{2em}\marg{min-freq}\marg{max-freq}
+%
+% Nichols chart of a transfer function given in TF format. Same arguments as |\NyquistTF|. For example, the command\\
+% |\NicholsTF[plot/{green,thick,samples=2000}]|\\
+% |    {num/{10,2,2.6,0},den/{1,1,100.25},d/0.01}|\\
+% |    {0.001}{100}|\\
+% generates the Nichols chart in Figure \ref{simpleNicholsTF}.
+%
+% \begin{figure}
+% \begin{center}
+% \NicholsTF[plot/{green,thick,samples=2000}] {num/{10,2,2.6,0},den/{1,1,100.25},d/0.01} {0.001} {100}
+% \label{simpleNicholsTF}
+% \cprotect\caption{Output of the |\NyquistZPK| command.}
+% \end{center}
+% \end{figure}
+%
+% \DescribeEnv{YOURENV}
+% Put description of |YOURENV| here.
+%
+% \StopEventually{\PrintIndex}
+%
+% \section{Implementation}
+% \subsection{Initialization}
+% \begin{macro}{\pdfstrcmp}
+% The package makes extensive use of the |\pdfstrcmp| command to parse options. Since that command is not available in |lualatex|, this code is needed.
+%    \begin{macrocode}
+\RequirePackage{ifluatex}
+\ifluatex
+	\RequirePackage{pdftexcmds}
+	\let\pdfstrcmp\pdf@strcmp
+\fi
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\n@mod}
+% \begin{macro}{\n@pow}
+% \begin{macro}{idGnuplot}
+% \begin{macro}{gnuplot def}
+% \begin{macro}{gnuplot degrees}
+% This code is needed to support both |pgfplots| and |gnuplot| simultaneously. New macros are defined for the |pow| and |mod| functions to address differences between the two math engines. We start by processing the |pgf| class option.
+%    \begin{macrocode}
+\newif\if@pgfarg\@pgfargfalse
+\DeclareOption{pgf}{
+	\@pgfargtrue
+}
+\ProcessOptions\relax
+%    \end{macrocode}
+% Then, we define two new commands to unify |pgfplots| and |gnuplot|.
+%    \begin{macrocode}
+\if@pgfarg
+	\newcommand{\n@pow}[2]{(#1)^(#2)}
+	\newcommand{\n@mod}[2]{mod((#1),(#2))}
+\else
+\newcommand{\n@pow}[2]{(#1)**(#2)}
+\newcommand{\n@mod}[2]{(#1)-(floor((#1)/(#2))*(#2))}
+%    \end{macrocode}
+% Then, we create a counter so that a new data table is generated and for each new plot. If the plot commands have not changed, the tables, once generated, can be reused by |gnuplot|, which reduces compilation time.
+%    \begin{macrocode}
+\newcounter{idGnuplot}
+\setcounter{idGnuplot}{0}
+\tikzset{
+	gnuplot def/.style={
+		id=\arabic{idGnuplot},
+		prefix=gnuplot/
+	}
+}
+%    \end{macrocode}
+% Then, we add |set angles degrees| to all |gnuplot| commands to avoid having to convert from degrees to radians everywhere.
+%    \begin{macrocode}
+\pgfplotsset{
+	gnuplot degrees/.code={
+		\ifnum\value{idGnuplot}=1
+		\xdef\pgfplots@gnuplot@format{\pgfplots@gnuplot@format set angles degrees;}
+		\fi
+	}
+}
+\fi
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \subsection{Parametric function generators for poles, zeros, etc.}
+% \begin{macro}{\MagK}
+% \begin{macro}{\MagKAsymp}
+% \begin{macro}{\MagKLin}
+% \begin{macro}{\PhK}
+% \begin{macro}{\PhKAsymp}
+% \begin{macro}{\PhKLin}
+%	True, linear, and asymptotic magnitude and phase parametric functions for a pure gain.
+%    \begin{macrocode}
+\newcommand*{\MagK}[2]{(20*log10(abs(#1)))}
+\newcommand*{\MagKAsymp}{\MagK}
+\newcommand*{\MagKLin}{\MagK}
+\newcommand*{\PhK}[2]{(#1<0?-180:0)}
+\newcommand*{\PhKAsymp}{\PhK}
+\newcommand*{\PhKLin}{\PhK}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{\MagPole}
+% \begin{macro}{\MagPoleAsymp}
+% \begin{macro}{\MagPoleLin}
+% \begin{macro}{\PhPole}
+% \begin{macro}{\PhPoleAsymp}
+% \begin{macro}{\PhPoleLin}
+%	These macros are the building blocks for most of the plotting functions provided by this package. We start with Parametric function for the true magnitude of a complex pole.
+%    \begin{macrocode}
+\newcommand*{\MagPole}[2]
+	{(-20*log10(sqrt(\n@pow{#1}{2} + \n@pow{t - (#2)}{2})))}
+%    \end{macrocode}
+%	Parametric function for linear approximation of the magnitude of a complex pole.
+%    \begin{macrocode}
+\newcommand*{\MagPoleLin}[2]{(t < sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) ?
+	-20*log10(sqrt(\n@pow{#1}{2} + \n@pow{#2}{2})) :
+	-20*log10(t)
+	)}
+%    \end{macrocode}
+%	Parametric function for asymptotic approximation of the magnitude of a complex pole, same as linear approximation.
+%    \begin{macrocode}
+\newcommand*{\MagPoleAsymp}{\MagPoleLin}
+%    \end{macrocode}
+%	Parametric function for the true phase of a complex pole.
+%    \begin{macrocode}
+\newcommand*{\PhPole}[2]{(#1 > 0 ? (#2 > 0 ? 
+	(\n@mod{-atan2((t - (#2)),-(#1))+360}{360}) : 
+	(-atan2((t - (#2)),-(#1)))) : 
+	(-atan2((t - (#2)),-(#1))))}
+%    \end{macrocode}
+%	Parametric function for linear approximation of the phase of a complex pole.
+%    \begin{macrocode}
+\newcommand*{\PhPoleLin}[2]{
+	(abs(#1)+abs(#2) == 0 ? -90 :
+	(t < (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) / 
+		(\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))})) ? 
+	(-atan2(-(#2),-(#1))) :
+	(t >= (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) * 
+		(\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))})) ? 
+	(#2>0?(#1>0?270:-90):-90) :
+	(-atan2(-(#2),-(#1)) + (log10(t/(sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) / 
+		(\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + 
+		\n@pow{#2}{2}))}))))*((#2>0?(#1>0?270:-90):-90) + atan2(-(#2),-(#1)))/
+		(log10(\n@pow{10}{sqrt((4*\n@pow{#1}{2})/
+		(\n@pow{#1}{2} + \n@pow{#2}{2}))}))))))}
+%    \end{macrocode}
+%	Parametric function for asymptotic approximation of the phase of a complex pole.
+%    \begin{macrocode}
+\newcommand*{\PhPoleAsymp}[2]{(t < (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2})) ? 
+	(-atan2(-(#2),-(#1))) :
+	(#2>0?(#1>0?270:-90):-90))}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{\MagZero}
+% \begin{macro}{\MagZeroAsymp}
+% \begin{macro}{\MagZeroLin}
+% \begin{macro}{\PhZero}
+% \begin{macro}{\PhZeroAsymp}
+% \begin{macro}{\PhZeroLin}
+% Plots of zeros are defined to be negative of plots of poles. The |0-| is necessary due to a bug in |gnuplot| (fixed in version 5.4, patchlevel 3).
+%    \begin{macrocode}
+\newcommand*{\MagZero}{0-\MagPole}
+\newcommand*{\MagZeroLin}{0-\MagPoleLin}
+\newcommand*{\MagZeroAsymp}{0-\MagPoleAsymp}
+\newcommand*{\PhZero}{0-\PhPole}
+\newcommand*{\PhZeroLin}{0-\PhPoleLin}
+\newcommand*{\PhZeroAsymp}{0-\PhPoleAsymp}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \begin{environment}{YOURENV}
+% Put explanation of |YOURENV| implementation here.
+%    \begin{macrocode}
+\newenvironment{YOURENV}{}{}
+%    \end{macrocode}
+% \end{environment}
+%
+% \Finale
+\endinput
