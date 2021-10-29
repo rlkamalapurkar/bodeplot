@@ -41,6 +41,7 @@
 % \CheckSum{0}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
+% \changes{v1.0.1}{2021/10/29}{Improved optional argument handling for |\addBode...| commands.}
 %
 % \GetFileInfo{bodeplot.sty}
 %
@@ -146,7 +147,7 @@
 % \hspace*{2em}\marg{plot-type}\\
 % \hspace*{2em}\marg{z/\marg{zeros},p/\marg{poles},k/\marg{gain},d/\marg{delay}}
 %
-% \noindent Generates the appropriate parametric functions and supplies them to multiple |\addplot| macros, one for each |approx/{opt}| pair in the optional argument. If no optional argument is supplied, then a single |\addplot| command corresponding to the true Bode plot is generated. This macro can be used inside any |semilogaxis| environment as long as a domain for the x-axis is supplied through either the |approx/{opt}| interface or directly in the optional argument of the |semilogaxis| environment. Use with the |BodePlot| environment supplied with this package is recommended. The second mandatory argument, |plot-type| is either magnitude or |phase|. If it is not equal to |phase|, it is assumed to be |magnitude|. The last mandatory argument is the same as |\BodeZPK|.
+% \noindent Generates the appropriate parametric functions and supplies them to multiple |\addplot| macros, one for each |approx/{opt}| pair in the optional argument. If no optional argument is supplied, then a single |\addplot| command corresponding to a thick red true Bode plot is generated. If an optional argument is supplied, it needs to be one of |true/{opt}|, |linear/{opt}|, or |asymptotic/{opt}|. This macro can be used inside any |semilogaxis| environment as long as a domain for the x-axis is supplied through either the |approx/{opt}| interface or directly in the optional argument of the |semilogaxis| environment. Use with the |BodePlot| environment supplied with this package is recommended. The second mandatory argument, |plot-type| is either |magnitude| or |phase|. If it is not equal to |phase|, it is assumed to be |magnitude|. The last mandatory argument is the same as |\BodeZPK|.
 %
 % For example, given the transfer function in (\ref{eq:ZPKExample}), its linear, asymptotic, and true Bode plots can be superimposed using
 %\begin{verbatim}
@@ -831,7 +832,9 @@
 % This macro is designed to issues multiple |\addplot| macros for the same set of poles, zeros, gain, and delay. All of the work is done by the |\build@ZPK@plot| macro.
 %    \begin{macrocode}
 \newcommand{\addBodeZPKPlots}[3][{}]{%
+  \gdef\opt@args{0}
   \foreach \approx/\opt in {#1} {%
+  	\gdef\opt@args{1}
     \gdef\plot@macro{}%
     \gdef\temp@macro{}%
     \ifnum\pdfstrcmp{#2}{phase}=0
@@ -848,6 +851,23 @@
       \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\plot@macro};
     \fi
   }%
+  \ifnum\opt@args=0
+    \gdef\plot@macro{}%
+    \gdef\temp@macro{}%
+    \ifnum\pdfstrcmp{#2}{phase}=0
+      \build@ZPK@plot{\temp@macro}{\plot@macro}{}{#3}%
+    \else
+      \build@ZPK@plot{\plot@macro}{\temp@macro}{}{#3}%
+    \fi
+    \if@pgfarg
+      \edef\temp@cmd{\noexpand\addplot[red,thick]}%
+      \temp@cmd {\plot@macro};
+    \else
+      \stepcounter{idGnuplot}%
+      \edef\temp@cmd{\noexpand\addplot[red,thick]}
+      \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\plot@macro};
+    \fi
+  \fi
 }
 %    \end{macrocode}
 %\end{macro}

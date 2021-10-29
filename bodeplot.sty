@@ -238,7 +238,9 @@
   \fi
   \end{groupplot}\end{tikzpicture}}
 \newcommand{\addBodeZPKPlots}[3][{}]{%
+  \gdef\opt@args{0}
   \foreach \approx/\opt in {#1} {%
+   \gdef\opt@args{1}
     \gdef\plot@macro{}%
     \gdef\temp@macro{}%
     \ifnum\pdfstrcmp{#2}{phase}=0
@@ -255,6 +257,23 @@
       \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\plot@macro};
     \fi
   }%
+  \ifnum\opt@args=0
+    \gdef\plot@macro{}%
+    \gdef\temp@macro{}%
+    \ifnum\pdfstrcmp{#2}{phase}=0
+      \build@ZPK@plot{\temp@macro}{\plot@macro}{}{#3}%
+    \else
+      \build@ZPK@plot{\plot@macro}{\temp@macro}{}{#3}%
+    \fi
+    \if@pgfarg
+      \edef\temp@cmd{\noexpand\addplot[red,thick]}%
+      \temp@cmd {\plot@macro};
+    \else
+      \stepcounter{idGnuplot}%
+      \edef\temp@cmd{\noexpand\addplot[red,thick]}
+      \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\plot@macro};
+    \fi
+  \fi
 }
 \newcommand{\addBodeTFPlot}[3][red,thick]{%
   \gdef\plot@macro{}%
