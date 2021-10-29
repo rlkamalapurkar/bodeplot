@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 % Copyright (C) 2021 by Rushikesh Kamalapurkar
 %
 % This file may be distributed and/or modified under the
@@ -728,3 +729,729 @@
 		\fi
 	}%
 }
+=======
+% Copyright (C) 2021 by Rushikesh Kamalapurkar
+%
+% This file may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either
+% version 1.3c of this license or (at your option) any later
+% version. The latest version of this license is in:
+%
+% http://www.latex-project.org/lppl.txt
+%
+% and version 1.3c or later is part of all distributions of
+% LaTeX version 2005/12/01 or later.
+\NeedsTeXFormat{LaTeX2e}[2005/12/01]
+\ProvidesPackage{bodeplot}
+	[2021/10/25 v1.0 Generate Bode, Nyquist, and Nichols plots]
+\RequirePackage{tikz}
+\RequirePackage{pgfplots}
+	\pgfplotsset{compat=1.18,variable=t}
+	\usepgfplotslibrary{groupplots}
+\RequirePackage{ifluatex}
+\ifluatex
+	\RequirePackage{pdftexcmds}
+	\let\pdfstrcmp\pdf@strcmp
+\fi
+
+% Handle gnuplot option
+\newif\if@pgfarg\@pgfargfalse
+\DeclareOption{pgf}{%
+	\@pgfargtrue
+}
+\ProcessOptions\relax
+
+\if@pgfarg
+	\newcommand{\n@pow}[2]{(#1)^(#2)}
+	\newcommand{\n@mod}[2]{mod((#1),(#2))}
+	\PackageWarning {bodeplot} {You are using the 'bodeplot' package in 'pgfplots' mode. If compilation is too slow, consider using the default 'gnuplot' mode. The 'gnuplot' utility needs to be installed and available on the system path, and the document needs to be compiled using the '--shell-escape' flag.}
+\else
+	\newcounter{idGnuplot}
+	\setcounter{idGnuplot}{0}
+	\newcommand{\n@pow}[2]{(#1)**(#2)}
+	\newcommand{\n@mod}[2]{(#1)-(floor((#1)/(#2))*(#2))}
+	\pgfplotsset{
+		gnuplot degrees/.code={%
+			\ifnum\value{idGnuplot}=1
+				\xdef\pgfplots@gnuplot@format{\pgfplots@gnuplot@format set angles degrees;}%
+			\fi
+		}%
+	}
+	\tikzset{
+		gnuplot def/.style={%
+			id=\arabic{idGnuplot},
+			prefix=gnuplot/
+		}%
+	}
+\fi
+
+% Constant
+\newcommand*{\MagK}[2]{(20*log10(abs(#1)))}
+\newcommand*{\MagKAsymp}{\MagK}
+\newcommand*{\MagKLin}{\MagK}
+\newcommand*{\PhK}[2]{(#1<0?-180:0)}
+\newcommand*{\PhKAsymp}{\PhK}
+\newcommand*{\PhKLin}{\PhK}
+
+%% Complex pole at s = #1 + i#2: G(s) = 1/(s-#1-#2i)
+% Magnitude
+\newcommand*{\MagPole}[2]{(-20*log10(sqrt(\n@pow{#1}{2} + \n@pow{t - (#2)}{2})))}
+\newcommand*{\MagPoleLin}[2]{(t < sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) ?
+	-20*log10(sqrt(\n@pow{#1}{2} + \n@pow{#2}{2})) :
+	-20*log10(t)
+)}
+\newcommand*{\MagPoleAsymp}{\MagPoleLin}
+% Phase
+\newcommand*{\PhPole}[2]{(#1 > 0 ? (#2 > 0 ? (\n@mod{-atan2((t - (#2)),-(#1))+360}{360}) : (-atan2((t - (#2)),-(#1)))) : (-atan2((t - (#2)),-(#1))))}
+\newcommand*{\PhPoleLin}[2]{%
+	(abs(#1)+abs(#2) == 0 ? -90 :
+		(t < (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) / (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))})) ? 
+			(-atan2(-(#2),-(#1))) :
+			(t >= (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) * (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))})) ? 
+				(#2>0?(#1>0?270:-90):-90) :
+				(-atan2(-(#2),-(#1)) + (log10(t/(sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) / (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))}))))*((#2>0?(#1>0?270:-90):-90) + atan2(-(#2),-(#1)))/(log10(\n@pow{10}{sqrt((4*\n@pow{#1}{2})/(\n@pow{#1}{2} + \n@pow{#2}{2}))})))
+			)
+		)
+	)
+}
+\newcommand*{\PhPoleAsymp}[2]{(t < (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2})) ? 
+	(-atan2(-(#2),-(#1))) :
+	(#2>0?(#1>0?270:-90):-90)
+)}
+
+%% Complex zero at s = #1 + i#2: G(s) = (s-#1-#2i)
+% Magnitude
+\newcommand*{\MagZero}{0-\MagPole}
+\newcommand*{\MagZeroLin}{0-\MagPoleLin}
+\newcommand*{\MagZeroAsymp}{0-\MagPoleAsymp}
+%Phase
+\newcommand*{\PhZero}{0-\PhPole}
+\newcommand*{\PhZeroLin}{0-\PhPoleLin}
+\newcommand*{\PhZeroAsymp}{0-\PhPoleAsymp}
+
+%% Resonance - complex conjugate poles at #1 \pm #2i
+\newcommand*{\MagCCPolesPeak}[3][]{%
+	\draw[#1,->] (axis cs:{sqrt(\n@pow{#2}{2} + \n@pow{#3}{2})},{-40*log10(sqrt(\n@pow{#2}{2} + \n@pow{#3}{2}))}) -- (axis cs:{sqrt(\n@pow{#2}{2} + \n@pow{#3}{2})},{-20*log10((\n@pow{#2}{2} + \n@pow{#3}{2})/(2*abs(#2)))})
+}
+%% Resonance - complex conjugate zeros at #1 \pm #2i
+\newcommand*{\MagCCZerosPeak}[3][]{%
+	\draw[#1,->] (axis cs:{sqrt(\n@pow{#2}{2} + \n@pow{#3}{2})},{40*log10(sqrt(\n@pow{#2}{2} + \n@pow{#3}{2}))}) -- (axis cs:{sqrt(\n@pow{#2}{2} + \n@pow{#3}{2})},{20*log10((\n@pow{#2}{2} + \n@pow{#3}{2})/(2*abs(#2)))})
+}
+
+%% Canonical second order transfer function G(s) = 1/(s^2 + 2 z wn s + wn^2)
+% Magnitude
+\newcommand*{\MagCSPoles}[2]{(-20*log10(sqrt(\n@pow{\n@pow{#2}{2} - \n@pow{t}{2}}{2} + \n@pow{2*#1*#2*t}{2})))}
+\newcommand*{\MagCSPolesLin}[2]{(t < #2 ? -40*log10(#2) : - 40*log10(t))}
+\newcommand*{\MagCSPolesAsymp}{\MagCSPolesLin}
+\newcommand*{\MagCSPolesPeak}[3][]{%
+	\draw[#1,->] (axis cs:{#3},{-40*log10(#3)}) -- (axis cs:{#3},{-40*log10(#3)-20*log10(2*abs(#2))})
+}
+% Phase
+\newcommand*{\PhCSPoles}[2]{(-atan2((2*(#1)*(#2)*t),(\n@pow{#2}{2} - \n@pow{t}{2})))}
+\newcommand*{\PhCSPolesLin}[2]{(t < (#2 / (\n@pow{10}{abs(#1)})) ? 
+	0 :
+	(t >= (#2 * (\n@pow{10}{abs(#1)})) ? 
+		(#1>0 ? -180 : 180) :
+		(#1>0 ? (-180*(log10(t*(\n@pow{10}{#1})/#2))/(2*#1)) : (180*(log10(t*(\n@pow{10}{abs(#1)})/#2))/(2*abs(#1))))
+	)
+)}
+\newcommand*{\PhCSPolesAsymp}[2]{(#1>0?(t<#2?0:-180):(t<#2?0:180))}
+
+%% Canonical second order transfer function G(s) = s^2 + 2 z wn s + wn^2
+% Magnitude
+\newcommand*{\MagCSZeros}{0-\MagCSPoles}
+\newcommand*{\MagCSZerosLin}{0-\MagCSPolesLin}
+\newcommand*{\MagCSZerosAsymp}{0-\MagCSPolesAsymp}
+\newcommand*{\MagCSZerosPeak}[3][]{%
+	\draw[#1,->] (axis cs:{#3},{40*log10(#3)}) -- (axis cs:{#3},{40*log10(#3)+20*log10(2*abs(#2))})
+}
+%Phase
+\newcommand*{\PhCSZeros}{0-\PhCSPoles}
+\newcommand*{\PhCSZerosLin}{0-\PhCSPolesLin}
+\newcommand*{\PhCSZerosAsymp}{0-\PhCSPolesAsymp}
+
+%% General second order transfer function G(s) = 1/(s^2 + as + b)
+% Magnitude
+\newcommand*{\MagSOPoles}[2]{(-20*log10(sqrt(\n@pow{#2 - \n@pow{t}{2}}{2} + \n@pow{#1*t}{2})))}
+\newcommand*{\MagSOPolesLin}[2]{(t < sqrt(abs(#2)) ? -20*log10(abs(#2)) : - 40*log10(t))}
+\newcommand*{\MagSOPolesAsymp}{\MagSOPolesLin}
+\newcommand*{\MagSOPolesPeak}[3][]{%
+	\draw[#1,->] (axis cs:{sqrt(abs(#3))},{-20*log10(abs(#3))}) -- (axis cs:{sqrt(abs(#3))},{-20*log10(abs(#3)) - 20*log10(abs(#2/sqrt(abs(#3))))});
+}
+% Phase
+\newcommand*{\PhSOPoles}[2]{(-atan2((#1)*t,((#2) - \n@pow{t}{2})))}
+\newcommand*{\PhSOPolesLin}[2]{(#2>0 ? \PhCSPolesLin{(#1/(2*sqrt(#2)))}{(sqrt(#2))} : (#1>0 ? -180 : 180))}
+\newcommand*{\PhSOPolesAsymp}[2]{(#2>0 ? \PhCSPolesAsymp{(#1/(2*sqrt(#2)))}{(sqrt(#2))} : (#1>0 ? -180 : 180))}
+
+%% General second order transfer function G(s) = s^2 + as + b
+% Magnitude
+\newcommand*{\MagSOZeros}{0-\MagSOPoles}
+\newcommand*{\MagSOZerosLin}{0-\MagSOPolesLin}
+\newcommand*{\MagSOZerosAsymp}{0-\MagSOPolesAsymp}
+\newcommand*{\MagSOZerosPeak}[3][]{%
+	\draw[#1,->] (axis cs:{sqrt(abs(#3))},{20*log10(abs(#3))}) -- (axis cs:{sqrt(abs(#3))},{20*log10(abs(#3)) + 20*log10(abs(#2/sqrt(abs(#3))))});
+}
+%Phase
+\newcommand*{\PhSOZeros}{0-\PhSOPoles}
+\newcommand*{\PhSOZerosLin}{0-\PhSOPolesLin}
+\newcommand*{\PhSOZerosAsymp}{0-\PhSOPolesAsymp}
+
+%Delay D(s)=exp(-T*s)
+\newcommand*{\MagDel}[2]{0}
+\newcommand*{\PhDel}[2]{-#1*180*t/pi}
+
+% Plot styles
+\pgfplotsset{%
+	bodeStyle/.style = {%
+		label style={font=\footnotesize},
+		tick label style={font=\footnotesize},
+		grid=both,
+		major grid style={color=gray!80},
+		minor grid style={color=gray!20},
+		x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+		y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+		scale only axis,
+		samples=200,
+		width=5cm,
+	}%
+}
+
+% The BodeZPK command
+%\BodeZPK[object1/type1/{options1},object2/type2/{options2},...]{z/{zeros},p/{poles},k/gain,d/delay}{min-frequency}{max-frequency}
+\newcommand{\BodeZPK}[4][]{%
+	\parse@opt{#1}%
+	\gdef\func@mag{}%
+	\gdef\func@ph{}%
+	\build@ZPK@plot{\func@mag}{\func@ph}{\opt@approx}{#2}%
+	\edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{groupplot}[%
+				bodeStyle,
+				xmin={#3},
+				xmax={#4},
+				domain=#3:#4,
+				height=2.5cm,
+				xmode=log,
+				group style = {group size = 1 by 2,vertical sep=0.25cm,},
+				\opt@group,]}
+	\temp@cmd
+			\if@pgfarg
+				\expandafter\nextgroupplot\expandafter[ytick distance=20,ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
+					\edef\temp@cmd{\noexpand\addplot[red,thick,\optmag@plot]}%
+					\temp@cmd {\func@mag};
+				\expandafter\nextgroupplot\expandafter[ytick distance=45,ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
+					\edef\temp@cmd{\noexpand\addplot[red,thick,\optph@plot]}%
+					\temp@cmd {\func@ph};
+			\else
+				\stepcounter{idGnuplot}
+				\expandafter\nextgroupplot\expandafter[ytick distance=20,ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
+					\edef\temp@cmd{\noexpand\addplot[red,thick,\optmag@plot]}%
+					\temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
+				\stepcounter{idGnuplot}
+				\expandafter\nextgroupplot\expandafter[ytick distance=45,ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
+					\edef\temp@cmd{\noexpand\addplot[red,thick,\optph@plot]}%
+					\temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
+			\fi
+		\end{groupplot}
+	\end{tikzpicture}
+}
+
+% The BodeTF command
+% \BodeTF[object1/type1/{options1},object2/type2/{options2},...]{num/{coeff},den/{coeff},d/delay}{min-frequency}{max-frequency}
+\newcommand{\BodeTF}[4][]{%
+	\parse@opt{#1}%
+	\gdef\func@mag{}%
+	\gdef\func@ph{}%
+	\build@TF@plot{\func@mag}{\func@ph}{#2}%
+	\edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{groupplot}[%
+				bodeStyle,
+				xmin={#3},
+				xmax={#4},
+				domain=#3:#4,
+				height=2.5cm,
+				xmode=log,
+				group style = {group size = 1 by 2,vertical sep=0.25cm,},
+				\opt@group,]}
+	\temp@cmd
+			\if@pgfarg
+				\expandafter\nextgroupplot\expandafter[ytick distance=20,ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
+					\edef\temp@cmd{\noexpand\addplot[red,thick,\optmag@plot]}%
+					\temp@cmd {\func@mag};
+				\expandafter\nextgroupplot\expandafter[ytick distance=45,ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
+					\edef\temp@cmd{\noexpand\addplot[red,thick,\optph@plot]}%
+					\temp@cmd {\func@ph};
+			\else
+				\stepcounter{idGnuplot}
+				\expandafter\nextgroupplot\expandafter[ytick distance=20,ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
+					\edef\temp@cmd{\noexpand\addplot[red,thick,\optmag@plot]}%
+					\temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
+				\stepcounter{idGnuplot}
+				\expandafter\nextgroupplot\expandafter[ytick distance=45,ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
+					\edef\temp@cmd{\noexpand\addplot[red,thick,\optph@plot]}%
+					\temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
+			\fi
+		\end{groupplot}
+	\end{tikzpicture}
+}
+
+% The BodePlot environment, works in conjunction with \addZPKBodePlots and \addTFBodePlots
+%\begin{BodePlot}[axis-options]{min-frequency}{max-frequency}
+\newenvironment{BodePlot}[3][]{%
+	\begin{tikzpicture}
+		\begin{semilogxaxis}[%
+			bodeStyle,
+			xmin={#2},
+			xmax={#3},
+			domain=#2:#3,
+			height=2.5cm,
+			xlabel={Frequency (rad/s)},
+			#1]
+}{
+		\end{semilogxaxis}
+	\end{tikzpicture}
+}
+
+% Command to add Bode plots using ZPK data
+%\addBodeZPKPlots[{approximation1/{plot-options1}},{approximation2/{plot-options2}},...]{plot-type (phase or magnitude)}{z/{zeros},p/{poles},k/gain,d/delay}
+\newcommand{\addBodeZPKPlots}[3][{}]{%
+	\foreach \approx/\opt in {#1} {%
+		\gdef\plot@macro{}%
+		\gdef\temp@macro{}%
+		\ifnum\pdfstrcmp{#2}{phase}=0
+			\build@ZPK@plot{\temp@macro}{\plot@macro}{\approx}{#3}%
+		\else
+			\build@ZPK@plot{\plot@macro}{\temp@macro}{\approx}{#3}%
+		\fi
+		\if@pgfarg
+			\edef\temp@cmd{\noexpand\addplot[red,thick,\opt]}%
+			\temp@cmd {\plot@macro};
+		\else
+			\stepcounter{idGnuplot}%
+			\edef\temp@cmd{\noexpand\addplot[red,thick,\opt]}%
+			\temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\plot@macro};
+		\fi
+	}%
+}
+
+% Command to add Bode plots using TF data
+%\addBodeTFPlot[plot-options]{plot-type (phase or magnitude)}{num/{coeff},den/{coeff},d/delay}
+\newcommand{\addBodeTFPlot}[3][red,thick]{%
+	\gdef\plot@macro{}%
+	\gdef\temp@macro{}%
+	\ifnum\pdfstrcmp{#2}{phase}=0
+		\build@TF@plot{\temp@macro}{\plot@macro}{#3}%
+	\else
+		\build@TF@plot{\plot@macro}{\temp@macro}{#3}%
+	\fi
+	\if@pgfarg
+		\addplot[#1]{\plot@macro};
+	\else
+		\stepcounter{idGnuplot}%
+		\addplot[#1] gnuplot[gnuplot degrees, gnuplot def] {\plot@macro};
+	\fi
+}
+
+%Command to add Bode plot of component poles/zeros/delays
+%\addBodeComponentPlot[plot-options]{plot-command}
+\newcommand{\addBodeComponentPlot}[2][red,thick]{%
+	\if@pgfarg
+		\addplot[#1]{#2};
+	\else
+		\stepcounter{idGnuplot}%
+		\addplot[#1] gnuplot[gnuplot degrees,gnuplot def] {#2};
+	\fi
+}
+
+%%%%%%%%%%%%%%%%%%%%%%% Nichols Charts %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% The NicholsZPK command
+%\NicholsZPK[plot/{options},axes/{options}]{z/{zeros},p/{poles},k/gain,d/delay}{min-frequency}{max-frequency}
+\newcommand{\NicholsZPK}[4][]{%
+	\parse@N@opt{#1}%
+	\gdef\func@mag{}%
+	\gdef\func@ph{}%
+	\build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
+	\edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[%
+				bodeStyle,
+				domain=#3:#4,
+				height=5cm,
+				xlabel={Phase (degrees)},
+				ylabel={Gain (dB)},
+				samples=500,
+				\opt@axes]}
+	\temp@cmd
+			\edef\temp@cmd{\noexpand\addplot[red,thick,\opt@plot]}%
+			\if@pgfarg
+				\temp@cmd ( {\func@ph} , {\func@mag} );
+			\else
+				\stepcounter{idGnuplot}%
+				\temp@cmd gnuplot[parametric, gnuplot degrees, gnuplot def] { \func@ph , \func@mag };
+			\fi
+		\end{axis}
+	\end{tikzpicture}
+}
+
+% The NicholsTF command
+%\NicholsTF[plot/{options},axes/{options}]{num/{coeff},den/{coeff},d/delay}
+\newcommand{\NicholsTF}[4][]{%
+	\parse@N@opt{#1}%
+	\gdef\func@mag{}%
+	\gdef\func@ph{}%
+	\build@TF@plot{\func@mag}{\func@ph}{#2}%
+	\edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[%
+				bodeStyle,
+				domain=#3:#4,
+				height=5cm,
+				xlabel={Phase (degrees)},
+				ylabel={Gain (dB)},
+				samples=500,
+				\opt@axes]}
+	\temp@cmd
+			\edef\temp@cmd{\noexpand\addplot[red,thick,\opt@plot]}%
+			\if@pgfarg
+				\temp@cmd ( {\func@ph} , {\func@mag} );
+			\else
+				\stepcounter{idGnuplot}%
+				\temp@cmd gnuplot[parametric, gnuplot degrees, gnuplot def] { \func@ph , \func@mag };
+			\fi
+		\end{axis}
+	\end{tikzpicture}
+}
+
+%\begin{NicholsChart}[axis-options]{min-frequency}{max-frequency}
+\newenvironment{NicholsChart}[3][]{%
+	\begin{tikzpicture}
+		\begin{axis}[%
+			bodeStyle,
+			domain=#2:#3,
+			height=5cm,
+			ytick distance=20,
+			xtick distance=15,
+			xlabel={Phase (degrees)},
+			ylabel={Gain (dB)},
+			#1]
+}{
+		\end{axis}
+	\end{tikzpicture}
+}
+% \addNicholsZPKChart[plot-options]{z/{zeros},p/{poles},k/gain,d/delay}
+\newcommand{\addNicholsZPKChart}[2][]{%
+	\gdef\func@mag{}%
+	\gdef\func@ph{}%
+	\build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
+	\if@pgfarg
+		\addplot [#1] ( {\func@ph} , {\func@mag} );
+	\else
+		\stepcounter{idGnuplot}%
+		\addplot [#1] gnuplot[parametric,gnuplot degrees,gnuplot def] {\func@ph , \func@mag};
+	\fi
+}
+% \addNicholsTFChart[plot-options]{num/{coeff},den/{coeff},d/delay}
+\newcommand{\addNicholsTFChart}[2][]{%
+	\gdef\func@mag{}%
+	\gdef\func@ph{}%
+	\build@TF@plot{\func@mag}{\func@ph}{#2}%
+	\if@pgfarg
+		\addplot [#1] ( {\func@ph} , {\func@mag} );
+	\else
+		\stepcounter{idGnuplot}%
+		\addplot [#1] gnuplot[gnuplot degrees,gnuplot def] {\func@ph , \func@mag};
+	\fi
+}
+
+%%%%%%%%%%%%%%%%%%%%%%% Nyquist Plots %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% The NyquistZPK command
+%\NyquistZPK[plot/{options},axes/{options}]{z/{zeros},p/{poles},k/gain,d/delay}{min-frequency}{max-frequency}
+\newcommand{\NyquistZPK}[4][]{%
+	\parse@N@opt{#1}%
+	\gdef\func@mag{}%
+	\gdef\func@ph{}%
+	\build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
+	\edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[%
+				bodeStyle,
+				domain=#3:#4,
+				height=5cm,
+				xlabel={$\Re$},
+				ylabel={$\Im$},
+				samples=500,
+				\opt@axes,]}
+	\temp@cmd
+			\addplot [only marks,mark=+,thick,red] (-1 , 0);
+			\edef\temp@cmd{\noexpand\addplot[thick,\unexpanded\expandafter{\opt@plot}]}%
+			\if@pgfarg
+				\temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)} , {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
+			\else
+				\stepcounter{idGnuplot}
+				\temp@cmd gnuplot[parametric,gnuplot degrees,gnuplot def] { \n@pow{10}{((\func@mag)/20)}*cos(\func@ph) , \n@pow{10}{((\func@mag)/20)}*sin(\func@ph) };
+			\fi
+		\end{axis}
+	\end{tikzpicture}
+}
+
+% The NyquistTF command
+%\NyquistTF[plot/{options},axes/{options}]{num/{coeff},den/{coeff},d/delay}
+\newcommand{\NyquistTF}[4][]{%
+	\parse@N@opt{#1}%
+	\gdef\func@mag{}%
+	\gdef\func@ph{}%
+	\build@TF@plot{\func@mag}{\func@ph}{#2}%
+	\edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[%
+				bodeStyle,
+				domain=#3:#4,
+				height=5cm,
+				xlabel={$\Re$},
+				ylabel={$\Im$},
+				samples=500,
+				\opt@axes,]}
+	\temp@cmd
+			\addplot [only marks,mark=+,thick,red] (-1 , 0);
+			\edef\temp@cmd{\noexpand\addplot[thick,\unexpanded\expandafter{\opt@plot}]}%
+			\if@pgfarg
+				\temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)} , {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
+			\else
+				\stepcounter{idGnuplot}
+				\temp@cmd gnuplot[parametric,gnuplot degrees,gnuplot def] { \n@pow{10}{((\func@mag)/20)}*cos(\func@ph) , \n@pow{10}{((\func@mag)/20)}*sin(\func@ph) };
+			\fi
+		\end{axis}
+	\end{tikzpicture}
+}
+
+%\begin{NyquistPlot}[axis-options]{min-frequency}{max-frequency}
+\newenvironment{NyquistPlot}[3][]{%
+	\begin{tikzpicture}
+		\begin{axis}[%
+			bodeStyle,
+			height=5cm,
+			domain=#2:#3,
+			xlabel={$\Re$},
+			ylabel={$\Im$},
+			#1
+		\addplot [only marks,mark=+,thick,red] (-1 , 0);
+}{
+		\end{axis}
+	\end{tikzpicture}
+}
+% \addNyquistZPKPlot[plot-options]{z/{zeros},p/{poles},k/gain,d/delay}
+\newcommand{\addNyquistZPKPlot}[2][]{%
+	\gdef\func@mag{}%
+	\gdef\func@ph{}%
+	\build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
+	\if@pgfarg
+		\addplot [#1] ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)} , {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
+	\else
+		\stepcounter{idGnuplot}%
+		\addplot [#1] gnuplot[parametric,gnuplot degrees,gnuplot def] { \n@pow{10}{((\func@mag)/20)}*cos(\func@ph) , \n@pow{10}{((\func@mag)/20)}*sin(\func@ph) };
+	\fi
+}
+% \addNyquistTFPlot[plot-options]{num/{coeff},den/{coeff},d/delay}
+\newcommand{\addNyquistTFPlot}[2][]{%
+	\gdef\func@mag{}%
+	\gdef\func@ph{}%
+	\build@TF@plot{\func@mag}{\func@ph}{#2}%
+	\if@pgfarg
+		\addplot [#1] ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)} , {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
+	\else
+		\stepcounter{idGnuplot}%
+		\addplot [#1] gnuplot[parametric,gnuplot degrees,gnuplot def] { \n@pow{10}{((\func@mag)/20)}*cos(\func@ph) , \n@pow{10}{((\func@mag)/20)}*sin(\func@ph) };
+	\fi
+}
+
+%% Internal Commands
+% Internal command to build Bode parametric function from zeros, poles, gain, and delay
+%\build@ZPK@plot{magnitude_plot_handle}{phase_plot_handle}{plot_approximation}{z/{zeros},p/{poles},k/gain,d/delay}
+\newcommand{\build@ZPK@plot}[4]{%
+	\foreach \feature/\values in {#4} {%
+		\ifnum\pdfstrcmp{\feature}{z}=0
+			\foreach \z in \values {%
+				\ifnum\pdfstrcmp{#3}{linear}=0
+					\add@feature{#2}{\PhZeroLin}{\z}%
+					\add@feature{#1}{\MagZeroLin}{\z}%
+				\else
+					\ifnum\pdfstrcmp{#3}{asymptotic}=0
+						\add@feature{#2}{\PhZeroAsymp}{\z}%
+						\add@feature{#1}{\MagZeroAsymp}{\z}%
+					\else
+						\add@feature{#2}{\PhZero}{\z}%
+						\add@feature{#1}{\MagZero}{\z}%
+					\fi
+				\fi
+			}%
+		\fi
+		\ifnum\pdfstrcmp{\feature}{p}=0
+			\foreach \p in \values {%
+				\ifnum\pdfstrcmp{#3}{linear}=0
+					\add@feature{#2}{\PhPoleLin}{\p}%
+					\add@feature{#1}{\MagPoleLin}{\p}%
+				\else
+					\ifnum\pdfstrcmp{#3}{asymptotic}=0
+						\add@feature{#2}{\PhPoleAsymp}{\p}%
+						\add@feature{#1}{\MagPoleAsymp}{\p}%
+					\else
+						\add@feature{#2}{\PhPole}{\p}%
+						\add@feature{#1}{\MagPole}{\p}%
+					\fi
+				\fi
+			}%
+		\fi
+		\ifnum\pdfstrcmp{\feature}{k}=0
+			\ifnum\pdfstrcmp{#3}{linear}=0
+				\add@feature{#2}{\PhKLin}{\values}%
+				\add@feature{#1}{\MagKLin}{\values}%
+			\else
+				\ifnum\pdfstrcmp{#3}{asymptotic}=0
+					\add@feature{#2}{\PhKAsymp}{\values}%
+					\add@feature{#1}{\MagKAsymp}{\values}%
+				\else
+					\add@feature{#2}{\PhK}{\values}%
+					\add@feature{#1}{\MagK}{\values}%
+				\fi
+			\fi
+		\fi
+		\ifnum\pdfstrcmp{\feature}{d}=0
+			\ifnum\pdfstrcmp{#3}{linear}=0
+				\PackageError {bodeplot} {Linear approximation for pure delays is not supported.} {Plot the true Bode plot using 'true' instead of 'linear'.}
+			\else
+				\ifnum\pdfstrcmp{#3}{asymptotic}=0
+					\PackageError {bodeplot} {Asymptotic approximation for pure delays is not supported.} {Plot the true Bode plot using 'true' instead of 'asymptotic'.}
+				\else
+					\ifdim\values pt < 0pt
+						\PackageError {bodeplot} {Delay needs to be a positive number.}
+					\fi
+					\add@feature{#2}{\PhDel}{\values}%
+					\add@feature{#1}{\MagDel}{\values}%
+				\fi
+			\fi
+		\fi
+	}%
+}%
+
+
+% Internal command to add pole/zero/gain/delay to a parametric function
+\newcommand*{\add@feature}[3]{%
+	\ifcat$\detokenize\expandafter{#1}$%
+		\xdef#1{\unexpanded\expandafter{#1 0+#2}}%
+	\else
+		\xdef#1{\unexpanded\expandafter{#1+#2}}%
+	\fi
+	\foreach \y [count=\n] in #3 {%
+		\xdef#1{\unexpanded\expandafter{#1}{\y}}%
+		\xdef\Last@LoopValue{\n}%
+	}%
+	\ifnum\Last@LoopValue=1%
+		\xdef#1{\unexpanded\expandafter{#1}{0}}%
+	\fi
+}
+
+% Internal command to build a TF bodeplot
+%\build@TF@plot{magnitude_plot_handle}{phase_plot_handle}{num/{coeff},den/{coeff},d/delay}
+\newcommand{\build@TF@plot}[3]{%
+	\gdef\num@real{0}%
+	\gdef\num@im{0}%
+	\gdef\den@real{0}%
+	\gdef\den@im{0}%
+	\gdef\loop@delay{0}%
+	\foreach \feature/\values in {#3} {%
+		\ifnum\pdfstrcmp{\feature}{num}=0
+			\foreach \numcoeff [count=\numpow] in \values {%
+				\xdef\num@degree{\numpow}%
+			}%
+			\foreach \numcoeff [count=\numpow] in \values {%
+				\pgfmathtruncatemacro{\currentdegree}{\num@degree-\numpow}%
+				\ifnum\currentdegree = 0
+					\xdef\num@real{\num@real+\numcoeff}%
+				\else
+					\ifodd\currentdegree
+						\xdef\num@im{\num@im+(\numcoeff*(\n@pow{-1}{(\currentdegree-1)/2})*(\n@pow{t}{\currentdegree}))}%
+					\else
+						\xdef\num@real{\num@real+(\numcoeff*(\n@pow{-1}{(\currentdegree)/2})*(\n@pow{t}{\currentdegree}))}%
+					\fi
+				\fi
+			}%
+		\fi
+		\ifnum\pdfstrcmp{\feature}{den}=0
+			\foreach \dencoeff [count=\denpow] in \values {%
+				\xdef\den@degree{\denpow}%
+			}
+			\foreach \dencoeff [count=\denpow] in \values {%
+				\pgfmathtruncatemacro{\currentdegree}{\den@degree-\denpow}%
+				\ifnum\currentdegree = 0
+					\xdef\den@real{\den@real+\dencoeff}%
+				\else
+					\ifodd\currentdegree
+						\xdef\den@im{\den@im+(\dencoeff*(\n@pow{-1}{(\currentdegree-1)/2})*(\n@pow{t}{\currentdegree}))}%
+					\else
+						\xdef\den@real{\den@real+(\dencoeff*(\n@pow{-1}{(\currentdegree)/2})*(\n@pow{t}{\currentdegree}))}%
+					\fi
+				\fi
+			}%
+		\fi
+		\ifnum\pdfstrcmp{\feature}{d}=0
+			\xdef\loop@delay{\values}%
+		\fi
+	}%
+	\xdef#2{(\n@mod{atan2((\num@im),(\num@real))-atan2((\den@im),(\den@real))+360}{360}-\loop@delay*180*t/pi)}%
+	\xdef#1{(20*log10(sqrt((\n@pow{\num@real}{2})+(\n@pow{\num@im}{2}))) - 20*log10(sqrt((\n@pow{\den@real}{2})+(\n@pow{\den@im}{2}))))}%
+}
+
+\newcommand{\parse@opt}[1]{%
+	\gdef\optmag@axes{}%
+	\gdef\optph@axes{}%
+	\gdef\optph@plot{}%
+	\gdef\optmag@plot{}%
+	\gdef\opt@group{}%
+	\gdef\opt@approx{}%
+	\foreach \obj/\typ/\opt in {#1} {%
+		\ifnum\pdfstrcmp{\obj}{plot}=0
+			\ifnum\pdfstrcmp{\typ}{mag}=0
+				\xdef\optmag@plot{\optmag@plot,\opt}%
+			\else
+				\ifnum\pdfstrcmp{\typ}{ph}=0
+					\xdef\optph@plot{\optph@plot,\opt}%
+				\else
+					\xdef\optmag@plot{\optmag@plot,\opt}%
+					\xdef\optph@plot{\optph@plot,\opt}%
+				\fi
+			\fi
+		\else
+			\ifnum\pdfstrcmp{\obj}{axes}=0
+				\ifnum\pdfstrcmp{\typ}{mag}=0
+					\xdef\optmag@axes{\optmag@axes,\opt}%
+				\else
+					\ifnum\pdfstrcmp{\typ}{ph}=0
+						\xdef\optph@axes{\optph@axes,\opt}%
+					\else
+						\xdef\optmag@axes{\optmag@axes,\opt}%
+						\xdef\optph@axes{\optph@axes,\opt}%
+					\fi
+				\fi
+			\else
+				\ifnum\pdfstrcmp{\obj}{group}=0
+					\xdef\opt@group{\opt@group,\opt}%
+				\else
+					\ifnum\pdfstrcmp{\obj}{approx}=0
+						\xdef\opt@approx{\typ}%
+					\else
+						\xdef\optmag@plot{\optmag@plot,\obj}%
+						\xdef\optph@plot{\optph@plot,\obj}%
+					\fi
+				\fi
+			\fi
+		\fi
+	}%
+}
+
+\newcommand{\parse@N@opt}[1]{%
+	\gdef\opt@axes{}%
+	\gdef\opt@plot{}%
+	\foreach \obj/\opt in {#1} {%
+		\ifnum\pdfstrcmp{\obj}{axes}=0
+			\xdef\opt@axes{\unexpanded\expandafter{\opt}}%
+		\else
+			\ifnum\pdfstrcmp{\obj}{plot}=0
+				\xdef\opt@plot{\unexpanded\expandafter{\opt}}%
+			\else
+				\xdef\opt@plot{\unexpanded\expandafter{\obj}}%
+			\fi
+		\fi
+	}%
+}
+>>>>>>> c157bebb812d29b93266e4459d1b7e04fe6a87e5
