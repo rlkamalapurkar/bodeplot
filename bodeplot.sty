@@ -319,7 +319,7 @@
 }
 
 %Command to add Bode plot of component poles/zeros/delays
-%\addBodeComponentPlot[plot-options]{plot_command}
+%\addBodeComponentPlot[plot-options]{plot-command}
 \newcommand{\addBodeComponentPlot}[2][red,thick]{%%%
 	\if@pgfarg
 		\addplot[#1]{#2};
@@ -360,7 +360,7 @@
 
 % The NicholsTF command
 %\NicholsTF[plot/{options},axes/{options}]{num/{coeff},den/{coeff},d/delay}
-\newcommand{\NicholsTF}[4][{},{}]{%
+\newcommand{\NicholsTF}[4][]{%
 	\parse@N@opt{#1}%
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
@@ -431,7 +431,7 @@
 
 % The NyquistZPK command
 %\NyquistZPK[plot/{options},axes/{options}]{z/{zeros},p/{poles},k/gain,d/delay}{min-frequency}{max-frequency}
-\newcommand{\NyquistZPK}[4][{},{}]{%
+\newcommand{\NyquistZPK}[4][]{%
 	\parse@N@opt{#1}
 	\typeout{\meaning\opt@plot}
 	\gdef\func@mag{}%
@@ -462,7 +462,7 @@
 
 % The NyquistTF command
 %\NyquistTF[plot/{options},axes/{options}]{num/{coeff},den/{coeff},d/delay}
-\newcommand{\NyquistTF}[4][{},{},{}]{%
+\newcommand{\NyquistTF}[4][]{%
 	\parse@N@opt{#1}
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
