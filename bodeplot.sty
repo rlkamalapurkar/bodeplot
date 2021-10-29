@@ -185,7 +185,7 @@
 }
 
 % The BodeZPK command
-%\BodeZPK[object1/type1/{options1},object2/type2/{options2},...]{z/{zeros},p/{poles},k/gain,d/delay}{min-frequency}{max-frequency}
+%\BodeZPK[{{magnitude_plot_options},{phase_plot_options}},{{magnitude_axis_options},{phase_axis_options}},{group_options},approximation_type]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
 \newcommand{\BodeZPK}[4][]{%
 	\parse@opt{#1}
 	\gdef\func@mag{}%
@@ -223,7 +223,7 @@
 }
 
 % The BodeTF command
-% \BodeTF[object1/type1/{options1},object2/type2/{options2},...]{num/{coeff},den/{coeff},d/delay}{min-frequency}{max-frequency}
+% \BodeTF[{{magnitude_plot_options},{phase_plot_options}},{{magnitude_axis_options},{phase_axis_options}},{group_options}]{{numerator coefficients},{denominator coefficients},delay}{min_frequency}{max_frequency}
 \newcommand{\BodeTF}[4][]{%
 	\parse@opt{#1}
 	\gdef\func@mag{}%
@@ -261,7 +261,7 @@
 }
 
 % The BodePlot environment, works in conjunction with \addZPKBodePlots and \addTFBodePlots
-%\begin{BodePlot}[axis-options]{min-frequency}{max-frequency}
+%\begin{BodePlot}[axis options]{frequency_min}{frequency_max}
 \newenvironment{BodePlot}[3][]{
 	\begin{tikzpicture}
 		\begin{semilogxaxis}[
@@ -279,7 +279,7 @@
 }
 
 % Command to add Bode plots using ZPK data
-%\addBodeZPKPlots[{approximation1/{plot-options1}},{approximation2/{plot-options2}},...]{plot-type (phase or magnitude)}{z/{zeros},p/{poles},k/gain,d/delay}
+%\addBodeZPKPlots[{approximation_1/{plot_options_1}},{approximation_2/{plot_options_2}},...]{plot_type (phase or magnitude)}{{zeros},{poles},gain,delay}
 \newcommand{\addBodeZPKPlots}[3][{}]{%%%
 	\foreach \approx/\opt in {#1} {
 		\gdef\plot@macro{}%
@@ -301,7 +301,7 @@
 }
 
 % Command to add Bode plots using TF data
-%\addBodeTFPlot[plot-options]{plot-type (phase or magnitude)}{num/{coeff},den/{coeff},d/delay}
+%\addBodeTFPlot[plot_options]{plot_type (phase or magnitude)}{{numerator coefficients},{denominator coefficients},delay}
 \newcommand{\addBodeTFPlot}[3][red,thick]{%
 	\gdef\plot@macro{}%
 	\gdef\temp@macro{}%
@@ -319,7 +319,7 @@
 }
 
 %Command to add Bode plot of component poles/zeros/delays
-%\addBodeComponentPlot[plot-options]{plot-command}
+%\addBodeComponentPlot[plot_options]{plot_command}
 \newcommand{\addBodeComponentPlot}[2][red,thick]{%%%
 	\if@pgfarg
 		\addplot[#1]{#2};
@@ -332,7 +332,7 @@
 %%%%%%%%%%%%%%%%%%%%%%% Nichols Charts %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % The NicholsZPK command
-%\NicholsZPK[plot/{options},axes/{options}]{z/{zeros},p/{poles},k/gain,d/delay}{min-frequency}{max-frequency}
+%\NicholsZPK[{plot_options},{axis_options}]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
 \newcommand{\NicholsZPK}[4][]{%
 	\parse@N@opt{#1}%
 	\gdef\func@mag{}%
@@ -359,8 +359,8 @@
 }
 
 % The NicholsTF command
-%\NicholsTF[plot/{options},axes/{options}]{num/{coeff},den/{coeff},d/delay}
-\newcommand{\NicholsTF}[4][]{%
+%\NicholsTF[{plot_options},{axis_options}]{{numerator coefficients},{denominator coefficients},delay}
+\newcommand{\NicholsTF}[4][{},{}]{%
 	\parse@N@opt{#1}%
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
@@ -385,7 +385,7 @@
 	\end{tikzpicture}
 }
 
-%\begin{NicholsChart}[axis-options]{min-frequency}{max-frequency}
+%\begin{NicholsChart}[axis options]{frequency_min}{frequency_max}
 \newenvironment{NicholsChart}[3][]{
 	\begin{tikzpicture}
 		\begin{axis}[
@@ -402,7 +402,7 @@
 		\end{axis}
 	\end{tikzpicture}
 }
-% \addNicholsZPKChart[plot-options]{z/{zeros},p/{poles},k/gain,d/delay}
+% \addNicholsZPKChart[plot_options]{{zeros},{poles},gain,delay}
 \newcommand{\addNicholsZPKChart}[2][]{
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
@@ -414,7 +414,7 @@
 		\addplot [#1] gnuplot[parametric,gnuplot degrees,gnuplot def] {\func@ph , \func@mag};
 	\fi
 }
-% \addNicholsTFChart[plot-options]{num/{coeff},den/{coeff},d/delay}
+% \addNicholsTFChart[plot_options]{{numerator coefficients},{denominator coefficients},delay}
 \newcommand{\addNicholsTFChart}[2][]{
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
@@ -430,8 +430,8 @@
 %%%%%%%%%%%%%%%%%%%%%%% Nyquist Plots %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % The NyquistZPK command
-%\NyquistZPK[plot/{options},axes/{options}]{z/{zeros},p/{poles},k/gain,d/delay}{min-frequency}{max-frequency}
-\newcommand{\NyquistZPK}[4][]{%
+%\NyquistZPK[{plot_options},{axis_options}]{{zeros},{poles},gain,delay}{min_frequency}{max_frequency}
+\newcommand{\NyquistZPK}[4][{},{}]{%
 	\parse@N@opt{#1}
 	\typeout{\meaning\opt@plot}
 	\gdef\func@mag{}%
@@ -461,8 +461,8 @@
 }
 
 % The NyquistTF command
-%\NyquistTF[plot/{options},axes/{options}]{num/{coeff},den/{coeff},d/delay}
-\newcommand{\NyquistTF}[4][]{%
+%\NyquistTF[{plot_options},{axis_options}]{{numerator coefficients},{denominator coefficients},delay}
+\newcommand{\NyquistTF}[4][{},{},{}]{%
 	\parse@N@opt{#1}
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
@@ -488,7 +488,7 @@
 	\end{tikzpicture}
 }
 
-%\begin{NyquistPlot}[axis-options]{min-frequency}{max-frequency}
+%\begin{NyquistPlot}[axis options]{frequency_min}{frequency_max}
 \newenvironment{NyquistPlot}[3][]{
 	\begin{tikzpicture}
 		\begin{axis}[
@@ -504,7 +504,7 @@
 		\end{axis}
 	\end{tikzpicture}
 }
-% \addNyquistZPKPlot[plot-options]{z/{zeros},p/{poles},k/gain,d/delay}
+% \addNyquistZPKPlot[plot_options]{{zeros},{poles},gain,delay}
 \newcommand{\addNyquistZPKPlot}[2][]{
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
@@ -516,7 +516,7 @@
 		\addplot [#1] gnuplot[parametric,gnuplot degrees,gnuplot def] { \n@pow{10}{((\func@mag)/20)}*cos(\func@ph) , \n@pow{10}{((\func@mag)/20)}*sin(\func@ph) };
 	\fi
 }
-% \addNyquistTFPlot[plot-options]{num/{coeff},den/{coeff},d/delay}
+% \addNyquistTFPlot[plot_options]{{numerator coefficients},{denominator coefficients},delay}
 \newcommand{\addNyquistTFPlot}[2][]{
 	\gdef\func@mag{}%
 	\gdef\func@ph{}%
@@ -531,7 +531,7 @@
 
 %% Internal Commands
 % Internal command to build Bode parametric function from zeros, poles, gain, and delay
-%\build@ZPK@plot{magnitude_plot_handle}{phase_plot_handle}{plot_approximation}{z/{zeros},p/{poles},k/gain,d/delay}
+%\build@ZPK@plot{magnitude_plot_handle}{phase_plot_handle}{plot_approximation}{{zeros},{poles},gain,delay}
 \newcommand{\build@ZPK@plot}[4]{
 	\foreach \feature/\values in {#4} {%
 		\ifnum\pdfstrcmp{\feature}{z}=0
@@ -616,7 +616,7 @@
 }
 
 % Internal command to build a TF bodeplot
-%\build@TF@plot{magnitude_plot_handle}{phase_plot_handle}{num/{coeff},den/{coeff},d/delay}
+%\build@TF@plot{magnitude_plot_handle}{phase_plot_handle}{{numerator coefficients},{denominator coefficients},delay}
 \newcommand{\build@TF@plot}[3]{
 	\gdef\num@real{0}%
 	\gdef\num@im{0}%

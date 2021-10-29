@@ -122,7 +122,7 @@
 % 
 % Plots the Bode plot of a transfer function given in TF format. The three mandatory arguments are a list of tuples comprised of the coefficients in the numerator and the denominator of the transfer function, respectively, and the transport delay, and the desired frequency range. The coefficients are entered as a comma-separated list, in order from the highest degree of $s$ to the lowest, with zeros for missing degrees. The optional arguments are the same as |\BodeZPK|, except that linear/asymptotic approximation is not supported, so |approx/...| is ignored.
 %
-% For example, given the same transfer function as (\ref{eq:ZPKExample}) in TF form and with a small transport delay, \begin{equation}G(s) = e^{-0.01s}\frac{s(10s^2+2s+2.6)}{(s^2+s+100.25)},\ref{eq:TFExample}\end{equation} its Bode plot over the frequency range $[0.01,100]$ can be generated using\\
+% For example, given the same transfer function as (\ref{eq:ZPKExample}) in TF form and with a small transport delay, \begin{equation}G(s) = e^{-0.01s}\frac{s(10s^2+2s+2.6)}{(s^2+s+100.25)},\label{eq:TFExample}\end{equation} its Bode plot over the frequency range $[0.01,100]$ can be generated using\\
 % |  \BodeTF[blue,thick]|\\
 % |    {num/{10,2,2.6,0},den/{1,0.2,100},d/0.01}|\\
 % |    {0.01}{100}|\\
