@@ -18,12 +18,12 @@
  \ProvidesPackage{bodeplot}
  \RequirePackage{tikz}
  \RequirePackage{pgfplots}
+ \RequirePackage{pdftexcmds}
  \pgfplotsset{compat=1.18,variable=t}
  \usepgfplotslibrary{groupplots}
 
 \RequirePackage{ifluatex}%
 \ifluatex
-  \RequirePackage{pdftexcmds}%
   \let\pdfstrcmp\pdf@strcmp
 \fi
 \newif\if@pgfarg\@pgfargfalse
@@ -163,7 +163,7 @@
   (axis cs:{sqrt(abs(#3))},{20*log10(abs(#3)) +
     20*log10(abs(#2/sqrt(abs(#3))))});
 }
-\newcommand{\BodeZPK}[4][]{%
+\newcommand{\BodeZPK}[4][approx/true]{%
   \parse@opt{#1}%
   \gdef\func@mag{}%
   \gdef\func@ph{}%
@@ -181,25 +181,30 @@
   \if@pgfarg
     \expandafter\nextgroupplot\expandafter[ytick distance=20,
       ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-    \edef\temp@cmd{\noexpand\addplot[red,thick,\optmag@plot]}%
+    \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
     \temp@cmd {\func@mag};
+    \optmag@commands;
     \expandafter\nextgroupplot\expandafter[ytick distance=45,
       ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-    \edef\temp@cmd{\noexpand\addplot[red,thick,\optph@plot]}%
+    \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
     \temp@cmd {\func@ph};
+    \optph@commands;
   \else
     \stepcounter{idGnuplot}
     \expandafter\nextgroupplot\expandafter[ytick distance=20,
       ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-    \edef\temp@cmd{\noexpand\addplot[red,thick,\optmag@plot]}%
+    \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
     \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
+    \optmag@commands;
     \stepcounter{idGnuplot}
     \expandafter\nextgroupplot\expandafter[ytick distance=45,
       ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-    \edef\temp@cmd{\noexpand\addplot[red,thick,\optph@plot]}%
+    \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
     \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
+    \optph@commands;
   \fi
-  \end{groupplot}\end{tikzpicture}}
+  \end{groupplot}\end{tikzpicture}
+}
 \newcommand{\BodeTF}[4][]{%
   \parse@opt{#1}%
   \gdef\func@mag{}%
@@ -218,29 +223,32 @@
   \if@pgfarg
     \expandafter\nextgroupplot\expandafter[ytick distance=20,
       ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-    \edef\temp@cmd{\noexpand\addplot[red,thick,\optmag@plot]}%
+    \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
     \temp@cmd {\func@mag};
+    \optmag@commands;%
     \expandafter\nextgroupplot\expandafter[ytick distance=45,
       ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-    \edef\temp@cmd{\noexpand\addplot[red,thick,\optph@plot]}%
+    \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
     \temp@cmd {\func@ph};
+    \optph@commands;%
   \else
     \stepcounter{idGnuplot}%
     \expandafter\nextgroupplot\expandafter[ytick distance=20,
       ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-    \edef\temp@cmd{\noexpand\addplot[red,thick,\optmag@plot]}%
+    \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
     \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
+    \optmag@commands;%
     \stepcounter{idGnuplot}%
     \expandafter\nextgroupplot\expandafter[ytick distance=45,
       ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-    \edef\temp@cmd{\noexpand\addplot[red,thick,\optph@plot]}%
+    \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
     \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
+    \optph@commands;%
   \fi
-  \end{groupplot}\end{tikzpicture}}
-\newcommand{\addBodeZPKPlots}[3][{}]{%
-  \gdef\opt@args{0}
+  \end{groupplot}\end{tikzpicture}
+}
+\newcommand{\addBodeZPKPlots}[3][true/{}]{%
   \foreach \approx/\opt in {#1} {%
-   \gdef\opt@args{1}
     \gdef\plot@macro{}%
     \gdef\temp@macro{}%
     \ifnum\pdfstrcmp{#2}{phase}=0
@@ -249,33 +257,16 @@
       \build@ZPK@plot{\plot@macro}{\temp@macro}{\approx}{#3}%
     \fi
     \if@pgfarg
-      \edef\temp@cmd{\noexpand\addplot[red,thick,\opt]}%
+      \edef\temp@cmd{\noexpand\addplot[thick,\opt]}%
       \temp@cmd {\plot@macro};
     \else
       \stepcounter{idGnuplot}%
-      \edef\temp@cmd{\noexpand\addplot[red,thick,\opt]}
+      \edef\temp@cmd{\noexpand\addplot[thick,\opt]}
       \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\plot@macro};
     \fi
   }%
-  \ifnum\opt@args=0
-    \gdef\plot@macro{}%
-    \gdef\temp@macro{}%
-    \ifnum\pdfstrcmp{#2}{phase}=0
-      \build@ZPK@plot{\temp@macro}{\plot@macro}{}{#3}%
-    \else
-      \build@ZPK@plot{\plot@macro}{\temp@macro}{}{#3}%
-    \fi
-    \if@pgfarg
-      \edef\temp@cmd{\noexpand\addplot[red,thick]}%
-      \temp@cmd {\plot@macro};
-    \else
-      \stepcounter{idGnuplot}%
-      \edef\temp@cmd{\noexpand\addplot[red,thick]}
-      \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\plot@macro};
-    \fi
-  \fi
 }
-\newcommand{\addBodeTFPlot}[3][red,thick]{%
+\newcommand{\addBodeTFPlot}[3][thick]{%
   \gdef\plot@macro{}%
   \gdef\temp@macro{}%
   \ifnum\pdfstrcmp{#2}{phase}=0
@@ -290,7 +281,7 @@
     \addplot[#1] gnuplot[gnuplot degrees, gnuplot def] {\plot@macro};
   \fi
 }
-\newcommand{\addBodeComponentPlot}[2][red,thick]{%
+\newcommand{\addBodeComponentPlot}[2][thick]{%
   \if@pgfarg
     \addplot[#1]{#2};
   \else
@@ -454,6 +445,8 @@
   \gdef\optmag@plot{}%
   \gdef\opt@group{}%
   \gdef\opt@approx{}%
+  \xdef\optph@commands{}%
+  \xdef\optmag@commands{}%
   \foreach \obj/\typ/\opt in {#1} {%
     \ifnum\pdfstrcmp{\obj}{plot}=0
       \ifnum\pdfstrcmp{\typ}{mag}=0
@@ -483,10 +476,18 @@
           \xdef\opt@group{\opt@group,\opt}%
         \else
           \ifnum\pdfstrcmp{\obj}{approx}=0
-            \xdef\opt@approx{\typ}%
+            \xdef\opt@approx{\opt}%
           \else
-            \xdef\optmag@plot{\optmag@plot,\obj}%
-            \xdef\optph@plot{\optph@plot,\obj}%
+            \ifnum\pdfstrcmp{\obj}{commands}=0
+              \ifnum\pdfstrcmp{\typ}{phase}=0
+                \xdef\optph@commands{\unexpanded\expandafter{\opt}}%
+              \else
+                \xdef\optmag@commands{\unexpanded\expandafter{\opt}}%
+              \fi
+            \else
+              \xdef\optmag@plot{\optmag@plot,\obj}%
+              \xdef\optph@plot{\optph@plot,\obj}%
+            \fi
           \fi
         \fi
       \fi
@@ -620,7 +621,7 @@
         samples=500,
         \opt@axes]}
   \temp@cmd
-      \edef\temp@cmd{\noexpand\addplot[red,thick,\opt@plot]}%
+      \edef\temp@cmd{\noexpand\addplot[thick,\opt@plot]}%
       \if@pgfarg
         \temp@cmd ( {\func@ph} , {\func@mag} );
       \else
@@ -645,7 +646,7 @@
         samples=500,
         \opt@axes]}
   \temp@cmd
-      \edef\temp@cmd{\noexpand\addplot[red,thick,\opt@plot]}%
+      \edef\temp@cmd{\noexpand\addplot[thick,\opt@plot]}%
       \if@pgfarg
         \temp@cmd ( {\func@ph} , {\func@mag} );
       \else

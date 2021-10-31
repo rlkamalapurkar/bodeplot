@@ -20,6 +20,7 @@
 %<package> \ProvidesPackage{bodeplot}
 %<package> \RequirePackage{tikz}
 %<package> \RequirePackage{pgfplots}
+%<package> \RequirePackage{pdftexcmds}
 %<package> \pgfplotsset{compat=1.18,variable=t}
 %<package> \usepgfplotslibrary{groupplots}
 %
@@ -41,7 +42,6 @@
 % \CheckSum{0}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
-% \changes{v1.0.1}{2021/10/29}{Improved optional argument handling for |\addBode...| commands.}
 %
 % \GetFileInfo{bodeplot.sty}
 %
@@ -53,7 +53,7 @@
 % \author{Rushikesh Kamalapurkar \\ \texttt{rlkamalapurkar@gmail.com}}
 %
 % \maketitle
-%
+% \tableofcontents
 % \section{Introduction}
 %
 % Generate Bode, Nyquist, and Nichols plots for transfer functions in the canonical (TF) form \begin{equation}G(s) = e^{-Ts}\frac{b_ms^m+\cdots+b_1s+b_0}{a_ns^n+\cdots+a_1s+a_0}\label{eq:TF}\end{equation} and the zero-pole-gain (ZPK) form \begin{equation}G(s) = Ke^{-Ts}\frac{(s-z_1)(s-z_2)\cdots(s-z_m)}{(s-p_1)(s-p_2)\cdots(s-p_n)}.\label{eq:ZPK}\end{equation} In the equations above, $b_m,\cdots,b_0$ and $a_n,\cdots,a_0$ are real coefficients, $T\geq 0$ is the loop delay, $z_1,\cdots,z_m$ and $p_1,\cdots,p_n$ are complex zeros and poles of the transfer function, respectively, and $K\in \Re$ is the loop gain. For transfer functions in the ZPK format in (\ref{eq:ZPK}) with zero delay, this package also supports linear and asymptotic approximation of Bode plots.
@@ -73,6 +73,7 @@
 % \begin{itemize}
 %  \item |plot/typ/{opt}|: modify plot properties by adding options |{opt}| to the |\addplot| macro for the magnitude plot if |typ| is |mag| and the phase plot if |typ| is |ph|.
 %  \item |axes/typ/{opt}|: modify axis properties by adding options |{opt}| to the |\nextgroupplot| macro for the magnitude plot if |typ| is |mag| and the phase plot if |typ| is |ph|.
+%  \item |commands/typ/{opt}|: add any valid TikZ commands (including the the parametric function generator macros in this package, such as |\addBodeZPKPlots|, |\addBodeTFPlot|, and |\addBodeComponentPlot|) to the magnitude axes plot if |typ| is |mag| and the phase plot if |typ| is |ph|. The commands passed to |opt| need to be valid TikZ commands, separated by semicolons as usual. For example, a TikZ command is used in the description of the |\BodeTF| macro below to mark the gain crossover frequency on the Bode Magnitude plot. 
 % \end{itemize}
 % \item Tuples of the form |obj/{opt}|:
 % \begin{itemize}
@@ -87,17 +88,18 @@
 % The options |{opt}| can be any |key=value| options that are supported by the |pgfplots| macros they are added to. \textit{Linear or asymptotic approximation of transfer functions that include a transport delay is not supported.}
 
 % For example, given a transfer function \begin{equation}G(s) = 10\frac{s(s+0.1+0.5\mathrm{i})(s+0.1-0.5\mathrm{i})}{(s+0.5+10\mathrm{i})(s+0.5-10\mathrm{i})},\label{eq:ZPKExample}\end{equation} its Bode plot over the frequency range $[0.01,100]$ can be generated using\\
-% |\BodeZPK|\\
+% |\BodeZPK [blue,thick]|\\
 % |  {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}|\\
 % |  {0.01}{100}|\\
 % which generates the plot in Figure \ref{simpleBode}. If a delay is not specified, it is assumed to be zero. If a gain is not specified, it is assumed to be 1. By default, each of the axes, excluding ticks and labels, are 5cm wide and 2.5cm high. The width and the height, along with other properties of the plots, the axes, and the group can be customized using native |pgf| keys as shown in the example below.
 %
 % \begin{figure}
 % \begin{center}
-% \BodeZPK{z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}{0.01}{100}
+% \BodeZPK[blue,thick]{z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}{0.01}{100}
 % \cprotect\caption{\label{simpleBode}Output of the default |\BodeZPK| macro.}
 % \end{center}
 % \end{figure}
+%  As demonstrated in this example, if a single comma-separated list of options is passed, it applies to both the magnitude and the phase plots. Without any optional arguments, we gets a thick black Bode plot.
 %
 % A linear approximation of the Bode plot with customization of the plots, the axes, and the group can be generated using\\
 % |\BodeZPK[plot/mag/{red,thick},plot/ph/{blue,thick},|\\
@@ -124,15 +126,16 @@
 % \noindent Plots the Bode plot of a transfer function given in TF format. The three mandatory arguments include: (1) a list of tuples comprised of the coefficients in the numerator and the denominator of the transfer function and the transport delay, (2) the lower end of the frequency range for the $x-$ axis, and (3) the higher end of the frequency range for the $x-$axis. The coefficients are entered as a comma-separated list, in order from the highest degree of $s$ to the lowest, with zeros for missing degrees. The optional arguments are the same as |\BodeZPK|, except that linear/asymptotic approximation is not supported, so |approx/...| is ignored.
 %
 % For example, given the same transfer function as (\ref{eq:ZPKExample}) in TF form and with a small transport delay, \begin{equation}G(s) = e^{-0.01s}\frac{s(10s^2+2s+2.6)}{(s^2+s+100.25)},\label{eq:TFExample}\end{equation} its Bode plot over the frequency range $[0.01,100]$ can be generated using\\
-% |\BodeTF[blue,thick]|\\
+% |\BodeTF[commands/mag/{\node at (axis cs: 2.1,0) |\\
+% |  [circle,fill,inner sep=0.05cm,label=below:{$\omega_{gc}$}]{};}]|\\
 % |  {num/{10,2,2.6,0},den/{1,0.2,100},d/0.01}|\\
 % |  {0.01}{100}|\\
-% which generates the plot in Figure \ref{simpleBodeTF}. Note the $0$ added to the numerator coefficients to account for the fact that the numerator does not have a constant term in it. As demonstrated in this example, if a single comma-separated list of options is passed, it applies to both the magnitude and the phase plots.
+% which generates the plot in Figure \ref{simpleBodeTF}. Note the $0$ added to the numerator coefficients to account for the fact that the numerator does not have a constant term in it. Note the semicolon after the TikZ command passed to the |\commands| option.
 %
 % \begin{figure}
 % \begin{center}
-% \BodeTF[blue,thick]{num/{10,2,2.6,0},den/{1,1,100.25},d/0.01}{0.01}{100}
-% \cprotect\caption{\label{simpleBodeTF}Output of the |\BodeTF| macro.}
+% \BodeTF[commands/mag/{\node at (axis cs: 2.1,0) [circle,fill,inner sep=0.05cm,label=below:{$\omega_{gc}$}] {};}]{num/{10,2,2.6,0},den/{1,1,100.25},d/0.01}{0.01}{100}
+% \cprotect\caption{\label{simpleBodeTF}Output of the |\BodeTF| macro with an optional TikZ command used to mark the gain crossover frequency.}
 % \end{center}
 % \end{figure}
 %
@@ -140,14 +143,14 @@
 % |\begin{BodePlot}|\oarg{axis-options}\marg{min-frequency}\marg{max-frequency}\\
 % \hspace*{2em}|\addBode...|\\
 % \hspace*{1.5em}|\end{BodePlot}|\\
-% The |BodePlot| environment works in conjunction with the parametric function generator macros |\addBodeZPKPlots|, |\addBodeTFPlot|, and |\addBodeComponentPlots|. If supplied, |axis-options| are passed directly to the |semilogaxis| environment and the frequency limits are translated to the x-axis limits and the domain of the |semilogaxis| environment. Example usage in the description of |\addBodeZPKPlots|, |\addBodeTFPlot|, and |\addBodeComponentPlots|.
+% The |BodePlot| environment works in conjunction with the parametric function generator macros |\addBodeZPKPlots|, |\addBodeTFPlot|, and |\addBodeComponentPlot|. If supplied, |axis-options| are passed directly to the |semilogaxis| environment and the frequency limits are translated to the x-axis limits and the domain of the |semilogaxis| environment. Example usage in the description of |\addBodeZPKPlots|, |\addBodeTFPlot|, and |\addBodeComponentPlot|.
 %
 % \DescribeMacro{\addBodeZPKPlots}
 % |\addBodeZPKPlots| \oarg{approx1/\marg{opt1},approx2/\marg{opt2},...}\\
 % \hspace*{2em}\marg{plot-type}\\
 % \hspace*{2em}\marg{z/\marg{zeros},p/\marg{poles},k/\marg{gain},d/\marg{delay}}
 %
-% \noindent Generates the appropriate parametric functions and supplies them to multiple |\addplot| macros, one for each |approx/{opt}| pair in the optional argument. If no optional argument is supplied, then a single |\addplot| command corresponding to a thick red true Bode plot is generated. If an optional argument is supplied, it needs to be one of |true/{opt}|, |linear/{opt}|, or |asymptotic/{opt}|. This macro can be used inside any |semilogaxis| environment as long as a domain for the x-axis is supplied through either the |approx/{opt}| interface or directly in the optional argument of the |semilogaxis| environment. Use with the |BodePlot| environment supplied with this package is recommended. The second mandatory argument, |plot-type| is either |magnitude| or |phase|. If it is not equal to |phase|, it is assumed to be |magnitude|. The last mandatory argument is the same as |\BodeZPK|.
+% \noindent Generates the appropriate parametric functions and supplies them to multiple |\addplot| macros, one for each |approx/{opt}| pair in the optional argument. If no optional argument is supplied, then a single |\addplot| command corresponding to a thick true Bode plot is generated. If an optional argument is supplied, it needs to be one of |true/{opt}|, |linear/{opt}|, or |asymptotic/{opt}|. This macro can be used inside any |semilogaxis| environment as long as a domain for the x-axis is supplied through either the |approx/{opt}| interface or directly in the optional argument of the |semilogaxis| environment. Use with the |BodePlot| environment supplied with this package is recommended. The second mandatory argument, |plot-type| is either |magnitude| or |phase|. If it is not equal to |phase|, it is assumed to be |magnitude|. The last mandatory argument is the same as |\BodeZPK|.
 %
 % For example, given the transfer function in (\ref{eq:ZPKExample}), its linear, asymptotic, and true Bode plots can be superimposed using
 %\begin{verbatim}
@@ -411,7 +414,6 @@
 %    \begin{macrocode}
 \RequirePackage{ifluatex}%
 \ifluatex
-  \RequirePackage{pdftexcmds}%
   \let\pdfstrcmp\pdf@strcmp
 \fi
 %    \end{macrocode}
@@ -733,9 +735,9 @@
 % \subsection{Commands for Bode plots}
 % \subsubsection{User macros}
 % \begin{macro}{\BodeZPK}
-% This macro takes lists of complex poles and zeros of the form |{re,im}|, and values of gain and delay as inputs and constructs parametric functions for the Bode magnitude and phase plots. This is done by adding together the parametric functions generated by the macros for individual zeros, poles, gain, and delay, described above. The parametric functions are then plotted in a |tikzpicture| environment using the |\addplot| macro. Unless the package is loaded with the option |pgf|, the parametric functions are evaluated using |gnuplot|.
+% This macro takes lists of complex poles and zeros of the form |{re,im}|, and values of gain and delay as inputs and constructs parametric functions for the Bode magnitude and phase plots. This is done by adding together the parametric functions generated by the macros for individual zeros, poles, gain, and delay, described above. The parametric functions are then plotted in a |tikzpicture| environment using the |\addplot| macro. Unless the package is loaded with the option |pgf|, the parametric functions are evaluated using |gnuplot|. \changes{v1.0.1}{2021/10/29}{Pass arbitrary TikZ commands as options.}
 %    \begin{macrocode}
-\newcommand{\BodeZPK}[4][]{%
+\newcommand{\BodeZPK}[4][approx/true]{%
 %    \end{macrocode}
 % Most of the work is done by the |\parse@opt| and the |\build@ZPK@plot| macros, described in the 'Internal macros' section. The former is used to parse the optional arguments and the latter to extract poles, zeros, gain, and delay from the first mandatory argument and to generate macros |\func@mag| and |\func@ph| that hold the magnitude and phase parametric functions.
 %    \begin{macrocode}
@@ -762,12 +764,14 @@
   \if@pgfarg
     \expandafter\nextgroupplot\expandafter[ytick distance=20,
       ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-    \edef\temp@cmd{\noexpand\addplot[red,thick,\optmag@plot]}%
+    \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
     \temp@cmd {\func@mag};
+    \optmag@commands;
     \expandafter\nextgroupplot\expandafter[ytick distance=45,
       ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-    \edef\temp@cmd{\noexpand\addplot[red,thick,\optph@plot]}%
+    \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
     \temp@cmd {\func@ph};
+    \optph@commands;
   \else
 %    \end{macrocode}
 % In |gnuplot| mode, we increment the |idGnuplot| counter before every plot to make sure that new and reusable |.gnuplot| and |.table| files are generated for every plot.
@@ -775,15 +779,18 @@
     \stepcounter{idGnuplot}
     \expandafter\nextgroupplot\expandafter[ytick distance=20,
       ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-    \edef\temp@cmd{\noexpand\addplot[red,thick,\optmag@plot]}%
+    \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
     \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
+    \optmag@commands;
     \stepcounter{idGnuplot}
     \expandafter\nextgroupplot\expandafter[ytick distance=45,
       ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-    \edef\temp@cmd{\noexpand\addplot[red,thick,\optph@plot]}%
+    \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
     \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
+    \optph@commands;
   \fi
-  \end{groupplot}\end{tikzpicture}}
+  \end{groupplot}\end{tikzpicture}
+}
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\BodeTF}
@@ -807,34 +814,37 @@
   \if@pgfarg
     \expandafter\nextgroupplot\expandafter[ytick distance=20,
       ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-    \edef\temp@cmd{\noexpand\addplot[red,thick,\optmag@plot]}%
+    \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
     \temp@cmd {\func@mag};
+    \optmag@commands;%
     \expandafter\nextgroupplot\expandafter[ytick distance=45,
       ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-    \edef\temp@cmd{\noexpand\addplot[red,thick,\optph@plot]}%
+    \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
     \temp@cmd {\func@ph};
+    \optph@commands;%
   \else
     \stepcounter{idGnuplot}%
     \expandafter\nextgroupplot\expandafter[ytick distance=20,
       ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-    \edef\temp@cmd{\noexpand\addplot[red,thick,\optmag@plot]}%
+    \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
     \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
+    \optmag@commands;%
     \stepcounter{idGnuplot}%
     \expandafter\nextgroupplot\expandafter[ytick distance=45,
       ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-    \edef\temp@cmd{\noexpand\addplot[red,thick,\optph@plot]}%
+    \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
     \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
+    \optph@commands;%
   \fi
-  \end{groupplot}\end{tikzpicture}}
+  \end{groupplot}\end{tikzpicture}
+}
 %    \end{macrocode} 
 % \end{macro}
 % \begin{macro}{\addBodeZPKPlots}
-% This macro is designed to issues multiple |\addplot| macros for the same set of poles, zeros, gain, and delay. All of the work is done by the |\build@ZPK@plot| macro.
+% This macro is designed to issues multiple |\addplot| macros for the same set of poles, zeros, gain, and delay. All of the work is done by the |\build@ZPK@plot| macro. \changes{v1.0.1}{2021/10/29}{Improved optional argument handling.}
 %    \begin{macrocode}
-\newcommand{\addBodeZPKPlots}[3][{}]{%
-  \gdef\opt@args{0}
+\newcommand{\addBodeZPKPlots}[3][true/{}]{%
   \foreach \approx/\opt in {#1} {%
-  	\gdef\opt@args{1}
     \gdef\plot@macro{}%
     \gdef\temp@macro{}%
     \ifnum\pdfstrcmp{#2}{phase}=0
@@ -843,38 +853,21 @@
       \build@ZPK@plot{\plot@macro}{\temp@macro}{\approx}{#3}%
     \fi
     \if@pgfarg
-      \edef\temp@cmd{\noexpand\addplot[red,thick,\opt]}%
+      \edef\temp@cmd{\noexpand\addplot[thick,\opt]}%
       \temp@cmd {\plot@macro};
     \else
       \stepcounter{idGnuplot}%
-      \edef\temp@cmd{\noexpand\addplot[red,thick,\opt]}
+      \edef\temp@cmd{\noexpand\addplot[thick,\opt]}
       \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\plot@macro};
     \fi
   }%
-  \ifnum\opt@args=0
-    \gdef\plot@macro{}%
-    \gdef\temp@macro{}%
-    \ifnum\pdfstrcmp{#2}{phase}=0
-      \build@ZPK@plot{\temp@macro}{\plot@macro}{}{#3}%
-    \else
-      \build@ZPK@plot{\plot@macro}{\temp@macro}{}{#3}%
-    \fi
-    \if@pgfarg
-      \edef\temp@cmd{\noexpand\addplot[red,thick]}%
-      \temp@cmd {\plot@macro};
-    \else
-      \stepcounter{idGnuplot}%
-      \edef\temp@cmd{\noexpand\addplot[red,thick]}
-      \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\plot@macro};
-    \fi
-  \fi
 }
 %    \end{macrocode}
 %\end{macro}
 % \begin{macro}{\addBodeTFPlot}
 % This macro is designed to issues a single |\addplot| macros for the set of coefficients and delay. All of the work is done by the |\build@TF@plot| macro.
 %    \begin{macrocode}
-\newcommand{\addBodeTFPlot}[3][red,thick]{%
+\newcommand{\addBodeTFPlot}[3][thick]{%
   \gdef\plot@macro{}%
   \gdef\temp@macro{}%
   \ifnum\pdfstrcmp{#2}{phase}=0
@@ -894,7 +887,7 @@
 % \begin{macro}{\addBodeComponentPlot}
 % This macro is designed to issue a single |\addplot| macro capable of plotting linear combinations of the basic components described in Section \ref{sec:BasicComponents}. The only work to do here is to handle the |pgf| package option.
 %    \begin{macrocode}
-\newcommand{\addBodeComponentPlot}[2][red,thick]{%
+\newcommand{\addBodeComponentPlot}[2][thick]{%
   \if@pgfarg
     \addplot[#1]{#2};
   \else
@@ -1084,6 +1077,8 @@
   \gdef\optmag@plot{}%
   \gdef\opt@group{}%
   \gdef\opt@approx{}%
+  \xdef\optph@commands{}%
+  \xdef\optmag@commands{}%
   \foreach \obj/\typ/\opt in {#1} {%
     \ifnum\pdfstrcmp{\obj}{plot}=0
       \ifnum\pdfstrcmp{\typ}{mag}=0
@@ -1113,10 +1108,18 @@
           \xdef\opt@group{\opt@group,\opt}%
         \else
           \ifnum\pdfstrcmp{\obj}{approx}=0
-            \xdef\opt@approx{\typ}%
+            \xdef\opt@approx{\opt}%
           \else
-            \xdef\optmag@plot{\optmag@plot,\obj}%
-            \xdef\optph@plot{\optph@plot,\obj}%
+            \ifnum\pdfstrcmp{\obj}{commands}=0
+              \ifnum\pdfstrcmp{\typ}{phase}=0
+                \xdef\optph@commands{\unexpanded\expandafter{\opt}}%
+              \else
+                \xdef\optmag@commands{\unexpanded\expandafter{\opt}}%
+              \fi
+            \else
+              \xdef\optmag@plot{\optmag@plot,\obj}%
+              \xdef\optph@plot{\optph@plot,\obj}%
+            \fi
           \fi
         \fi
       \fi
@@ -1293,7 +1296,7 @@
         samples=500,
         \opt@axes]}
   \temp@cmd
-      \edef\temp@cmd{\noexpand\addplot[red,thick,\opt@plot]}%
+      \edef\temp@cmd{\noexpand\addplot[thick,\opt@plot]}%
       \if@pgfarg
         \temp@cmd ( {\func@ph} , {\func@mag} );
       \else
@@ -1318,7 +1321,7 @@
         samples=500,
         \opt@axes]}
   \temp@cmd
-      \edef\temp@cmd{\noexpand\addplot[red,thick,\opt@plot]}%
+      \edef\temp@cmd{\noexpand\addplot[thick,\opt@plot]}%
       \if@pgfarg
         \temp@cmd ( {\func@ph} , {\func@mag} );
       \else
