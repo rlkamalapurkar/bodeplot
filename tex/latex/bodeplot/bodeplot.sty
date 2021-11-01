@@ -19,6 +19,7 @@
  \RequirePackage{tikz}
  \RequirePackage{pgfplots}
  \RequirePackage{pdftexcmds}
+ \RequirePackage{ifplatform}
  \pgfplotsset{compat=1.18,variable=t}
  \usepgfplotslibrary{groupplots}
 
@@ -52,6 +53,9 @@
       \fi
     }%
   }
+  \ifwindows\else
+    \immediate\write18{mkdir -p gnuplot}%
+  \fi
 \fi
 \pgfplotsset{%
   bodeStyle/.style = {%

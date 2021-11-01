@@ -21,6 +21,7 @@
 %<package> \RequirePackage{tikz}
 %<package> \RequirePackage{pgfplots}
 %<package> \RequirePackage{pdftexcmds}
+%<package> \RequirePackage{ifplatform}
 %<package> \pgfplotsset{compat=1.18,variable=t}
 %<package> \usepgfplotslibrary{groupplots}
 %
@@ -423,7 +424,6 @@
 % \begin{macro}{idGnuplot}
 % \begin{macro}{gnuplot def}
 % \begin{macro}{gnuplot degrees}
-% \begin{macro}{bodeStyle}
 % This code is needed to support both |pgfplots| and |gnuplot| simultaneously. New macros are defined for the |pow| and |mod| functions to address differences between the two math engines. We start by processing the |pgf| class option.
 %    \begin{macrocode}
 \newif\if@pgfarg\@pgfargfalse
@@ -461,9 +461,21 @@
       \fi
     }%
   }
+%    \end{macrocode}
+% If the operating system is not Windows, we create the |gnuplot| folder if it does not already exist. \changes{v1.0.2}{2021/11/01}{Fixed issue \#1 using |ifplatform| package}
+%    \begin{macrocode}
+  \ifwindows\else
+    \immediate\write18{mkdir -p gnuplot}%
+  \fi
 \fi
 %    \end{macrocode}
 % Default axis properties for all plot macros are collected in the following |pgf| style.
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{bodeStyle}
 %    \begin{macrocode}
 \pgfplotsset{%
   bodeStyle/.style = {%
@@ -480,11 +492,6 @@
   }%
 }
 %    \end{macrocode}
-% \end{macro}
-% \end{macro}
-% \end{macro}
-% \end{macro}
-% \end{macro}
 % \end{macro}
 % \subsection{Parametric function generators for poles, zeros, gains, and delays.}
 % \begin{macro}{\MagK}
