@@ -462,20 +462,20 @@
     }%
   }
 %    \end{macrocode}
-% If the operating system is not Windows, we create the |gnuplot| folder if it does not already exist. \changes{v1.0.2}{2021/11/01}{Fixed issue \#1 using |ifplatform| package}
+% If the operating system is not Windows, we create the |gnuplot| folder if it does not already exist. \changes{v1.0.2}{2021/11/01}{Fixed issue \#1}
 %    \begin{macrocode}
   \ifwindows\else
     \immediate\write18{mkdir -p gnuplot}%
   \fi
 \fi
 %    \end{macrocode}
-% Default axis properties for all plot macros are collected in the following |pgf| style.
 % \end{macro}
 % \end{macro}
 % \end{macro}
 % \end{macro}
 % \end{macro}
 % \begin{macro}{bodeStyle}
+% Default axis properties for all plot macros are collected in this |pgf| style.
 %    \begin{macrocode}
 \pgfplotsset{%
   bodeStyle/.style = {%
