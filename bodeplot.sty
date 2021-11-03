@@ -172,7 +172,7 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{\opt@approx}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{groupplot}[%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{groupplot}[%
     bodeStyle,
     xmin={#3},
     xmax={#4},
@@ -214,7 +214,7 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{groupplot}[%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{groupplot}[%
     bodeStyle,
     xmin={#3},
     xmax={#4},
@@ -229,25 +229,25 @@
       ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
     \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
     \temp@cmd {\func@mag};
-    \optmag@commands;%
+    \optmag@commands;
     \expandafter\nextgroupplot\expandafter[ytick distance=45,
       ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
     \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
     \temp@cmd {\func@ph};
-    \optph@commands;%
+    \optph@commands;
   \else
     \stepcounter{idGnuplot}%
     \expandafter\nextgroupplot\expandafter[ytick distance=20,
       ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
     \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
     \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
-    \optmag@commands;%
+    \optmag@commands;
     \stepcounter{idGnuplot}%
     \expandafter\nextgroupplot\expandafter[ytick distance=45,
       ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
     \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
     \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
-    \optph@commands;%
+    \optph@commands;
   \fi
   \end{groupplot}\end{tikzpicture}
 }
@@ -449,38 +449,39 @@
   \gdef\optmag@plot{}%
   \gdef\opt@group{}%
   \gdef\opt@approx{}%
-  \xdef\optph@commands{}%
-  \xdef\optmag@commands{}%
+  \gdef\optph@commands{}%
+  \gdef\optmag@commands{}%
+  \gdef\opt@tikz{}%
   \foreach \obj/\typ/\opt in {#1} {%
     \ifnum\pdfstrcmp{\obj}{plot}=0
       \ifnum\pdfstrcmp{\typ}{mag}=0
-        \xdef\optmag@plot{\optmag@plot,\opt}%
+        \xdef\optmag@plot{\unexpanded\expandafter{\opt}}%
       \else
         \ifnum\pdfstrcmp{\typ}{ph}=0
-          \xdef\optph@plot{\optph@plot,\opt}%
+          \xdef\optph@plot{\unexpanded\expandafter{\opt}}%
         \else
-          \xdef\optmag@plot{\optmag@plot,\opt}%
-          \xdef\optph@plot{\optph@plot,\opt}%
+          \xdef\optmag@plot{\unexpanded\expandafter{\opt}}%
+          \xdef\optph@plot{\unexpanded\expandafter{\opt}}%
         \fi
       \fi
     \else
       \ifnum\pdfstrcmp{\obj}{axes}=0
         \ifnum\pdfstrcmp{\typ}{mag}=0
-          \xdef\optmag@axes{\optmag@axes,\opt}%
+          \xdef\optmag@axes{\unexpanded\expandafter{\opt}}%
         \else
           \ifnum\pdfstrcmp{\typ}{ph}=0
-            \xdef\optph@axes{\optph@axes,\opt}%
+            \xdef\optph@axes{\unexpanded\expandafter{\opt}}%
           \else
-            \xdef\optmag@axes{\optmag@axes,\opt}%
-            \xdef\optph@axes{\optph@axes,\opt}%
+            \xdef\optmag@axes{\unexpanded\expandafter{\opt}}%
+            \xdef\optph@axes{\unexpanded\expandafter{\opt}}%
           \fi
         \fi
       \else
         \ifnum\pdfstrcmp{\obj}{group}=0
-          \xdef\opt@group{\opt@group,\opt}%
+          \xdef\opt@group{\unexpanded\expandafter{\opt}}%
         \else
           \ifnum\pdfstrcmp{\obj}{approx}=0
-            \xdef\opt@approx{\opt}%
+            \xdef\opt@approx{\unexpanded\expandafter{\opt}}%
           \else
             \ifnum\pdfstrcmp{\obj}{commands}=0
               \ifnum\pdfstrcmp{\typ}{phase}=0
@@ -489,8 +490,12 @@
                 \xdef\optmag@commands{\unexpanded\expandafter{\opt}}%
               \fi
             \else
-              \xdef\optmag@plot{\optmag@plot,\obj}%
-              \xdef\optph@plot{\optph@plot,\obj}%
+              \ifnum\pdfstrcmp{\obj}{tikz}=0
+                \xdef\opt@tikz{\unexpanded\expandafter{\opt}}%
+              \else
+                \xdef\optmag@plot{\unexpanded\expandafter{\obj}}%
+                \xdef\optph@plot{\unexpanded\expandafter{\obj}}%
+              \fi
             \fi
           \fi
         \fi
@@ -503,7 +508,7 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{axis}[%
         bodeStyle,
         domain=#3:#4,
         height=5cm,
@@ -517,11 +522,13 @@
       \if@pgfarg
         \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
           {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
+        \opt@commands;
       \else
         \stepcounter{idGnuplot}%
         \temp@cmd gnuplot[parametric,gnuplot degrees,gnuplot def] {%
           \n@pow{10}{((\func@mag)/20)}*cos(\func@ph),
           \n@pow{10}{((\func@mag)/20)}*sin(\func@ph)};
+        \opt@commands;
       \fi
     \end{axis}
   \end{tikzpicture}
@@ -531,7 +538,7 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{axis}[%
         bodeStyle,
         domain=#3:#4,
         height=5cm,
@@ -545,11 +552,13 @@
       \if@pgfarg
         \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
           {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
+        \opt@commands;
       \else
         \stepcounter{idGnuplot}%
         \temp@cmd gnuplot[parametric,gnuplot degrees,gnuplot def]{%
           \n@pow{10}{((\func@mag)/20)}*cos(\func@ph),
           \n@pow{10}{((\func@mag)/20)}*sin(\func@ph)};
+        \opt@commands;
       \fi
     \end{axis}
   \end{tikzpicture}
@@ -599,6 +608,8 @@
 \newcommand{\parse@N@opt}[1]{%
   \gdef\opt@axes{}%
   \gdef\opt@plot{}%
+  \gdef\opt@commands{}%
+  \gdef\opt@tikz{}
   \foreach \obj/\opt in {#1} {%
     \ifnum\pdfstrcmp{\obj}{axes}=0
       \xdef\opt@axes{\unexpanded\expandafter{\opt}}%
@@ -606,7 +617,15 @@
       \ifnum\pdfstrcmp{\obj}{plot}=0
         \xdef\opt@plot{\unexpanded\expandafter{\opt}}%
       \else
-        \xdef\opt@plot{\unexpanded\expandafter{\obj}}%
+        \ifnum\pdfstrcmp{\obj}{commands}=0
+          \xdef\opt@commands{\unexpanded\expandafter{\opt}}%
+        \else
+          \ifnum\pdfstrcmp{\obj}{tikz}=0
+            \xdef\opt@tikz{\unexpanded\expandafter{\opt}}%
+          \else
+            \xdef\opt@plot{\unexpanded\expandafter{\obj}}%
+          \fi
+        \fi
       \fi
     \fi
   }%
@@ -616,7 +635,7 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{axis}[%
         bodeStyle,
         domain=#3:#4,
         height=5cm,
@@ -628,10 +647,12 @@
       \edef\temp@cmd{\noexpand\addplot[thick,\opt@plot]}%
       \if@pgfarg
         \temp@cmd ( {\func@ph} , {\func@mag} );
+        \opt@commands;
       \else
         \stepcounter{idGnuplot}%
         \temp@cmd gnuplot[parametric, gnuplot degrees, gnuplot def]
           { \func@ph , \func@mag };
+        \opt@commands;
       \fi
     \end{axis}
   \end{tikzpicture}
@@ -641,7 +662,7 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{axis}[%
         bodeStyle,
         domain=#3:#4,
         height=5cm,
@@ -653,10 +674,12 @@
       \edef\temp@cmd{\noexpand\addplot[thick,\opt@plot]}%
       \if@pgfarg
         \temp@cmd ( {\func@ph} , {\func@mag} );
+        \opt@commands;
       \else
         \stepcounter{idGnuplot}%
         \temp@cmd gnuplot[parametric, gnuplot degrees, gnuplot def]
           { \func@ph , \func@mag };
+        \opt@commands;
       \fi
     \end{axis}
   \end{tikzpicture}

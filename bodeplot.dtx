@@ -27,7 +27,8 @@
 %
 %<*driver>
 \documentclass{ltxdoc}
-\usepackage{bodeplot,cprotect,hyperref}
+\usepackage{bodeplot,cprotect}
+\usepackage[colorlinks]{hyperref}
 \usetikzlibrary{decorations.markings,arrows.meta}
 \EnableCrossrefs
 \CodelineIndex
@@ -40,7 +41,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1162}
+% \CheckSum{1225}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
 %
@@ -49,15 +50,15 @@
 % \DoNotIndex{\newcommand,\xdef,\gdef,\def,\edef,\addplot,\approx,\arabic,\opt,\typ,\obj,\else,\if@pgfarg,\fi,\begin,\end,\feature,\footnotesize,\draw,\detokenize,\DeclareOption,\foreach,\ifdim,\ifodd,\Im,\Re,\let,\newif,\nextgroupplot,\noexpand,\expandafter,\unexpanded,\PackageError,\PackageWarning,\relax,\RequirePackage,\tikzset,\pgfmathsetmacro,\pgfmathtruncatemacro,\ProcessOptions}
 %
 % \title{The \textsf{bodeplot} package\thanks{This document
-% corresponds to \textsf{bodeplot}~\fileversion,
-% dated \filedate.}}
+% corresponds to \textsf{bodeplot}~v1.0.3,
+% dated November 3, 2021.}}
 % \author{Rushikesh Kamalapurkar \\ \texttt{rlkamalapurkar@gmail.com}}
 %
 % \maketitle
 % \tableofcontents
 % \section{Introduction}
 %
-% Generate Bode, Nyquist, and Nichols plots for transfer functions in the canonical (TF) form \begin{equation}G(s) = e^{-Ts}\frac{b_ms^m+\cdots+b_1s+b_0}{a_ns^n+\cdots+a_1s+a_0}\label{eq:TF}\end{equation} and the zero-pole-gain (ZPK) form \begin{equation}G(s) = Ke^{-Ts}\frac{(s-z_1)(s-z_2)\cdots(s-z_m)}{(s-p_1)(s-p_2)\cdots(s-p_n)}.\label{eq:ZPK}\end{equation} In the equations above, $b_m,\cdots,b_0$ and $a_n,\cdots,a_0$ are real coefficients, $T\geq 0$ is the loop delay, $z_1,\cdots,z_m$ and $p_1,\cdots,p_n$ are complex zeros and poles of the transfer function, respectively, and $K\in \Re$ is the loop gain. For transfer functions in the ZPK format in (\ref{eq:ZPK}) with zero delay, this package also supports linear and asymptotic approximation of Bode plots.
+% Generate Bode, Nyquist, and Nichols plots for transfer functions in the canonical (TF) form \begin{equation}G(s) = e^{-Ts}\frac{b_ms^m+\cdots+b_1s+b_0}{a_ns^n+\cdots+a_1s+a_0}\label{eq:TF}\end{equation} and the zero-pole-gain (ZPK) form \begin{equation}G(s) = Ke^{-Ts}\frac{(s-z_1)(s-z_2)\cdots(s-z_m)}{(s-p_1)(s-p_2)\cdots(s-p_n)}.\label{eq:ZPK}\end{equation} In the equations above, $b_m,\cdots,b_0$ and $a_n,\cdots,a_0$ are real coefficients, $T\geq 0$ is the loop delay, $z_1,\cdots,z_m$ and $p_1,\cdots,p_n$ are complex zeros and poles of the transfer function, respectively, and $K\in \Re$ is the loop gain. For transfer functions in the ZPK format in (\ref{eq:ZPK}) with zero delay, this package also supports linear and asymptotic approximation of Bode plots. \textbf{Limitation:} in TF form, the phase angles are always between 0 and 360$^\circ$, As such, the Bode phase plots and the Nyquist and Nichols plots will have phase wrapping discontinuities. I do not know how this can be rectified, pull requests are welcome!
 %
 % \section{Usage}
 % \subsection{Bode plots}
@@ -81,6 +82,7 @@
 %  \item |plot/{opt}|: adds options |{opt}| to |\addplot| macros for both the magnitude and the phase plots.
 %  \item |axes/{opt}|: adds options |{opt}| to |\nextgroupplot| macros for both the magnitude and the phase plots.
 %  \item |group/{opt}|: adds options |{opt}| to the |groupplot| environment.
+%  \item |tikz/{opt}|: adds options |{opt}| to the |tikzpicture| environment.
 %  \item |approx/linear|: plots linear approximation.
 %  \item |approx/asymptotic|: plots asymptotic approximation.
 % \end{itemize}
@@ -303,7 +305,7 @@
 % \hspace*{2em}\marg{z/\marg{zeros},p/\marg{poles},k/\marg{gain},d/\marg{delay}}\\
 % \hspace*{2em}\marg{min-freq}\marg{max-freq}
 %
-% \noindent Plots the Nyquist plot of a transfer function given in ZPK format with a thick red $+$ marking the critical point (-1,0). The mandatory arguments are the same as |\BodeZPK|. Since there is only one plot in a Nyquist diagram, the |\typ| specifier in the optional argument tuples is not needed. As such, the supported optional argument tuples are |plot/{opt}|, which passes |{opt}| to |\addplot| and |axes/{opt}|, which passes |{\opt}| to the |axis| environment. Asymptotic/linear approximations are not supported in Nyquist plots. If just |{opt}| is provided as the optional argument, it is interpreted as |plot/{opt}|. Arrows to indicate the direction of increasing $\omega$ can be added by adding |\usetikzlibrary{decorations.markings}| and |\usetikzlibrary{arrows.meta}| to the preamble and then passing a tuple of the form\\
+% \noindent Plots the Nyquist plot of a transfer function given in ZPK format with a thick red $+$ marking the critical point (-1,0). The mandatory arguments are the same as |\BodeZPK|. Since there is only one plot in a Nyquist diagram, the |\typ| specifier in the optional argument tuples is not needed. As such, the supported optional argument tuples are |plot/{opt}|, which passes |{opt}| to |\addplot|, |axes/{opt}|, which passes |{\opt}| to the |axis| environment, and |tikz/{opt}|, which passes |{\opt}| to the |tikzpicture| environment. Asymptotic/linear approximations are not supported in Nyquist plots. If just |{opt}| is provided as the optional argument, it is interpreted as |plot/{opt}|. Arrows to indicate the direction of increasing $\omega$ can be added by adding |\usetikzlibrary{decorations.markings}| and |\usetikzlibrary{arrows.meta}| to the preamble and then passing a tuple of the form\\
 %|plot/{postaction=decorate,decoration={markings,|\\
 %|  mark=between positions 0.1 and 0.9 step 5em with|\\
 %|  {\arrow{Stealth| |[length=2mm, blue]}}}}|\\
@@ -753,9 +755,9 @@
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{\opt@approx}{#2}%
 %    \end{macrocode}
-% The |\noexpand| macros below are needed to so that only the macro |\opt@group| is expanded.
+% The |\noexpand| macros below are needed to so that only the macro |\opt@group| is expanded. \changes{v1.0.3}{2021/11/03}{Added Tikz option}
 %    \begin{macrocode}
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{groupplot}[%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{groupplot}[%
     bodeStyle,
     xmin={#3},
     xmax={#4},
@@ -801,14 +803,14 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\BodeTF}
-% Implementation of this macro is very similar to the |\BodeZPK| macro above. The only difference is the lack of linear and asymptotic plots and slightly different parsing of the mandatory arguments.
+% Implementation of this macro is very similar to the |\BodeZPK| macro above. The only difference is the lack of linear and asymptotic plots and slightly different parsing of the mandatory arguments. \changes{v1.0.3}{2021/11/03}{Added Tikz option}
 %    \begin{macrocode}
 \newcommand{\BodeTF}[4][]{%
   \parse@opt{#1}%
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{groupplot}[%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{groupplot}[%
     bodeStyle,
     xmin={#3},
     xmax={#4},
@@ -823,25 +825,25 @@
       ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
     \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
     \temp@cmd {\func@mag};
-    \optmag@commands;%
+    \optmag@commands;
     \expandafter\nextgroupplot\expandafter[ytick distance=45,
       ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
     \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
     \temp@cmd {\func@ph};
-    \optph@commands;%
+    \optph@commands;
   \else
     \stepcounter{idGnuplot}%
     \expandafter\nextgroupplot\expandafter[ytick distance=20,
       ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
     \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
     \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
-    \optmag@commands;%
+    \optmag@commands;
     \stepcounter{idGnuplot}%
     \expandafter\nextgroupplot\expandafter[ytick distance=45,
       ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
     \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
     \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
-    \optph@commands;%
+    \optph@commands;
   \fi
   \end{groupplot}\end{tikzpicture}
 }
@@ -1075,7 +1077,7 @@
 %    \end{macrocode}
 %\end{macro}
 % \begin{macro}{\parse@opt}
-% Parses options supplied to the main Bode macros. A |for| loop over tuples of the form |\obj/\typ/\opt| with a long list of nested if-else statements does the job. The input |\obj| is either |plot|, |axes|, |group| or |approx|, and the corresponding |\opt| are passed to the |\addplot| macro, the |\nextgroupplot| macro, the |groupplot| environment, and the |\build@ZPK@plot| macros, respectively. The input tuples should not contain any macros that need to be passed to respective |pgf| macros unexpanded. If an input tuple needs to contain such a macro, the |\xdef| macros below need to be defined using |\unexpanded\expandafter{\opt}| instead of just |\opt|. For example, the |\parse@N@opt| macro in Section \ref{sec:NInternal} can pass macros in its arguments, unexpanded, to |pgf| plot macros and environments, which is useful, for example, when the user wishes to add direction arrows to Nyquist plots. I did not think such a use case would be encountered when plotting Bode plots.
+% Parses options supplied to the main Bode macros. A |for| loop over tuples of the form |\obj/\typ/\opt| with a long list of nested if-else statements does the job. The input |\obj| is either |plot|, |axes|, |group| or |approx|, and the corresponding |\opt| are passed to the |\addplot| macro, the |\nextgroupplot| macro, the |groupplot| environment, and the |\build@ZPK@plot| macros, respectively. The input tuples should not contain any macros that need to be passed to respective |pgf| macros unexpanded. If an input tuple needs to contain such a macro, the |\xdef| macros below need to be defined using |\unexpanded\expandafter{\opt}| instead of just |\opt|. For example, the |\parse@N@opt| macro in Section \ref{sec:NInternal} can pass macros in its arguments, unexpanded, to |pgf| plot macros and environments, which is useful, for example, when the user wishes to add direction arrows to Nyquist plots. I did not think such a use case would be encountered when plotting Bode plots. \changes{v1.0.3}{2021/11/03}{Added Tikz option}
 %    \begin{macrocode}
 \newcommand{\parse@opt}[1]{%
   \gdef\optmag@axes{}%
@@ -1084,38 +1086,39 @@
   \gdef\optmag@plot{}%
   \gdef\opt@group{}%
   \gdef\opt@approx{}%
-  \xdef\optph@commands{}%
-  \xdef\optmag@commands{}%
+  \gdef\optph@commands{}%
+  \gdef\optmag@commands{}%
+  \gdef\opt@tikz{}%
   \foreach \obj/\typ/\opt in {#1} {%
     \ifnum\pdfstrcmp{\obj}{plot}=0
       \ifnum\pdfstrcmp{\typ}{mag}=0
-        \xdef\optmag@plot{\optmag@plot,\opt}%
+        \xdef\optmag@plot{\unexpanded\expandafter{\opt}}%
       \else
         \ifnum\pdfstrcmp{\typ}{ph}=0
-          \xdef\optph@plot{\optph@plot,\opt}%
+          \xdef\optph@plot{\unexpanded\expandafter{\opt}}%
         \else
-          \xdef\optmag@plot{\optmag@plot,\opt}%
-          \xdef\optph@plot{\optph@plot,\opt}%
+          \xdef\optmag@plot{\unexpanded\expandafter{\opt}}%
+          \xdef\optph@plot{\unexpanded\expandafter{\opt}}%
         \fi
       \fi
     \else
       \ifnum\pdfstrcmp{\obj}{axes}=0
         \ifnum\pdfstrcmp{\typ}{mag}=0
-          \xdef\optmag@axes{\optmag@axes,\opt}%
+          \xdef\optmag@axes{\unexpanded\expandafter{\opt}}%
         \else
           \ifnum\pdfstrcmp{\typ}{ph}=0
-            \xdef\optph@axes{\optph@axes,\opt}%
+            \xdef\optph@axes{\unexpanded\expandafter{\opt}}%
           \else
-            \xdef\optmag@axes{\optmag@axes,\opt}%
-            \xdef\optph@axes{\optph@axes,\opt}%
+            \xdef\optmag@axes{\unexpanded\expandafter{\opt}}%
+            \xdef\optph@axes{\unexpanded\expandafter{\opt}}%
           \fi
         \fi
       \else
         \ifnum\pdfstrcmp{\obj}{group}=0
-          \xdef\opt@group{\opt@group,\opt}%
+          \xdef\opt@group{\unexpanded\expandafter{\opt}}%
         \else
           \ifnum\pdfstrcmp{\obj}{approx}=0
-            \xdef\opt@approx{\opt}%
+            \xdef\opt@approx{\unexpanded\expandafter{\opt}}%
           \else
             \ifnum\pdfstrcmp{\obj}{commands}=0
               \ifnum\pdfstrcmp{\typ}{phase}=0
@@ -1124,8 +1127,12 @@
                 \xdef\optmag@commands{\unexpanded\expandafter{\opt}}%
               \fi
             \else
-              \xdef\optmag@plot{\optmag@plot,\obj}%
-              \xdef\optph@plot{\optph@plot,\obj}%
+              \ifnum\pdfstrcmp{\obj}{tikz}=0
+                \xdef\opt@tikz{\unexpanded\expandafter{\opt}}%
+              \else
+                \xdef\optmag@plot{\unexpanded\expandafter{\obj}}%
+                \xdef\optph@plot{\unexpanded\expandafter{\obj}}%
+              \fi
             \fi
           \fi
         \fi
@@ -1138,14 +1145,14 @@
 % \subsection{Nyquist plots}
 % \subsubsection{User macros}
 % \begin{macro}{\NyquistZPK}
-% Converts magnitude and phase parametric functions built using |\build@ZPK@plot| into real part and imaginary part parametric functions. A plot of these is the Nyquist plot. The parametric functions are then plotted in a |tikzpicture| environment using the |\addplot| macro. Unless the package is loaded with the option |pgf|, the parametric functions are evaluated using |gnuplot|. A large number of samples is typically needed to get a smooth plot because frequencies near 0 result in plot points that are very close to each other. Linear frequency sampling is unnecessarily fine near zero and very coarse for large $\omega$. Logarithmic sampling makes it worse, perhaps inverse logarithmic sampling will help, merge requests are welcome!
+% Converts magnitude and phase parametric functions built using |\build@ZPK@plot| into real part and imaginary part parametric functions. A plot of these is the Nyquist plot. The parametric functions are then plotted in a |tikzpicture| environment using the |\addplot| macro. Unless the package is loaded with the option |pgf|, the parametric functions are evaluated using |gnuplot|. A large number of samples is typically needed to get a smooth plot because frequencies near 0 result in plot points that are very close to each other. Linear frequency sampling is unnecessarily fine near zero and very coarse for large $\omega$. Logarithmic sampling makes it worse, perhaps inverse logarithmic sampling will help, pull requests to fix that are welcome! \changes{v1.0.3}{2021/11/03}{Added commands and tikz options}
 %    \begin{macrocode}
 \newcommand{\NyquistZPK}[4][]{%
   \parse@N@opt{#1}%
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{axis}[%
         bodeStyle,
         domain=#3:#4,
         height=5cm,
@@ -1159,11 +1166,13 @@
       \if@pgfarg
         \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
           {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
+        \opt@commands;
       \else
         \stepcounter{idGnuplot}%
         \temp@cmd gnuplot[parametric,gnuplot degrees,gnuplot def] {%
           \n@pow{10}{((\func@mag)/20)}*cos(\func@ph),
           \n@pow{10}{((\func@mag)/20)}*sin(\func@ph)};
+        \opt@commands;
       \fi
     \end{axis}
   \end{tikzpicture}
@@ -1171,14 +1180,14 @@
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\NyquistTF}
-% Implementation of this macro is very similar to the |\NyquistZPK| macro above. The only difference is a slightly different parsing of the mandatory arguments via |\build@TF@plot|.
+% Implementation of this macro is very similar to the |\NyquistZPK| macro above. The only difference is a slightly different parsing of the mandatory arguments via |\build@TF@plot|. \changes{v1.0.3}{2021/11/03}{Added commands and tikz options}
 %    \begin{macrocode}
 \newcommand{\NyquistTF}[4][]{%
   \parse@N@opt{#1}%
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{axis}[%
         bodeStyle,
         domain=#3:#4,
         height=5cm,
@@ -1192,11 +1201,13 @@
       \if@pgfarg
         \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
           {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
+        \opt@commands;
       \else
         \stepcounter{idGnuplot}%
         \temp@cmd gnuplot[parametric,gnuplot degrees,gnuplot def]{%
           \n@pow{10}{((\func@mag)/20)}*cos(\func@ph),
           \n@pow{10}{((\func@mag)/20)}*sin(\func@ph)};
+        \opt@commands;
       \fi
     \end{axis}
   \end{tikzpicture}
@@ -1261,12 +1272,14 @@
 %    \end{macrocode}
 %\end{macro}
 % \subsubsection{Internal commands\label{sec:NInternal}}
-% \begin{macro}{\parse@opt}
-% Parses options supplied to the main Nyquist and Nichols macros. A |for| loop over tuples of the form |\obj/\opt|, processed using nested if-else statements does the job. The input |\obj| is either |plot| or |axes|, and the corresponding |\opt| are passed to the |\addplot| macro and the |axis| environment, respectively. If the input tuples contain macros, they are to be passed to respective |pgf| macros unexpanded.
+% \begin{macro}{\parse@N@opt}
+% Parses options supplied to the main Nyquist and Nichols macros. A |for| loop over tuples of the form |\obj/\opt|, processed using nested if-else statements does the job. The input |\obj| is either |plot| or |axes|, and the corresponding |\opt| are passed to the |\addplot| macro and the |axis| environment, respectively. If the input tuples contain macros, they are to be passed to respective |pgf| macros unexpanded. \changes{v1.0.3}{2021/11/03}{Added commands and tikz options}
 %    \begin{macrocode}
 \newcommand{\parse@N@opt}[1]{%
   \gdef\opt@axes{}%
   \gdef\opt@plot{}%
+  \gdef\opt@commands{}%
+  \gdef\opt@tikz{}
   \foreach \obj/\opt in {#1} {%
     \ifnum\pdfstrcmp{\obj}{axes}=0
       \xdef\opt@axes{\unexpanded\expandafter{\opt}}%
@@ -1274,7 +1287,15 @@
       \ifnum\pdfstrcmp{\obj}{plot}=0
         \xdef\opt@plot{\unexpanded\expandafter{\opt}}%
       \else
-        \xdef\opt@plot{\unexpanded\expandafter{\obj}}%
+        \ifnum\pdfstrcmp{\obj}{commands}=0
+          \xdef\opt@commands{\unexpanded\expandafter{\opt}}%
+        \else
+          \ifnum\pdfstrcmp{\obj}{tikz}=0
+            \xdef\opt@tikz{\unexpanded\expandafter{\opt}}%
+          \else
+            \xdef\opt@plot{\unexpanded\expandafter{\obj}}%
+          \fi
+        \fi
       \fi
     \fi
   }%
@@ -1287,14 +1308,14 @@
 % \begin{macro}{NicholsChart}
 % \begin{macro}{\addNicholsZPKChart}
 % \begin{macro}{\addNicholsTFChart}
-% These macros and the |NicholsChart| environment generate Nichols charts, and they are implemented similar to their Nyquist counterparts.
+% These macros and the |NicholsChart| environment generate Nichols charts, and they are implemented similar to their Nyquist counterparts. \changes{v1.0.3}{2021/11/03}{Added commands and tikz options}
 %    \begin{macrocode}
 \newcommand{\NicholsZPK}[4][]{%
   \parse@N@opt{#1}%
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{axis}[%
         bodeStyle,
         domain=#3:#4,
         height=5cm,
@@ -1306,10 +1327,12 @@
       \edef\temp@cmd{\noexpand\addplot[thick,\opt@plot]}%
       \if@pgfarg
         \temp@cmd ( {\func@ph} , {\func@mag} );
+        \opt@commands;
       \else
         \stepcounter{idGnuplot}%
         \temp@cmd gnuplot[parametric, gnuplot degrees, gnuplot def]
           { \func@ph , \func@mag };
+        \opt@commands;
       \fi
     \end{axis}
   \end{tikzpicture}
@@ -1319,7 +1342,7 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}\noexpand\begin{axis}[%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{axis}[%
         bodeStyle,
         domain=#3:#4,
         height=5cm,
@@ -1331,10 +1354,12 @@
       \edef\temp@cmd{\noexpand\addplot[thick,\opt@plot]}%
       \if@pgfarg
         \temp@cmd ( {\func@ph} , {\func@mag} );
+        \opt@commands;
       \else
         \stepcounter{idGnuplot}%
         \temp@cmd gnuplot[parametric, gnuplot degrees, gnuplot def]
           { \func@ph , \func@mag };
+        \opt@commands;
       \fi
     \end{axis}
   \end{tikzpicture}
