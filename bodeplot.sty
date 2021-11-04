@@ -43,7 +43,7 @@
   \tikzset{%
     gnuplot def/.style={%
       id=\arabic{idGnuplot},
-      prefix=gnuplot/
+      prefix=gnuplot/\jobname
     }%
   }
   \pgfplotsset{%
@@ -172,84 +172,92 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{\opt@approx}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{groupplot}[%
-    bodeStyle,
-    xmin={#3},
-    xmax={#4},
-    domain=#3:#4,
-    height=2.5cm,
-    xmode=log,
-    group style = {group size = 1 by 2,vertical sep=0.25cm,},
-    \opt@group,]}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+    \noexpand\begin{groupplot}[%
+      bodeStyle,
+      xmin={#3},
+      xmax={#4},
+      domain=#3:#4,
+      height=2.5cm,
+      xmode=log,
+      group style = {group size = 1 by 2,vertical sep=0.25cm},
+      \opt@group
+    ]%
+  }%
   \temp@cmd
-  \if@pgfarg
-    \expandafter\nextgroupplot\expandafter[ytick distance=20,
-      ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-    \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
-    \temp@cmd {\func@mag};
-    \optmag@commands;
-    \expandafter\nextgroupplot\expandafter[ytick distance=45,
-      ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-    \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
-    \temp@cmd {\func@ph};
-    \optph@commands;
-  \else
-    \stepcounter{idGnuplot}
-    \expandafter\nextgroupplot\expandafter[ytick distance=20,
-      ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-    \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
-    \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
-    \optmag@commands;
-    \stepcounter{idGnuplot}
-    \expandafter\nextgroupplot\expandafter[ytick distance=45,
-      ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-    \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
-    \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
-    \optph@commands;
-  \fi
-  \end{groupplot}\end{tikzpicture}
+      \if@pgfarg
+        \expandafter\nextgroupplot\expandafter[ytick distance=20,
+          ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
+        \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
+        \temp@cmd {\func@mag};
+        \optmag@commands;
+        \expandafter\nextgroupplot\expandafter[ytick distance=45,
+          ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
+        \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
+        \temp@cmd {\func@ph};
+        \optph@commands;
+      \else
+      \stepcounter{idGnuplot}
+      \expandafter\nextgroupplot\expandafter[ytick distance=20,
+        ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
+      \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
+      \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
+      \optmag@commands;
+      \stepcounter{idGnuplot}
+      \expandafter\nextgroupplot\expandafter[ytick distance=45,
+        ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
+      \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
+      \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
+      \optph@commands;
+    \fi
+    \end{groupplot}
+  \end{tikzpicture}
 }
 \newcommand{\BodeTF}[4][]{%
   \parse@opt{#1}%
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{groupplot}[%
-    bodeStyle,
-    xmin={#3},
-    xmax={#4},
-    domain=#3:#4,
-    height=2.5cm,
-    xmode=log,
-    group style = {group size = 1 by 2,vertical sep=0.25cm,},
-    \opt@group,]}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+    \noexpand\begin{groupplot}[%
+      bodeStyle,
+      xmin={#3},
+      xmax={#4},
+      domain=#3:#4,
+      height=2.5cm,
+      xmode=log,
+      group style = {group size = 1 by 2,vertical sep=0.25cm},
+      \opt@group
+    ]%
+  }%
   \temp@cmd
-  \if@pgfarg
-    \expandafter\nextgroupplot\expandafter[ytick distance=20,
-      ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-    \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
-    \temp@cmd {\func@mag};
-    \optmag@commands;
-    \expandafter\nextgroupplot\expandafter[ytick distance=45,
-      ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-    \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
-    \temp@cmd {\func@ph};
-    \optph@commands;
-  \else
-    \stepcounter{idGnuplot}%
-    \expandafter\nextgroupplot\expandafter[ytick distance=20,
-      ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-    \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
-    \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
-    \optmag@commands;
-    \stepcounter{idGnuplot}%
-    \expandafter\nextgroupplot\expandafter[ytick distance=45,
-      ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-    \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
-    \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
-    \optph@commands;
-  \fi
-  \end{groupplot}\end{tikzpicture}
+      \if@pgfarg
+        \expandafter\nextgroupplot\expandafter[ytick distance=20,
+          ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
+        \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
+        \temp@cmd {\func@mag};
+        \optmag@commands;
+        \expandafter\nextgroupplot\expandafter[ytick distance=45,
+          ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
+        \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
+        \temp@cmd {\func@ph};
+        \optph@commands;
+      \else
+        \stepcounter{idGnuplot}%
+        \expandafter\nextgroupplot\expandafter[ytick distance=20,
+          ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
+        \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
+        \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
+        \optmag@commands;
+        \stepcounter{idGnuplot}%
+        \expandafter\nextgroupplot\expandafter[ytick distance=45,
+          ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
+        \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
+        \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
+        \optph@commands;
+      \fi
+    \end{groupplot}
+  \end{tikzpicture}
 }
 \newcommand{\addBodeZPKPlots}[3][true/{}]{%
   \foreach \approx/\opt in {#1} {%
@@ -294,17 +302,21 @@
   \fi
 }
 \newenvironment{BodePlot}[3][]{%
-  \begin{tikzpicture}
-    \begin{semilogxaxis}[%
+  \parse@env@opt{#1}%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]
+    \noexpand\begin{semilogxaxis}[%
       bodeStyle,
       xmin={#2},
       xmax={#3},
       domain=#2:#3,
       height=2.5cm,
       xlabel={Frequency (rad/s)},
-      #1]
+      \opt@axes
+    ]%
+  }%
+  \temp@cmd
 }{
-  \end{semilogxaxis}
+    \end{semilogxaxis}
   \end{tikzpicture}
 }
 \newcommand*{\add@feature}[3]{%
@@ -493,12 +505,27 @@
               \ifnum\pdfstrcmp{\obj}{tikz}=0
                 \xdef\opt@tikz{\unexpanded\expandafter{\opt}}%
               \else
-                \xdef\optmag@plot{\unexpanded\expandafter{\obj}}%
-                \xdef\optph@plot{\unexpanded\expandafter{\obj}}%
+                \xdef\optmag@plot{\optmag@plot,\unexpanded\expandafter{\obj}}%
+                \xdef\optph@plot{\optph@plot,\unexpanded\expandafter{\obj}}%
               \fi
             \fi
           \fi
         \fi
+      \fi
+    \fi
+  }%
+}
+\newcommand{\parse@env@opt}[1]{%
+  \gdef\opt@axes{}%
+  \gdef\opt@tikz{}%
+  \foreach \obj/\opt in {#1} {%
+    \ifnum\pdfstrcmp{\obj}{axes}=0
+      \xdef\opt@axes{\unexpanded\expandafter{\opt}}%
+    \else
+      \ifnum\pdfstrcmp{\obj}{tikz}=0
+        \xdef\opt@tikz{\unexpanded\expandafter{\opt}}%
+      \else
+        \xdef\opt@axes{\opt@axes,\unexpanded\expandafter{\obj}}%
       \fi
     \fi
   }%
@@ -508,14 +535,17 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{axis}[%
-        bodeStyle,
-        domain=#3:#4,
-        height=5cm,
-        xlabel={$\Re$},
-        ylabel={$\Im$},
-        samples=500,
-        \opt@axes,]}%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+    \noexpand\begin{axis}[%
+      bodeStyle,
+      domain=#3:#4,
+      height=5cm,
+      xlabel={$\Re$},
+      ylabel={$\Im$},
+      samples=500,
+      \opt@axes
+    ]%
+  }%
   \temp@cmd
       \addplot [only marks,mark=+,thick,red] (-1 , 0);
       \edef\temp@cmd{\noexpand\addplot[thick,\unexpanded\expandafter{\opt@plot}]}%
@@ -538,14 +568,17 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{axis}[%
-        bodeStyle,
-        domain=#3:#4,
-        height=5cm,
-        xlabel={$\Re$},
-        ylabel={$\Im$},
-        samples=500,
-        \opt@axes,]}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+    \noexpand\begin{axis}[%
+      bodeStyle,
+      domain=#3:#4,
+      height=5cm,
+      xlabel={$\Re$},
+      ylabel={$\Im$},
+      samples=500,
+      \opt@axes
+    ]%
+  }%
   \temp@cmd
       \addplot [only marks,mark=+,thick,red] (-1 , 0);
       \edef\temp@cmd{\noexpand\addplot[thick,\unexpanded\expandafter{\opt@plot}]}%
@@ -592,14 +625,18 @@
   \fi
 }
 \newenvironment{NyquistPlot}[3][]{%
-  \begin{tikzpicture}
-    \begin{axis}[%
+\parse@env@opt{#1}%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+    \noexpand\begin{axis}[%
       bodeStyle,
       height=5cm,
       domain=#2:#3,
       xlabel={$\Re$},
       ylabel={$\Im$},
-      #1]
+      \opt@axes
+    ]%
+  }%
+  \temp@cmd
     \addplot [only marks,mark=+,thick,red] (-1 , 0);
 }{%
     \end{axis}
@@ -623,7 +660,7 @@
           \ifnum\pdfstrcmp{\obj}{tikz}=0
             \xdef\opt@tikz{\unexpanded\expandafter{\opt}}%
           \else
-            \xdef\opt@plot{\unexpanded\expandafter{\obj}}%
+            \xdef\opt@plot{\opt@plot,\unexpanded\expandafter{\obj}}%
           \fi
         \fi
       \fi
@@ -635,14 +672,17 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{axis}[%
-        bodeStyle,
-        domain=#3:#4,
-        height=5cm,
-        xlabel={Phase (degrees)},
-        ylabel={Gain (dB)},
-        samples=500,
-        \opt@axes]}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+    \noexpand\begin{axis}[%
+      bodeStyle,
+      domain=#3:#4,
+      height=5cm,
+      xlabel={Phase (degrees)},
+      ylabel={Gain (dB)},
+      samples=500,
+      \opt@axes
+    ]%
+  }%
   \temp@cmd
       \edef\temp@cmd{\noexpand\addplot[thick,\opt@plot]}%
       \if@pgfarg
@@ -662,14 +702,17 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{axis}[%
-        bodeStyle,
-        domain=#3:#4,
-        height=5cm,
-        xlabel={Phase (degrees)},
-        ylabel={Gain (dB)},
-        samples=500,
-        \opt@axes]}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+    \noexpand\begin{axis}[%
+      bodeStyle,
+      domain=#3:#4,
+      height=5cm,
+      xlabel={Phase (degrees)},
+      ylabel={Gain (dB)},
+      samples=500,
+      \opt@axes
+    ]%
+  }%
   \temp@cmd
       \edef\temp@cmd{\noexpand\addplot[thick,\opt@plot]}%
       \if@pgfarg
@@ -685,8 +728,8 @@
   \end{tikzpicture}
 }
 \newenvironment{NicholsChart}[3][]{%
-  \begin{tikzpicture}
-    \begin{axis}[%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+    \noexpand\begin{axis}[%
       bodeStyle,
       domain=#2:#3,
       height=5cm,
@@ -694,7 +737,10 @@
       xtick distance=15,
       xlabel={Phase (degrees)},
       ylabel={Gain (dB)},
-      #1]
+      \opt@axes
+    ]%
+  }%
+  \temp@cmd
 }{
     \end{axis}
   \end{tikzpicture}

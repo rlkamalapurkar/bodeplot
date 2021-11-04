@@ -41,7 +41,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1225}
+% \CheckSum{1287}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
 %
@@ -116,7 +116,7 @@
 %
 % \begin{figure}
 % \begin{center}
-% \BodeZPK[plot/mag/{red,thick},plot/ph/{blue,thick},axes/mag/{ytick distance=40,xmajorticks=true,xlabel={Frequency (rad/s)}},axes/ph/{ytick distance=90},approx/linear,group/{group style={group size = 2 by 1,horizontal sep=2cm},width=4cm,height=2cm},] {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},g/10} {0.01} {100}
+% \BodeZPK[plot/mag/{red,thick},plot/ph/{blue,thick},axes/mag/{ytick distance=40,xmajorticks=true,xlabel={Frequency (rad/s)}},axes/ph/{ytick distance=90},approx/linear,group/{group style={group size = 2 by 1,horizontal sep=2cm},width=4cm,height=2cm}] {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},g/10} {0.01} {100}
 % \cprotect\caption{\label{customBode}Customization of the default |\BodeZPK| macro.}
 % \end{center}
 % \end{figure}
@@ -168,7 +168,7 @@
 %\end{BodePlot}
 %
 %\begin{BodePlot}[ylabel={Phase ($^{\circ}$)},
-%  height=2cm, width=4cm, ytick distance=90,] {0.01} {100}
+%  height=2cm, width=4cm, ytick distance=90] {0.01} {100}
 %  \addBodeZPKPlots[
 %    true/{black,thick},
 %    linear/{red,dashed,thick},
@@ -190,7 +190,7 @@
 %      {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.1,-10},{-0.1,10}},k/10}
 %    \end{BodePlot}
 %    \begin{BodePlot}[ylabel={Phase ($^{\circ}$)},
-%      height=2cm, width=4cm, ytick distance=90,] {0.01} {100}
+%      height=2cm, width=4cm, ytick distance=90] {0.01} {100}
 %
 %      \addBodeZPKPlots[
 %        true/{black,thick},
@@ -425,6 +425,7 @@
 % \begin{macro}{\n@pow}
 % \begin{macro}{idGnuplot}
 % \begin{macro}{gnuplot def}
+% \changes{v1.0.3}{2021/11/03}{Added jobname to gnuplot prefix}
 % \begin{macro}{gnuplot degrees}
 % This code is needed to support both |pgfplots| and |gnuplot| simultaneously. New macros are defined for the |pow| and |mod| functions to address differences between the two math engines. We start by processing the |pgf| class option.
 %    \begin{macrocode}
@@ -450,7 +451,7 @@
   \tikzset{%
     gnuplot def/.style={%
       id=\arabic{idGnuplot},
-      prefix=gnuplot/
+      prefix=gnuplot/\jobname
     }%
   }
 %    \end{macrocode}
@@ -757,48 +758,52 @@
 %    \end{macrocode}
 % The |\noexpand| macros below are needed to so that only the macro |\opt@group| is expanded. \changes{v1.0.3}{2021/11/03}{Added Tikz option}
 %    \begin{macrocode}
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{groupplot}[%
-    bodeStyle,
-    xmin={#3},
-    xmax={#4},
-    domain=#3:#4,
-    height=2.5cm,
-    xmode=log,
-    group style = {group size = 1 by 2,vertical sep=0.25cm,},
-    \opt@group,]}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+    \noexpand\begin{groupplot}[%
+      bodeStyle,
+      xmin={#3},
+      xmax={#4},
+      domain=#3:#4,
+      height=2.5cm,
+      xmode=log,
+      group style = {group size = 1 by 2,vertical sep=0.25cm},
+      \opt@group
+    ]%
+  }%
   \temp@cmd
 %    \end{macrocode}
 % To ensure frequency tick marks on magnitude and the phase plots are always aligned, we use the |groupplot| library. The |\expandafter| chain below is used to expand macros in the plot and group optional arguments.
 %    \begin{macrocode}
-  \if@pgfarg
-    \expandafter\nextgroupplot\expandafter[ytick distance=20,
-      ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-    \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
-    \temp@cmd {\func@mag};
-    \optmag@commands;
-    \expandafter\nextgroupplot\expandafter[ytick distance=45,
-      ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-    \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
-    \temp@cmd {\func@ph};
-    \optph@commands;
-  \else
+      \if@pgfarg
+        \expandafter\nextgroupplot\expandafter[ytick distance=20,
+          ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
+        \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
+        \temp@cmd {\func@mag};
+        \optmag@commands;
+        \expandafter\nextgroupplot\expandafter[ytick distance=45,
+          ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
+        \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
+        \temp@cmd {\func@ph};
+        \optph@commands;
+      \else
 %    \end{macrocode}
 % In |gnuplot| mode, we increment the |idGnuplot| counter before every plot to make sure that new and reusable |.gnuplot| and |.table| files are generated for every plot.
 %    \begin{macrocode}
-    \stepcounter{idGnuplot}
-    \expandafter\nextgroupplot\expandafter[ytick distance=20,
-      ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-    \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
-    \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
-    \optmag@commands;
-    \stepcounter{idGnuplot}
-    \expandafter\nextgroupplot\expandafter[ytick distance=45,
-      ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-    \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
-    \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
-    \optph@commands;
-  \fi
-  \end{groupplot}\end{tikzpicture}
+      \stepcounter{idGnuplot}
+      \expandafter\nextgroupplot\expandafter[ytick distance=20,
+        ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
+      \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
+      \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
+      \optmag@commands;
+      \stepcounter{idGnuplot}
+      \expandafter\nextgroupplot\expandafter[ytick distance=45,
+        ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
+      \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
+      \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
+      \optph@commands;
+    \fi
+    \end{groupplot}
+  \end{tikzpicture}
 }
 %    \end{macrocode}
 % \end{macro}
@@ -810,42 +815,46 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{groupplot}[%
-    bodeStyle,
-    xmin={#3},
-    xmax={#4},
-    domain=#3:#4,
-    height=2.5cm,
-    xmode=log,
-    group style = {group size = 1 by 2,vertical sep=0.25cm,},
-    \opt@group,]}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+    \noexpand\begin{groupplot}[%
+      bodeStyle,
+      xmin={#3},
+      xmax={#4},
+      domain=#3:#4,
+      height=2.5cm,
+      xmode=log,
+      group style = {group size = 1 by 2,vertical sep=0.25cm},
+      \opt@group
+    ]%
+  }%
   \temp@cmd
-  \if@pgfarg
-    \expandafter\nextgroupplot\expandafter[ytick distance=20,
-      ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-    \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
-    \temp@cmd {\func@mag};
-    \optmag@commands;
-    \expandafter\nextgroupplot\expandafter[ytick distance=45,
-      ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-    \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
-    \temp@cmd {\func@ph};
-    \optph@commands;
-  \else
-    \stepcounter{idGnuplot}%
-    \expandafter\nextgroupplot\expandafter[ytick distance=20,
-      ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-    \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
-    \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
-    \optmag@commands;
-    \stepcounter{idGnuplot}%
-    \expandafter\nextgroupplot\expandafter[ytick distance=45,
-      ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-    \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
-    \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
-    \optph@commands;
-  \fi
-  \end{groupplot}\end{tikzpicture}
+      \if@pgfarg
+        \expandafter\nextgroupplot\expandafter[ytick distance=20,
+          ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
+        \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
+        \temp@cmd {\func@mag};
+        \optmag@commands;
+        \expandafter\nextgroupplot\expandafter[ytick distance=45,
+          ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
+        \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
+        \temp@cmd {\func@ph};
+        \optph@commands;
+      \else
+        \stepcounter{idGnuplot}%
+        \expandafter\nextgroupplot\expandafter[ytick distance=20,
+          ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
+        \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
+        \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
+        \optmag@commands;
+        \stepcounter{idGnuplot}%
+        \expandafter\nextgroupplot\expandafter[ytick distance=45,
+          ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
+        \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
+        \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
+        \optph@commands;
+      \fi
+    \end{groupplot}
+  \end{tikzpicture}
 }
 %    \end{macrocode} 
 % \end{macro}
@@ -907,20 +916,24 @@
 %    \end{macrocode}
 %\end{macro}
 % \begin{environment}{BodePlot}
-% An environment to host macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bodeStyle| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments.
+% An environment to host macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bodeStyle| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments. \changes{v1.0.3}{2021/11/03}{Added tikz option to environments}
 %    \begin{macrocode}
 \newenvironment{BodePlot}[3][]{%
-  \begin{tikzpicture}
-    \begin{semilogxaxis}[%
+  \parse@env@opt{#1}%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]
+    \noexpand\begin{semilogxaxis}[%
       bodeStyle,
       xmin={#2},
       xmax={#3},
       domain=#2:#3,
       height=2.5cm,
       xlabel={Frequency (rad/s)},
-      #1]
+      \opt@axes
+    ]%
+  }%
+  \temp@cmd
 }{
-  \end{semilogxaxis}
+    \end{semilogxaxis}
   \end{tikzpicture}
 }
 %    \end{macrocode}
@@ -1077,7 +1090,7 @@
 %    \end{macrocode}
 %\end{macro}
 % \begin{macro}{\parse@opt}
-% Parses options supplied to the main Bode macros. A |for| loop over tuples of the form |\obj/\typ/\opt| with a long list of nested if-else statements does the job. The input |\obj| is either |plot|, |axes|, |group| or |approx|, and the corresponding |\opt| are passed to the |\addplot| macro, the |\nextgroupplot| macro, the |groupplot| environment, and the |\build@ZPK@plot| macros, respectively. The input tuples should not contain any macros that need to be passed to respective |pgf| macros unexpanded. If an input tuple needs to contain such a macro, the |\xdef| macros below need to be defined using |\unexpanded\expandafter{\opt}| instead of just |\opt|. For example, the |\parse@N@opt| macro in Section \ref{sec:NInternal} can pass macros in its arguments, unexpanded, to |pgf| plot macros and environments, which is useful, for example, when the user wishes to add direction arrows to Nyquist plots. I did not think such a use case would be encountered when plotting Bode plots. \changes{v1.0.3}{2021/11/03}{Added Tikz option}
+% Parses options supplied to the main Bode macros. A |for| loop over tuples of the form |\obj/\typ/\opt| with a long list of nested if-else statements does the job. If the input |\obj| is |plot|, |axes|, |group|, |approx|, or |tikz| the corresponding |\opt| are passed, unexpanded, to the |\addplot| macro, the |\nextgroupplot| macro, the |groupplot| environment, the |\build@ZPK@plot| macro, and the |tikzpicture| environment, respectively. If |\obj| is |commands|, the corresponding |\opt| are stored, unexpanded, in the macros |\optph@commands| and |\optmag@commands|, to be executed in appropriate |axis| environments. \changes{v1.0.3}{2021/11/03}{Added Tikz option}
 %    \begin{macrocode}
 \newcommand{\parse@opt}[1]{%
   \gdef\optmag@axes{}%
@@ -1130,8 +1143,8 @@
               \ifnum\pdfstrcmp{\obj}{tikz}=0
                 \xdef\opt@tikz{\unexpanded\expandafter{\opt}}%
               \else
-                \xdef\optmag@plot{\unexpanded\expandafter{\obj}}%
-                \xdef\optph@plot{\unexpanded\expandafter{\obj}}%
+                \xdef\optmag@plot{\optmag@plot,\unexpanded\expandafter{\obj}}%
+                \xdef\optph@plot{\optph@plot,\unexpanded\expandafter{\obj}}%
               \fi
             \fi
           \fi
@@ -1142,6 +1155,26 @@
 }
 %    \end{macrocode}
 %\end{macro}
+% \begin{macro}{\parse@env@opt}
+% Parses options supplied to the Bode, Nyquist, and Nichols environments. A |for| loop over tuples of the form |\obj/\opt|, processed using nested if-else statements does the job. The input |\obj| should either be |axes| or |tikz|, and the corresponding |\opt| are passed, unexpanded, to the |axis| environment and the |tikzpicture| environment, respectively. \changes{v1.0.3}{2021/11/03}{Added tikz option to environments}
+%    \begin{macrocode}
+\newcommand{\parse@env@opt}[1]{%
+  \gdef\opt@axes{}%
+  \gdef\opt@tikz{}%
+  \foreach \obj/\opt in {#1} {%
+    \ifnum\pdfstrcmp{\obj}{axes}=0
+      \xdef\opt@axes{\unexpanded\expandafter{\opt}}%
+    \else
+      \ifnum\pdfstrcmp{\obj}{tikz}=0
+        \xdef\opt@tikz{\unexpanded\expandafter{\opt}}%
+      \else
+        \xdef\opt@axes{\opt@axes,\unexpanded\expandafter{\obj}}%
+      \fi
+    \fi
+  }%
+}
+%    \end{macrocode}
+% \end{macro}
 % \subsection{Nyquist plots}
 % \subsubsection{User macros}
 % \begin{macro}{\NyquistZPK}
@@ -1152,14 +1185,17 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{axis}[%
-        bodeStyle,
-        domain=#3:#4,
-        height=5cm,
-        xlabel={$\Re$},
-        ylabel={$\Im$},
-        samples=500,
-        \opt@axes,]}%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+    \noexpand\begin{axis}[%
+      bodeStyle,
+      domain=#3:#4,
+      height=5cm,
+      xlabel={$\Re$},
+      ylabel={$\Im$},
+      samples=500,
+      \opt@axes
+    ]%
+  }%
   \temp@cmd
       \addplot [only marks,mark=+,thick,red] (-1 , 0);
       \edef\temp@cmd{\noexpand\addplot[thick,\unexpanded\expandafter{\opt@plot}]}%
@@ -1187,14 +1223,17 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{axis}[%
-        bodeStyle,
-        domain=#3:#4,
-        height=5cm,
-        xlabel={$\Re$},
-        ylabel={$\Im$},
-        samples=500,
-        \opt@axes,]}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+    \noexpand\begin{axis}[%
+      bodeStyle,
+      domain=#3:#4,
+      height=5cm,
+      xlabel={$\Re$},
+      ylabel={$\Im$},
+      samples=500,
+      \opt@axes
+    ]%
+  }%
   \temp@cmd
       \addplot [only marks,mark=+,thick,red] (-1 , 0);
       \edef\temp@cmd{\noexpand\addplot[thick,\unexpanded\expandafter{\opt@plot}]}%
@@ -1253,17 +1292,21 @@
 %    \end{macrocode}
 %\end{macro}
 %\begin{macro}{NyquistPlot}
-% An environment to host |\addNyquist...| macros that pass parametric functions to |\addplot|. Uses the defaults specified in |bodeStyle| to create a shortcut that includes the |tikzpicture| and |axis| environments.
+% An environment to host |\addNyquist...| macros that pass parametric functions to |\addplot|. Uses the defaults specified in |bodeStyle| to create a shortcut that includes the |tikzpicture| and |axis| environments. \changes{v1.0.3}{2021/11/03}{Added tikz option to environments}
 %    \begin{macrocode}
 \newenvironment{NyquistPlot}[3][]{%
-  \begin{tikzpicture}
-    \begin{axis}[%
+\parse@env@opt{#1}%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+    \noexpand\begin{axis}[%
       bodeStyle,
       height=5cm,
       domain=#2:#3,
       xlabel={$\Re$},
       ylabel={$\Im$},
-      #1]
+      \opt@axes
+    ]%
+  }%
+  \temp@cmd
     \addplot [only marks,mark=+,thick,red] (-1 , 0);
 }{%
     \end{axis}
@@ -1273,7 +1316,7 @@
 %\end{macro}
 % \subsubsection{Internal commands\label{sec:NInternal}}
 % \begin{macro}{\parse@N@opt}
-% Parses options supplied to the main Nyquist and Nichols macros. A |for| loop over tuples of the form |\obj/\opt|, processed using nested if-else statements does the job. The input |\obj| is either |plot| or |axes|, and the corresponding |\opt| are passed to the |\addplot| macro and the |axis| environment, respectively. If the input tuples contain macros, they are to be passed to respective |pgf| macros unexpanded. \changes{v1.0.3}{2021/11/03}{Added commands and tikz options}
+% Parses options supplied to the main Nyquist and Nichols macros. A |for| loop over tuples of the form |\obj/\opt|, processed using nested if-else statements does the job. If the input |\obj| is |plot|, |axes|, or |tikz| then the corresponding |\opt| are passed, unexpanded, to the |\addplot| macro, the |axis| environment, and the |tikzpicture| environment, respectively. \changes{v1.0.3}{2021/11/03}{Added commands and tikz options}
 %    \begin{macrocode}
 \newcommand{\parse@N@opt}[1]{%
   \gdef\opt@axes{}%
@@ -1293,7 +1336,7 @@
           \ifnum\pdfstrcmp{\obj}{tikz}=0
             \xdef\opt@tikz{\unexpanded\expandafter{\opt}}%
           \else
-            \xdef\opt@plot{\unexpanded\expandafter{\obj}}%
+            \xdef\opt@plot{\opt@plot,\unexpanded\expandafter{\obj}}%
           \fi
         \fi
       \fi
@@ -1304,25 +1347,31 @@
 % \end{macro}
 % \subsection{Nichols charts}
 % \begin{macro}{\NicholsZPK}
+% \changes{v1.0.3}{2021/11/03}{Added commands and tikz options}
 % \begin{macro}{\NicholsTF}
+% \changes{v1.0.3}{2021/11/03}{Added commands and tikz options}
 % \begin{macro}{NicholsChart}
+% \changes{v1.0.3}{2021/11/03}{Added tikz option to environments}
 % \begin{macro}{\addNicholsZPKChart}
 % \begin{macro}{\addNicholsTFChart}
-% These macros and the |NicholsChart| environment generate Nichols charts, and they are implemented similar to their Nyquist counterparts. \changes{v1.0.3}{2021/11/03}{Added commands and tikz options}
+% These macros and the |NicholsChart| environment generate Nichols charts, and they are implemented similar to their Nyquist counterparts.
 %    \begin{macrocode}
 \newcommand{\NicholsZPK}[4][]{%
   \parse@N@opt{#1}%
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{axis}[%
-        bodeStyle,
-        domain=#3:#4,
-        height=5cm,
-        xlabel={Phase (degrees)},
-        ylabel={Gain (dB)},
-        samples=500,
-        \opt@axes]}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+    \noexpand\begin{axis}[%
+      bodeStyle,
+      domain=#3:#4,
+      height=5cm,
+      xlabel={Phase (degrees)},
+      ylabel={Gain (dB)},
+      samples=500,
+      \opt@axes
+    ]%
+  }%
   \temp@cmd
       \edef\temp@cmd{\noexpand\addplot[thick,\opt@plot]}%
       \if@pgfarg
@@ -1342,14 +1391,17 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]\noexpand\begin{axis}[%
-        bodeStyle,
-        domain=#3:#4,
-        height=5cm,
-        xlabel={Phase (degrees)},
-        ylabel={Gain (dB)},
-        samples=500,
-        \opt@axes]}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+    \noexpand\begin{axis}[%
+      bodeStyle,
+      domain=#3:#4,
+      height=5cm,
+      xlabel={Phase (degrees)},
+      ylabel={Gain (dB)},
+      samples=500,
+      \opt@axes
+    ]%
+  }%
   \temp@cmd
       \edef\temp@cmd{\noexpand\addplot[thick,\opt@plot]}%
       \if@pgfarg
@@ -1365,8 +1417,8 @@
   \end{tikzpicture}
 }
 \newenvironment{NicholsChart}[3][]{%
-  \begin{tikzpicture}
-    \begin{axis}[%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+    \noexpand\begin{axis}[%
       bodeStyle,
       domain=#2:#3,
       height=5cm,
@@ -1374,7 +1426,10 @@
       xtick distance=15,
       xlabel={Phase (degrees)},
       ylabel={Gain (dB)},
-      #1]
+      \opt@axes
+    ]%
+  }%
+  \temp@cmd
 }{
     \end{axis}
   \end{tikzpicture}

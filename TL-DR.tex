@@ -1,6 +1,7 @@
 % !TeX TS-program = lualatex
 \documentclass{report}
-\usepackage[]{bodeplot,pgfplots}
+\usepackage[]{bodeplot,pgfplots,geometry}
+\geometry{margin=1in}
 \usetikzlibrary{arrows.meta,decorations.markings,spy,backgrounds}
 \begin{document}
 	Bode plot in ZPK format
@@ -35,7 +36,7 @@
 		{z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.1,-10},{-0.1,10}},k/10}
 		{0.01}
 		{100}
-	\end{center}
+	\end{center}\clearpage
 
 	Plot with delay and customization
 	\begin{center}
@@ -52,10 +53,11 @@
 	Individual gain and phase plots with more customization
 	\begin{center}
 		\begin{BodePlot}[
-			ylabel={Gain (dB)},
+			axes/{ylabel={Gain (dB)},
 			ytick distance=40,
 			height=2cm,
-			width=4cm]
+			width=4cm},
+			tikz/{>=latex}]
 		{0.01}
 		{100}
 			\addBodeZPKPlots[
@@ -87,8 +89,8 @@
 		{z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}
 		{0.001}
 		{100}
-	\end{center}
-	
+	\end{center}\clearpage
+
 	Nichols chart in TF format
 	\begin{center}
 			\NicholsTF[samples=1000]
@@ -113,12 +115,12 @@
 
 	Nyquist plot
 	\begin{center}
-		\NyquistZPK[plot/{red,thick,samples=2000}]
+		\NyquistZPK[plot/{red,thick,samples=1000}]
 		{z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}
 		{-30}
 		{30}
-	\end{center}
-	
+	\end{center}\clearpage
+
 	Nyquist plot in TF format with arrows
 	\begin{center}
 		\NyquistTF[
@@ -141,8 +143,30 @@
 	Multiple Nyquist plots with customization
 	\begin{center}
 		\begin{NyquistPlot}{-30}{30}
-			\addNyquistZPKPlot [red,samples=2000] {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10};
-			\addNyquistZPKPlot [blue,samples=2000] {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/5};
+			\addNyquistZPKPlot [red,samples=1000] {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10};
+			\addNyquistZPKPlot [blue,samples=1000] {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/5};
 		\end{NyquistPlot}
+	\end{center}
+
+	Nyquist plots with additional commands, using two different macros
+	\begin{center}
+		\begin{NyquistPlot}[tikz/{spy using outlines={circle, magnification=3, connect spies, size=2cm}}]{-30}{30}
+			\addNyquistZPKPlot [blue,samples=1000] {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/0.5};
+			\coordinate (spyon) at (axis cs:0,0);
+			\coordinate (spyat) at (axis cs:-22,5);
+			\spy [green] on (spyon) in node [fill=white] at (spyat);
+		\end{NyquistPlot}
+		\NyquistZPK[%
+			plot/{blue,samples=1000},
+			tikz/{spy using outlines={circle, magnification=3, connect spies, size=2cm}},
+			commands/{%
+				\coordinate (spyon) at (axis cs:0,0);
+				\coordinate (spyat) at (axis cs:-22,5);
+				\spy [green] on (spyon) in node [fill=white] at (spyat);
+			}%
+		]%
+		{z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/0.5}
+		{-30}
+		{30}
 	\end{center}
 \end{document}
