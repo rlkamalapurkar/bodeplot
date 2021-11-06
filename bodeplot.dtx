@@ -41,17 +41,18 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1287}
+% \CheckSum{1361}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
+% \changes{v1.0.4}{2021/11/05}{Fixed unintended optional argument macro expansion}
 %
 % \GetFileInfo{bodeplot.sty}
 %
 % \DoNotIndex{\newcommand,\xdef,\gdef,\def,\edef,\addplot,\approx,\arabic,\opt,\typ,\obj,\else,\if@pgfarg,\fi,\begin,\end,\feature,\footnotesize,\draw,\detokenize,\DeclareOption,\foreach,\ifdim,\ifodd,\Im,\Re,\let,\newif,\nextgroupplot,\noexpand,\expandafter,\unexpanded,\PackageError,\PackageWarning,\relax,\RequirePackage,\tikzset,\pgfmathsetmacro,\pgfmathtruncatemacro,\ProcessOptions}
 %
 % \title{The \textsf{bodeplot} package\thanks{This document
-% corresponds to \textsf{bodeplot}~v1.0.3,
-% dated November 3, 2021.}}
+% corresponds to \textsf{bodeplot}~v1.0.4,
+% dated November 5, 2021.}}
 % \author{Rushikesh Kamalapurkar \\ \texttt{rlkamalapurkar@gmail.com}}
 %
 % \maketitle
@@ -758,7 +759,7 @@
 %    \end{macrocode}
 % The |\noexpand| macros below are needed to so that only the macro |\opt@group| is expanded. \changes{v1.0.3}{2021/11/03}{Added Tikz option}
 %    \begin{macrocode}
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{groupplot}[%
       bodeStyle,
       xmin={#3},
@@ -815,7 +816,7 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{groupplot}[%
       bodeStyle,
       xmin={#3},
@@ -920,7 +921,7 @@
 %    \begin{macrocode}
 \newenvironment{BodePlot}[3][]{%
   \parse@env@opt{#1}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]
     \noexpand\begin{semilogxaxis}[%
       bodeStyle,
       xmin={#2},
@@ -928,7 +929,7 @@
       domain=#2:#3,
       height=2.5cm,
       xlabel={Frequency (rad/s)},
-      \opt@axes
+      \unexpanded\expandafter{\opt@axes}
     ]%
   }%
   \temp@cmd
@@ -1012,11 +1013,11 @@
     \ifnum\pdfstrcmp{\feature}{d}=0
       \ifnum\pdfstrcmp{#3}{linear}=0
         \PackageError {bodeplot} {Linear approximation for pure delays is not 
-        supported.} {Plot the true Bode plot using 'true' instead of 'linear'.}
+        supported.} {Plot the true Bode plot using `true' instead of `linear'.}
       \else
         \ifnum\pdfstrcmp{#3}{asymptotic}=0
           \PackageError {bodeplot} {Asymptotic approximation for pure delays is not 
-          supported.} {Plot the true Bode plot using 'true' instead of 'asymptotic'.}
+          supported.} {Plot the true Bode plot using `true' instead of `asymptotic'.}
         \else
           \ifdim\values pt < 0pt
             \PackageError {bodeplot} {Delay needs to be a positive number.}
@@ -1103,11 +1104,11 @@
   \gdef\optmag@commands{}%
   \gdef\opt@tikz{}%
   \foreach \obj/\typ/\opt in {#1} {%
-    \ifnum\pdfstrcmp{\obj}{plot}=0
-      \ifnum\pdfstrcmp{\typ}{mag}=0
+    \ifnum\pdfstrcmp{\unexpanded\expandafter{\obj}}{plot}=0
+      \ifnum\pdfstrcmp{\unexpanded\expandafter{\typ}}{mag}=0
         \xdef\optmag@plot{\unexpanded\expandafter{\opt}}%
       \else
-        \ifnum\pdfstrcmp{\typ}{ph}=0
+        \ifnum\pdfstrcmp{\unexpanded\expandafter{\typ}}{ph}=0
           \xdef\optph@plot{\unexpanded\expandafter{\opt}}%
         \else
           \xdef\optmag@plot{\unexpanded\expandafter{\opt}}%
@@ -1115,11 +1116,11 @@
         \fi
       \fi
     \else
-      \ifnum\pdfstrcmp{\obj}{axes}=0
-        \ifnum\pdfstrcmp{\typ}{mag}=0
+      \ifnum\pdfstrcmp{\unexpanded\expandafter{\obj}}{axes}=0
+        \ifnum\pdfstrcmp{\unexpanded\expandafter{\typ}}{mag}=0
           \xdef\optmag@axes{\unexpanded\expandafter{\opt}}%
         \else
-          \ifnum\pdfstrcmp{\typ}{ph}=0
+          \ifnum\pdfstrcmp{\unexpanded\expandafter{\typ}}{ph}=0
             \xdef\optph@axes{\unexpanded\expandafter{\opt}}%
           \else
             \xdef\optmag@axes{\unexpanded\expandafter{\opt}}%
@@ -1127,24 +1128,26 @@
           \fi
         \fi
       \else
-        \ifnum\pdfstrcmp{\obj}{group}=0
+        \ifnum\pdfstrcmp{\unexpanded\expandafter{\obj}}{group}=0
           \xdef\opt@group{\unexpanded\expandafter{\opt}}%
         \else
-          \ifnum\pdfstrcmp{\obj}{approx}=0
+          \ifnum\pdfstrcmp{\unexpanded\expandafter{\obj}}{approx}=0
             \xdef\opt@approx{\unexpanded\expandafter{\opt}}%
           \else
-            \ifnum\pdfstrcmp{\obj}{commands}=0
-              \ifnum\pdfstrcmp{\typ}{phase}=0
+            \ifnum\pdfstrcmp{\unexpanded\expandafter{\obj}}{commands}=0
+              \ifnum\pdfstrcmp{\unexpanded\expandafter{\typ}}{phase}=0
                 \xdef\optph@commands{\unexpanded\expandafter{\opt}}%
               \else
                 \xdef\optmag@commands{\unexpanded\expandafter{\opt}}%
               \fi
             \else
-              \ifnum\pdfstrcmp{\obj}{tikz}=0
+              \ifnum\pdfstrcmp{\unexpanded\expandafter{\obj}}{tikz}=0
                 \xdef\opt@tikz{\unexpanded\expandafter{\opt}}%
               \else
-                \xdef\optmag@plot{\optmag@plot,\unexpanded\expandafter{\obj}}%
-                \xdef\optph@plot{\optph@plot,\unexpanded\expandafter{\obj}}%
+                \xdef\optmag@plot{\unexpanded\expandafter{\optmag@plot},
+                  \unexpanded\expandafter{\obj}}%
+                \xdef\optph@plot{\unexpanded\expandafter{\optph@plot},
+                  \unexpanded\expandafter{\obj}}%
               \fi
             \fi
           \fi
@@ -1162,13 +1165,14 @@
   \gdef\opt@axes{}%
   \gdef\opt@tikz{}%
   \foreach \obj/\opt in {#1} {%
-    \ifnum\pdfstrcmp{\obj}{axes}=0
+    \ifnum\pdfstrcmp{\unexpanded\expandafter{\obj}}{axes}=0
       \xdef\opt@axes{\unexpanded\expandafter{\opt}}%
     \else
-      \ifnum\pdfstrcmp{\obj}{tikz}=0
+      \ifnum\pdfstrcmp{\unexpanded\expandafter{\obj}}{tikz}=0
         \xdef\opt@tikz{\unexpanded\expandafter{\opt}}%
       \else
-        \xdef\opt@axes{\opt@axes,\unexpanded\expandafter{\obj}}%
+        \xdef\opt@axes{\unexpanded\expandafter{\opt@axes},
+          \unexpanded\expandafter{\obj}}%
       \fi
     \fi
   }%
@@ -1185,7 +1189,7 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
       bodeStyle,
       domain=#3:#4,
@@ -1193,7 +1197,7 @@
       xlabel={$\Re$},
       ylabel={$\Im$},
       samples=500,
-      \opt@axes
+      \unexpanded\expandafter{\opt@axes}
     ]%
   }%
   \temp@cmd
@@ -1223,7 +1227,7 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
       bodeStyle,
       domain=#3:#4,
@@ -1231,7 +1235,7 @@
       xlabel={$\Re$},
       ylabel={$\Im$},
       samples=500,
-      \opt@axes
+      \unexpanded\expandafter{\opt@axes}
     ]%
   }%
   \temp@cmd
@@ -1296,14 +1300,14 @@
 %    \begin{macrocode}
 \newenvironment{NyquistPlot}[3][]{%
 \parse@env@opt{#1}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
       bodeStyle,
       height=5cm,
       domain=#2:#3,
       xlabel={$\Re$},
       ylabel={$\Im$},
-      \opt@axes
+      \unexpanded\expandafter{\opt@axes}
     ]%
   }%
   \temp@cmd
@@ -1324,19 +1328,20 @@
   \gdef\opt@commands{}%
   \gdef\opt@tikz{}
   \foreach \obj/\opt in {#1} {%
-    \ifnum\pdfstrcmp{\obj}{axes}=0
+    \ifnum\pdfstrcmp{\unexpanded\expandafter{\obj}}{axes}=0
       \xdef\opt@axes{\unexpanded\expandafter{\opt}}%
     \else
-      \ifnum\pdfstrcmp{\obj}{plot}=0
+      \ifnum\pdfstrcmp{\unexpanded\expandafter{\obj}}{plot}=0
         \xdef\opt@plot{\unexpanded\expandafter{\opt}}%
       \else
-        \ifnum\pdfstrcmp{\obj}{commands}=0
+        \ifnum\pdfstrcmp{\unexpanded\expandafter{\obj}}{commands}=0
           \xdef\opt@commands{\unexpanded\expandafter{\opt}}%
         \else
-          \ifnum\pdfstrcmp{\obj}{tikz}=0
+          \ifnum\pdfstrcmp{\unexpanded\expandafter{\obj}}{tikz}=0
             \xdef\opt@tikz{\unexpanded\expandafter{\opt}}%
           \else
-            \xdef\opt@plot{\opt@plot,\unexpanded\expandafter{\obj}}%
+            \xdef\opt@plot{\unexpanded\expandafter{\opt@plot},
+              \unexpanded\expandafter{\obj}}%
           \fi
         \fi
       \fi
@@ -1361,7 +1366,7 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
       bodeStyle,
       domain=#3:#4,
@@ -1369,7 +1374,7 @@
       xlabel={Phase (degrees)},
       ylabel={Gain (dB)},
       samples=500,
-      \opt@axes
+      \unexpanded\expandafter{\opt@axes}
     ]%
   }%
   \temp@cmd
@@ -1391,7 +1396,7 @@
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
       bodeStyle,
       domain=#3:#4,
@@ -1399,7 +1404,7 @@
       xlabel={Phase (degrees)},
       ylabel={Gain (dB)},
       samples=500,
-      \opt@axes
+      \unexpanded\expandafter{\opt@axes}
     ]%
   }%
   \temp@cmd
@@ -1417,7 +1422,7 @@
   \end{tikzpicture}
 }
 \newenvironment{NicholsChart}[3][]{%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\opt@tikz]%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
       bodeStyle,
       domain=#2:#3,
@@ -1426,7 +1431,7 @@
       xtick distance=15,
       xlabel={Phase (degrees)},
       ylabel={Gain (dB)},
-      \opt@axes
+      \unexpanded\expandafter{\opt@axes}
     ]%
   }%
   \temp@cmd
