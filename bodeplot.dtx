@@ -41,7 +41,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1361}
+% \CheckSum{1362}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
 % \changes{v1.0.4}{2021/11/05}{Fixed unintended optional argument macro expansion}
@@ -1299,7 +1299,7 @@
 % An environment to host |\addNyquist...| macros that pass parametric functions to |\addplot|. Uses the defaults specified in |bodeStyle| to create a shortcut that includes the |tikzpicture| and |axis| environments. \changes{v1.0.3}{2021/11/03}{Added tikz option to environments}
 %    \begin{macrocode}
 \newenvironment{NyquistPlot}[3][]{%
-\parse@env@opt{#1}%
+  \parse@env@opt{#1}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
       bodeStyle,
@@ -1422,13 +1422,12 @@
   \end{tikzpicture}
 }
 \newenvironment{NicholsChart}[3][]{%
+  \parse@env@opt{#1}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
       bodeStyle,
       domain=#2:#3,
       height=5cm,
-      ytick distance=20,
-      xtick distance=15,
       xlabel={Phase (degrees)},
       ylabel={Gain (dB)},
       \unexpanded\expandafter{\opt@axes}

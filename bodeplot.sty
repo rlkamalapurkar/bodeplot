@@ -628,7 +628,7 @@
   \fi
 }
 \newenvironment{NyquistPlot}[3][]{%
-\parse@env@opt{#1}%
+  \parse@env@opt{#1}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
       bodeStyle,
@@ -732,13 +732,12 @@
   \end{tikzpicture}
 }
 \newenvironment{NicholsChart}[3][]{%
+  \parse@env@opt{#1}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
       bodeStyle,
       domain=#2:#3,
       height=5cm,
-      ytick distance=20,
-      xtick distance=15,
       xlabel={Phase (degrees)},
       ylabel={Gain (dB)},
       \unexpanded\expandafter{\opt@axes}
