@@ -144,10 +144,21 @@
 % \end{figure}
 %
 % \DescribeEnv{BodePlot}
-% |\begin{BodePlot}|\oarg{axis-options}\marg{min-frequency}\marg{max-frequency}\\
+% |\begin{BodePlot}|\oarg{obj1/\marg{opt1},obj2/\marg{opt2},...}\\
+% \hspace*{3em}\marg{min-frequency}\marg{max-frequency}\\
 % \hspace*{2em}|\addBode...|\\
 % \hspace*{1.5em}|\end{BodePlot}|\\
-% The |BodePlot| environment works in conjunction with the parametric function generator macros |\addBodeZPKPlots|, |\addBodeTFPlot|, and |\addBodeComponentPlot|. If supplied, |axis-options| are passed directly to the |semilogaxis| environment and the frequency limits are translated to the x-axis limits and the domain of the |semilogaxis| environment. Example usage in the description of |\addBodeZPKPlots|, |\addBodeTFPlot|, and |\addBodeComponentPlot|.
+% The |BodePlot| environment works in conjunction with the parametric function generator macros |\addBodeZPKPlots|, |\addBodeTFPlot|, and |\addBodeComponentPlot|. The optional argument is comprised of a comma separated list of tuples, either |obj/{opt}| or just |{opt}|. Each tuple passes options to different |pgfplots| macros that generate the axes and the plots according to:
+% \begin{itemize}
+%  \item Tuples of the form |obj/{opt}|:
+%   \begin{itemize}
+%    \item |tikz/{opt}|: modify picture properties by adding options |{opt}| to the |tikzpicture| environment.
+%    \item |axes/{opt}|: modify axis properties by adding options |{opt}| to the |semilogaxis| environment.
+%    \item |commands/{opt}|: add any valid TikZ commands inside |semilogaxis| environment. The commands passed to |opt| need to be valid TikZ commands, separated by semicolons as usual.
+%   \end{itemize}
+%  \item Tuples of the form |{opt}| are passed directly to the |semilogaxis| environment.
+% \end{itemize}
+% The frequency limits are translated to the x-axis limits and the domain of the |semilogaxis| environment. Example usage in the description of |\addBodeZPKPlots|, |\addBodeTFPlot|, and |\addBodeComponentPlot|.
 %
 % \DescribeMacro{\addBodeZPKPlots}
 % |\addBodeZPKPlots| \oarg{approx1/\marg{opt1},approx2/\marg{opt2},...}\\
@@ -347,10 +358,21 @@
 % \end{figure}
 %
 % \DescribeEnv{NyquistPlot}
-% |\begin{NyquistPlot}|\oarg{axis-options}\marg{min-frequency}\marg{max-frequency}\\
+% |\begin{NyquistPlot}|\oarg{obj1/\marg{opt1},obj2/\marg{opt2},...}\\
+% \hspace*{3em}\marg{min-frequency}\marg{max-frequency}\\
 % \hspace*{2em}|\addNyquist...|\\
 % \hspace*{1.5em}|\end{NyquistPlot}|\\
-% The |NyquistPlot| environment works in conjunction with the parametric function generator macros |\addNyquistZPKPlot| and |\addNyquistTFPlot|. If supplied, |axis-options| are passed directly to the |axis| environment and the frequency limits are translated to the x-axis limits and the domain of the |axis| environment.
+% The |NyquistPlot| environment works in conjunction with the parametric function generator macros |\addNyquistZPKPlot| and |\addNyquistTFPlot|. The optional argument is comprised of a comma separated list of tuples, either |obj/{opt}| or just |{opt}|. Each tuple passes options to different |pgfplots| macros that generate the axes and the plots according to:
+% \begin{itemize}
+%  \item Tuples of the form |obj/{opt}|:
+%   \begin{itemize}
+%    \item |tikz/{opt}|: modify picture properties by adding options |{opt}| to the |tikzpicture| environment.
+%    \item |axes/{opt}|: modify axis properties by adding options |{opt}| to the |axis| environment.
+%    \item |commands/{opt}|: add any valid TikZ commands inside |axis| environment. The commands passed to |opt| need to be valid TikZ commands, separated by semicolons as usual.
+%   \end{itemize}
+%  \item Tuples of the form |{opt}| are passed directly to the |axis| environment.
+% \end{itemize}
+% The frequency limits are translated to the x-axis limits and the domain of the |axis| environment.
 %
 % \DescribeMacro{\addNyquistZPKPlot}
 % |\addNyquistZPKPlot|\oarg{plot-options}\\
@@ -392,10 +414,21 @@
 %
 %
 % \DescribeEnv{NicholsChart}
-% |\begin{NicholsChart}|\oarg{axis-options}\marg{min-frequency}\marg{max-frequency}\\
+% |\begin{NicholsChart}|\oarg{obj1/\marg{opt1},obj2/\marg{opt2},...}\\
+% \hspace*{3em}\marg{min-frequency}\marg{max-frequency}\\
 % \hspace*{2em}|\addNichols...|\\
 % \hspace*{1.5em}|\end{NicholsChart}|\\
-% The |NicholsChart| environment works in conjunction with the parametric function generator macros |\addNicholsZPKChart| and |\addNicholsTFChart|. If supplied, |axis-options| are passed directly to the |axis| environment and the frequency limits are translated to the x-axis limits and the domain of the |axis| environment.
+% The |NicholsChart| environment works in conjunction with the parametric function generator macros |\addNicholsZPKChart| and |\addNicholsTFChart|. The optional argument is comprised of a comma separated list of tuples, either |obj/{opt}| or just |{opt}|. Each tuple passes options to different |pgfplots| macros that generate the axes and the plots according to:
+% \begin{itemize}
+%  \item Tuples of the form |obj/{opt}|:
+%   \begin{itemize}
+%    \item |tikz/{opt}|: modify picture properties by adding options |{opt}| to the |tikzpicture| environment.
+%    \item |axes/{opt}|: modify axis properties by adding options |{opt}| to the |axis| environment.
+%    \item |commands/{opt}|: add any valid TikZ commands inside |axis| environment. The commands passed to |opt| need to be valid TikZ commands, separated by semicolons as usual.
+%   \end{itemize}
+%  \item Tuples of the form |{opt}| are passed directly to the |axis| environment.
+% \end{itemize}
+% The frequency limits are translated to the x-axis limits and the domain of the |axis| environment.
 %
 % \DescribeMacro{\addNicholsZPKChart}
 % |\addNicholsZPKChart|\oarg{plot-options}\\
@@ -1135,7 +1168,7 @@
             \xdef\opt@approx{\unexpanded\expandafter{\opt}}%
           \else
             \ifnum\pdfstrcmp{\unexpanded\expandafter{\obj}}{commands}=0
-              \ifnum\pdfstrcmp{\unexpanded\expandafter{\typ}}{phase}=0
+              \ifnum\pdfstrcmp{\unexpanded\expandafter{\typ}}{ph}=0
                 \xdef\optph@commands{\unexpanded\expandafter{\opt}}%
               \else
                 \xdef\optmag@commands{\unexpanded\expandafter{\opt}}%
