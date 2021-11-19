@@ -14,14 +14,14 @@
 %% http://www.latex-project.org/lppl.txt
 %% and version 1.3c or later is part of all distributions of
 %% LaTeX version 2006/05/20 or later.
-\NeedsTeXFormat{LaTeX2e}[2006/05/20]
-\ProvidesPackage{bodeplot}
-\RequirePackage{tikz}
-\RequirePackage{pdftexcmds}
-\RequirePackage{ifplatform}
-\RequirePackage{pgfplots}
-  \pgfplotsset{compat=1.18}
-  \usepgfplotslibrary{groupplots}
+ \NeedsTeXFormat{LaTeX2e}[2006/05/20]
+ \ProvidesPackage{bodeplot}
+ \RequirePackage{tikz}
+ \RequirePackage{pgfplots}
+ \RequirePackage{pdftexcmds}
+ \RequirePackage{ifplatform}
+ \pgfplotsset{compat=1.18,variable=t}
+ \usepgfplotslibrary{groupplots}
 
 \RequirePackage{ifluatex}%
 \ifluatex
@@ -38,17 +38,17 @@
 \else
   \newcommand{\n@pow}[2]{(#1)**(#2)}%
   \newcommand{\n@mod}[2]{(#1)-(floor((#1)/(#2))*(#2))}%
-  \newcounter{gnuplot@id}%
-  \setcounter{gnuplot@id}{0}%
+  \newcounter{idGnuplot}%
+  \setcounter{idGnuplot}{0}%
   \tikzset{%
-    gnuplot@prefix/.style={%
-      id=\arabic{gnuplot@id},
+    gnuplot def/.style={%
+      id=\arabic{idGnuplot},
       prefix=gnuplot/\jobname
     }%
   }
   \pgfplotsset{%
-    gnuplot@degrees/.code={%
-      \ifnum\value{gnuplot@id}=1
+    gnuplot degrees/.code={%
+      \ifnum\value{idGnuplot}=1
         \xdef\pgfplots@gnuplot@format{\pgfplots@gnuplot@format set angles degrees;}%
       \fi
     }%
@@ -58,7 +58,7 @@
   \fi
 \fi
 \pgfplotsset{%
-  bode@style/.style = {%
+  bodeStyle/.style = {%
     label style={font=\footnotesize},
     tick label style={font=\footnotesize},
     grid=both,
@@ -174,7 +174,7 @@
   \build@ZPK@plot{\func@mag}{\func@ph}{\opt@approx}{#2}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{groupplot}[%
-      bode@style,
+      bodeStyle,
       xmin={#3},
       xmax={#4},
       domain=#3:#4,
@@ -188,26 +188,26 @@
       \if@pgfarg
         \expandafter\nextgroupplot\expandafter[ytick distance=20,
           ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-        \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optmag@plot]}%
+        \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
         \temp@cmd {\func@mag};
         \optmag@commands;
         \expandafter\nextgroupplot\expandafter[ytick distance=45,
           ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-        \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optph@plot]}%
+        \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
         \temp@cmd {\func@ph};
         \optph@commands;
       \else
-      \stepcounter{gnuplot@id}
+      \stepcounter{idGnuplot}
       \expandafter\nextgroupplot\expandafter[ytick distance=20,
         ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optmag@plot]}%
-      \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\func@mag};
+      \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
+      \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
       \optmag@commands;
-      \stepcounter{gnuplot@id}
+      \stepcounter{idGnuplot}
       \expandafter\nextgroupplot\expandafter[ytick distance=45,
         ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optph@plot]}%
-      \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\func@ph};
+      \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
+      \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
       \optph@commands;
     \fi
     \end{groupplot}
@@ -220,7 +220,7 @@
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{groupplot}[%
-      bode@style,
+      bodeStyle,
       xmin={#3},
       xmax={#4},
       domain=#3:#4,
@@ -234,26 +234,26 @@
       \if@pgfarg
         \expandafter\nextgroupplot\expandafter[ytick distance=20,
           ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-        \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optmag@plot]}%
+        \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
         \temp@cmd {\func@mag};
         \optmag@commands;
         \expandafter\nextgroupplot\expandafter[ytick distance=45,
           ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-        \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optph@plot]}%
+        \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
         \temp@cmd {\func@ph};
         \optph@commands;
       \else
-        \stepcounter{gnuplot@id}%
+        \stepcounter{idGnuplot}%
         \expandafter\nextgroupplot\expandafter[ytick distance=20,
           ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-        \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optmag@plot]}%
-        \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\func@mag};
+        \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
+        \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
         \optmag@commands;
-        \stepcounter{gnuplot@id}%
+        \stepcounter{idGnuplot}%
         \expandafter\nextgroupplot\expandafter[ytick distance=45,
           ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-        \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optph@plot]}%
-        \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\func@ph};
+        \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
+        \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
         \optph@commands;
       \fi
     \end{groupplot}
@@ -269,12 +269,12 @@
       \build@ZPK@plot{\plot@macro}{\temp@macro}{\approx}{#3}%
     \fi
     \if@pgfarg
-      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\opt]}%
+      \edef\temp@cmd{\noexpand\addplot[thick,\opt]}%
       \temp@cmd {\plot@macro};
     \else
-      \stepcounter{gnuplot@id}%
-      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\opt]}
-      \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\plot@macro};
+      \stepcounter{idGnuplot}%
+      \edef\temp@cmd{\noexpand\addplot[thick,\opt]}
+      \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\plot@macro};
     \fi
   }%
 }
@@ -287,25 +287,25 @@
     \build@TF@plot{\plot@macro}{\temp@macro}{#3}%
   \fi
   \if@pgfarg
-    \addplot[variable=t,#1]{\plot@macro};
+    \addplot[#1]{\plot@macro};
   \else
-    \stepcounter{gnuplot@id}%
-    \addplot[variable=t,#1] gnuplot[gnuplot@degrees, gnuplot@prefix] {\plot@macro};
+    \stepcounter{idGnuplot}%
+    \addplot[#1] gnuplot[gnuplot degrees, gnuplot def] {\plot@macro};
   \fi
 }
 \newcommand{\addBodeComponentPlot}[2][thick]{%
   \if@pgfarg
-    \addplot[variable=t,#1]{#2};
+    \addplot[#1]{#2};
   \else
-    \stepcounter{gnuplot@id}%
-    \addplot[variable=t,#1] gnuplot[gnuplot@degrees,gnuplot@prefix] {#2};
+    \stepcounter{idGnuplot}%
+    \addplot[#1] gnuplot[gnuplot degrees,gnuplot def] {#2};
   \fi
 }
 \newenvironment{BodePlot}[3][]{%
   \parse@env@opt{#1}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]
     \noexpand\begin{semilogxaxis}[%
-      bode@style,
+      bodeStyle,
       xmin={#2},
       xmax={#3},
       domain=#2:#3,
@@ -540,7 +540,7 @@
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
-      bode@style,
+      bodeStyle,
       domain=#3:#4,
       height=5cm,
       xlabel={$\Re$},
@@ -551,14 +551,14 @@
   }%
   \temp@cmd
       \addplot [only marks,mark=+,thick,red] (-1 , 0);
-      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\unexpanded\expandafter{\opt@plot}]}%
+      \edef\temp@cmd{\noexpand\addplot[thick,\unexpanded\expandafter{\opt@plot}]}%
       \if@pgfarg
         \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
           {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
         \opt@commands;
       \else
-        \stepcounter{gnuplot@id}%
-        \temp@cmd gnuplot[parametric,gnuplot@degrees,gnuplot@prefix] {%
+        \stepcounter{idGnuplot}%
+        \temp@cmd gnuplot[parametric,gnuplot degrees,gnuplot def] {%
           \n@pow{10}{((\func@mag)/20)}*cos(\func@ph),
           \n@pow{10}{((\func@mag)/20)}*sin(\func@ph)};
         \opt@commands;
@@ -573,7 +573,7 @@
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
-      bode@style,
+      bodeStyle,
       domain=#3:#4,
       height=5cm,
       xlabel={$\Re$},
@@ -584,14 +584,14 @@
   }%
   \temp@cmd
       \addplot [only marks,mark=+,thick,red] (-1 , 0);
-      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\unexpanded\expandafter{\opt@plot}]}%
+      \edef\temp@cmd{\noexpand\addplot[thick,\unexpanded\expandafter{\opt@plot}]}%
       \if@pgfarg
         \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
           {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
         \opt@commands;
       \else
-        \stepcounter{gnuplot@id}%
-        \temp@cmd gnuplot[parametric,gnuplot@degrees,gnuplot@prefix]{%
+        \stepcounter{idGnuplot}%
+        \temp@cmd gnuplot[parametric,gnuplot degrees,gnuplot def]{%
           \n@pow{10}{((\func@mag)/20)}*cos(\func@ph),
           \n@pow{10}{((\func@mag)/20)}*sin(\func@ph)};
         \opt@commands;
@@ -604,11 +604,11 @@
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
   \if@pgfarg
-    \addplot[variable=t,#1] ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
+    \addplot [#1] ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
       {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
   \else
-    \stepcounter{gnuplot@id}%
-    \addplot[variable=t,#1] gnuplot[parametric,gnuplot@degrees,gnuplot@prefix]{%
+    \stepcounter{idGnuplot}%
+    \addplot [#1] gnuplot[parametric,gnuplot degrees,gnuplot def]{%
       \n@pow{10}{((\func@mag)/20)}*cos(\func@ph),
       \n@pow{10}{((\func@mag)/20)}*sin(\func@ph)};
   \fi
@@ -618,11 +618,11 @@
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
   \if@pgfarg
-    \addplot[variable=t,#1] ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
+    \addplot [#1] ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
       {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
   \else
-    \stepcounter{gnuplot@id}%
-    \addplot[variable=t,#1] gnuplot[parametric,gnuplot@degrees,gnuplot@prefix]{%
+    \stepcounter{idGnuplot}%
+    \addplot [#1] gnuplot[parametric,gnuplot degrees,gnuplot def]{%
       \n@pow{10}{((\func@mag)/20)}*cos(\func@ph),
       \n@pow{10}{((\func@mag)/20)}*sin(\func@ph)};
   \fi
@@ -631,7 +631,7 @@
   \parse@env@opt{#1}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
-      bode@style,
+      bodeStyle,
       height=5cm,
       domain=#2:#3,
       xlabel={$\Re$},
@@ -678,7 +678,7 @@
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
-      bode@style,
+      bodeStyle,
       domain=#3:#4,
       height=5cm,
       xlabel={Phase (degrees)},
@@ -688,13 +688,13 @@
     ]%
   }%
   \temp@cmd
-      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\opt@plot]}%
+      \edef\temp@cmd{\noexpand\addplot[thick,\opt@plot]}%
       \if@pgfarg
         \temp@cmd ( {\func@ph} , {\func@mag} );
         \opt@commands;
       \else
-        \stepcounter{gnuplot@id}%
-        \temp@cmd gnuplot[parametric, gnuplot@degrees, gnuplot@prefix]
+        \stepcounter{idGnuplot}%
+        \temp@cmd gnuplot[parametric, gnuplot degrees, gnuplot def]
           { \func@ph , \func@mag };
         \opt@commands;
       \fi
@@ -708,7 +708,7 @@
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
-      bode@style,
+      bodeStyle,
       domain=#3:#4,
       height=5cm,
       xlabel={Phase (degrees)},
@@ -718,13 +718,13 @@
     ]%
   }%
   \temp@cmd
-      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\opt@plot]}%
+      \edef\temp@cmd{\noexpand\addplot[thick,\opt@plot]}%
       \if@pgfarg
         \temp@cmd ( {\func@ph} , {\func@mag} );
         \opt@commands;
       \else
-        \stepcounter{gnuplot@id}%
-        \temp@cmd gnuplot[parametric, gnuplot@degrees, gnuplot@prefix]
+        \stepcounter{idGnuplot}%
+        \temp@cmd gnuplot[parametric, gnuplot degrees, gnuplot def]
           { \func@ph , \func@mag };
         \opt@commands;
       \fi
@@ -735,7 +735,7 @@
   \parse@env@opt{#1}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
-      bode@style,
+      bodeStyle,
       domain=#2:#3,
       height=5cm,
       xlabel={Phase (degrees)},
@@ -753,10 +753,10 @@
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
   \if@pgfarg
-    \addplot[variable=t,#1] ( {\func@ph} , {\func@mag} );
+    \addplot [#1] ( {\func@ph} , {\func@mag} );
   \else
-    \stepcounter{gnuplot@id}%
-    \addplot[variable=t,#1] gnuplot[parametric,gnuplot@degrees,gnuplot@prefix]
+    \stepcounter{idGnuplot}%
+    \addplot [#1] gnuplot[parametric,gnuplot degrees,gnuplot def]
       {\func@ph , \func@mag};
   \fi
 }
@@ -765,10 +765,10 @@
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
   \if@pgfarg
-    \addplot[variable=t,#1] ( {\func@ph} , {\func@mag} );
+    \addplot [#1] ( {\func@ph} , {\func@mag} );
   \else
-    \stepcounter{gnuplot@id}%
-    \addplot[variable=t,#1] gnuplot[gnuplot@degrees,gnuplot@prefix]
+    \stepcounter{idGnuplot}%
+    \addplot [#1] gnuplot[gnuplot degrees,gnuplot def]
       {\func@ph , \func@mag};
   \fi
 }
