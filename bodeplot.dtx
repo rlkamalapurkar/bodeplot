@@ -16,14 +16,14 @@
 % \fi
 %
 % \iffalse
-%<package> \NeedsTeXFormat{LaTeX2e}[2006/05/20]
-%<package> \ProvidesPackage{bodeplot}
-%<package> \RequirePackage{tikz}
-%<package> \RequirePackage{pgfplots}
-%<package> \RequirePackage{pdftexcmds}
-%<package> \RequirePackage{ifplatform}
-%<package> \pgfplotsset{compat=1.18,variable=t}
-%<package> \usepgfplotslibrary{groupplots}
+%<package>\NeedsTeXFormat{LaTeX2e}[2006/05/20]
+%<package>\ProvidesPackage{bodeplot}
+%<package>\RequirePackage{tikz}
+%<package>\RequirePackage{pdftexcmds}
+%<package>\RequirePackage{ifplatform}
+%<package>\RequirePackage{pgfplots}
+%<package>  \pgfplotsset{compat=1.18}
+%<package>  \usepgfplotslibrary{groupplots}
 %
 %<*driver>
 \documentclass{ltxdoc}
@@ -45,18 +45,20 @@
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
 % \changes{v1.0.4}{2021/11/05}{Fixed unintended optional argument macro expansion}
+% \changes{v1.0.6}{2021/11/18}{Fixed issue \#3}
 %
 % \GetFileInfo{bodeplot.sty}
 %
 % \DoNotIndex{\newcommand,\xdef,\gdef,\def,\edef,\addplot,\approx,\arabic,\opt,\typ,\obj,\else,\if@pgfarg,\fi,\begin,\end,\feature,\footnotesize,\draw,\detokenize,\DeclareOption,\foreach,\ifdim,\ifodd,\Im,\Re,\let,\newif,\nextgroupplot,\noexpand,\expandafter,\unexpanded,\PackageError,\PackageWarning,\relax,\RequirePackage,\tikzset,\pgfmathsetmacro,\pgfmathtruncatemacro,\ProcessOptions}
 %
 % \title{The \textsf{bodeplot} package\thanks{This document
-% corresponds to \textsf{bodeplot}~v1.0.4,
-% dated November 5, 2021.}}
+% corresponds to \textsf{bodeplot}~v1.0.6,
+% dated November 18, 2021.}}
 % \author{Rushikesh Kamalapurkar \\ \texttt{rlkamalapurkar@gmail.com}}
 %
 % \maketitle
 % \tableofcontents
+% \clearpage
 % \section{Introduction}
 %
 % Generate Bode, Nyquist, and Nichols plots for transfer functions in the canonical (TF) form \begin{equation}G(s) = e^{-Ts}\frac{b_ms^m+\cdots+b_1s+b_0}{a_ns^n+\cdots+a_1s+a_0}\label{eq:TF}\end{equation} and the zero-pole-gain (ZPK) form \begin{equation}G(s) = Ke^{-Ts}\frac{(s-z_1)(s-z_2)\cdots(s-z_m)}{(s-p_1)(s-p_2)\cdots(s-p_n)}.\label{eq:ZPK}\end{equation} In the equations above, $b_m,\cdots,b_0$ and $a_n,\cdots,a_0$ are real coefficients, $T\geq 0$ is the loop delay, $z_1,\cdots,z_m$ and $p_1,\cdots,p_n$ are complex zeros and poles of the transfer function, respectively, and $K\in \Re$ is the loop gain. For transfer functions in the ZPK format in (\ref{eq:ZPK}) with zero delay, this package also supports linear and asymptotic approximation of Bode plots. \textbf{Limitation:} in TF form, the phase angles are always between 0 and 360$^\circ$, As such, the Bode phase plots and the Nyquist and Nichols plots will have phase wrapping discontinuities. I do not know how this can be rectified, pull requests are welcome!
@@ -457,10 +459,10 @@
 % \end{macro}
 % \begin{macro}{\n@mod}
 % \begin{macro}{\n@pow}
-% \begin{macro}{idGnuplot}
-% \begin{macro}{gnuplot def}
+% \begin{macro}{gnuplot@id}
+% \begin{macro}{gnuplot@prefix}
 % \changes{v1.0.3}{2021/11/03}{Added jobname to gnuplot prefix}
-% \begin{macro}{gnuplot degrees}
+% \begin{macro}{gnuplot@degrees}
 % This code is needed to support both |pgfplots| and |gnuplot| simultaneously. New macros are defined for the |pow| and |mod| functions to address differences between the two math engines. We start by processing the |pgf| class option.
 %    \begin{macrocode}
 \newif\if@pgfarg\@pgfargfalse
@@ -480,11 +482,11 @@
 %    \end{macrocode}
 % Then, we create a counter so that a new data table is generated and for each new plot. If the plot macros have not changed, the tables, once generated, can be reused by |gnuplot|, which reduces compilation time.
 %    \begin{macrocode}
-  \newcounter{idGnuplot}%
-  \setcounter{idGnuplot}{0}%
+  \newcounter{gnuplot@id}%
+  \setcounter{gnuplot@id}{0}%
   \tikzset{%
-    gnuplot def/.style={%
-      id=\arabic{idGnuplot},
+    gnuplot@prefix/.style={%
+      id=\arabic{gnuplot@id},
       prefix=gnuplot/\jobname
     }%
   }
@@ -492,8 +494,8 @@
 % Then, we add |set angles degrees| to all |gnuplot| macros to avoid having to convert from degrees to radians everywhere.
 %    \begin{macrocode}
   \pgfplotsset{%
-    gnuplot degrees/.code={%
-      \ifnum\value{idGnuplot}=1
+    gnuplot@degrees/.code={%
+      \ifnum\value{gnuplot@id}=1
         \xdef\pgfplots@gnuplot@format{\pgfplots@gnuplot@format set angles degrees;}%
       \fi
     }%
@@ -511,11 +513,11 @@
 % \end{macro}
 % \end{macro}
 % \end{macro}
-% \begin{macro}{bodeStyle}
+% \begin{macro}{bode@style}
 % Default axis properties for all plot macros are collected in this |pgf| style.
 %    \begin{macrocode}
 \pgfplotsset{%
-  bodeStyle/.style = {%
+  bode@style/.style = {%
     label style={font=\footnotesize},
     tick label style={font=\footnotesize},
     grid=both,
@@ -794,7 +796,7 @@
 %    \begin{macrocode}
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{groupplot}[%
-      bodeStyle,
+      bode@style,
       xmin={#3},
       xmax={#4},
       domain=#3:#4,
@@ -811,29 +813,29 @@
       \if@pgfarg
         \expandafter\nextgroupplot\expandafter[ytick distance=20,
           ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-        \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
+        \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optmag@plot]}%
         \temp@cmd {\func@mag};
         \optmag@commands;
         \expandafter\nextgroupplot\expandafter[ytick distance=45,
           ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-        \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
+        \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optph@plot]}%
         \temp@cmd {\func@ph};
         \optph@commands;
       \else
 %    \end{macrocode}
-% In |gnuplot| mode, we increment the |idGnuplot| counter before every plot to make sure that new and reusable |.gnuplot| and |.table| files are generated for every plot.
+% In |gnuplot| mode, we increment the |gnuplot@id| counter before every plot to make sure that new and reusable |.gnuplot| and |.table| files are generated for every plot.
 %    \begin{macrocode}
-      \stepcounter{idGnuplot}
+      \stepcounter{gnuplot@id}
       \expandafter\nextgroupplot\expandafter[ytick distance=20,
         ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-      \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
-      \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
+      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optmag@plot]}%
+      \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\func@mag};
       \optmag@commands;
-      \stepcounter{idGnuplot}
+      \stepcounter{gnuplot@id}
       \expandafter\nextgroupplot\expandafter[ytick distance=45,
         ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-      \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
-      \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
+      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optph@plot]}%
+      \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\func@ph};
       \optph@commands;
     \fi
     \end{groupplot}
@@ -851,7 +853,7 @@
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{groupplot}[%
-      bodeStyle,
+      bode@style,
       xmin={#3},
       xmax={#4},
       domain=#3:#4,
@@ -865,26 +867,26 @@
       \if@pgfarg
         \expandafter\nextgroupplot\expandafter[ytick distance=20,
           ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-        \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
+        \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optmag@plot]}%
         \temp@cmd {\func@mag};
         \optmag@commands;
         \expandafter\nextgroupplot\expandafter[ytick distance=45,
           ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-        \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
+        \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optph@plot]}%
         \temp@cmd {\func@ph};
         \optph@commands;
       \else
-        \stepcounter{idGnuplot}%
+        \stepcounter{gnuplot@id}%
         \expandafter\nextgroupplot\expandafter[ytick distance=20,
           ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-        \edef\temp@cmd{\noexpand\addplot[thick,\optmag@plot]}%
-        \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@mag};
+        \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optmag@plot]}%
+        \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\func@mag};
         \optmag@commands;
-        \stepcounter{idGnuplot}%
+        \stepcounter{gnuplot@id}%
         \expandafter\nextgroupplot\expandafter[ytick distance=45,
           ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-        \edef\temp@cmd{\noexpand\addplot[thick,\optph@plot]}%
-        \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\func@ph};
+        \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optph@plot]}%
+        \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\func@ph};
         \optph@commands;
       \fi
     \end{groupplot}
@@ -905,12 +907,12 @@
       \build@ZPK@plot{\plot@macro}{\temp@macro}{\approx}{#3}%
     \fi
     \if@pgfarg
-      \edef\temp@cmd{\noexpand\addplot[thick,\opt]}%
+      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\opt]}%
       \temp@cmd {\plot@macro};
     \else
-      \stepcounter{idGnuplot}%
-      \edef\temp@cmd{\noexpand\addplot[thick,\opt]}
-      \temp@cmd gnuplot[gnuplot degrees,gnuplot def] {\plot@macro};
+      \stepcounter{gnuplot@id}%
+      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\opt]}
+      \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\plot@macro};
     \fi
   }%
 }
@@ -928,10 +930,10 @@
     \build@TF@plot{\plot@macro}{\temp@macro}{#3}%
   \fi
   \if@pgfarg
-    \addplot[#1]{\plot@macro};
+    \addplot[variable=t,#1]{\plot@macro};
   \else
-    \stepcounter{idGnuplot}%
-    \addplot[#1] gnuplot[gnuplot degrees, gnuplot def] {\plot@macro};
+    \stepcounter{gnuplot@id}%
+    \addplot[variable=t,#1] gnuplot[gnuplot@degrees, gnuplot@prefix] {\plot@macro};
   \fi
 }
 %    \end{macrocode}
@@ -941,22 +943,22 @@
 %    \begin{macrocode}
 \newcommand{\addBodeComponentPlot}[2][thick]{%
   \if@pgfarg
-    \addplot[#1]{#2};
+    \addplot[variable=t,#1]{#2};
   \else
-    \stepcounter{idGnuplot}%
-    \addplot[#1] gnuplot[gnuplot degrees,gnuplot def] {#2};
+    \stepcounter{gnuplot@id}%
+    \addplot[variable=t,#1] gnuplot[gnuplot@degrees,gnuplot@prefix] {#2};
   \fi
 }
 %    \end{macrocode}
 %\end{macro}
 % \begin{environment}{BodePlot}
-% An environment to host macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bodeStyle| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments. \changes{v1.0.3}{2021/11/03}{Added tikz option to environments}
+% An environment to host macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bode@style| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments. \changes{v1.0.3}{2021/11/03}{Added tikz option to environments}
 %    \begin{macrocode}
 \newenvironment{BodePlot}[3][]{%
   \parse@env@opt{#1}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]
     \noexpand\begin{semilogxaxis}[%
-      bodeStyle,
+      bode@style,
       xmin={#2},
       xmax={#3},
       domain=#2:#3,
@@ -1124,7 +1126,7 @@
 %    \end{macrocode}
 %\end{macro}
 % \begin{macro}{\parse@opt}
-% Parses options supplied to the main Bode macros. A |for| loop over tuples of the form |\obj/\typ/\opt| with a long list of nested if-else statements does the job. If the input |\obj| is |plot|, |axes|, |group|, |approx|, or |tikz| the corresponding |\opt| are passed, unexpanded, to the |\addplot| macro, the |\nextgroupplot| macro, the |groupplot| environment, the |\build@ZPK@plot| macro, and the |tikzpicture| environment, respectively. If |\obj| is |commands|, the corresponding |\opt| are stored, unexpanded, in the macros |\optph@commands| and |\optmag@commands|, to be executed in appropriate |axis| environments. \changes{v1.0.3}{2021/11/03}{Added Tikz option}
+% Parses options supplied to the main Bode macros. A |for| loop over tuples of the form |\obj/\typ/\opt| with a long list of nested if-else statements does the job. If the input |\obj| is |plot|, |axes|, |group|, |approx|, or |tikz| the corresponding |\opt| are passed, unexpanded, to the |\addplot| macro, the |\nextgroupplot| macro, the |groupplot| environment, the |\build@ZPK@plot| macro, and the |tikzpicture| environment, respectively. If |\obj| is |commands|, the corresponding |\opt| are stored, unexpanded, in the macros |\optph@commands| and |\optmag@commands|, to be executed in appropriate |axis| environments. \changes{v1.0.3}{2021/11/03}{Added Tikz option} \changes{v1.0.5}{2021/11/15}{Fixed a bug}
 %    \begin{macrocode}
 \newcommand{\parse@opt}[1]{%
   \gdef\optmag@axes{}%
@@ -1224,7 +1226,7 @@
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
-      bodeStyle,
+      bode@style,
       domain=#3:#4,
       height=5cm,
       xlabel={$\Re$},
@@ -1235,14 +1237,14 @@
   }%
   \temp@cmd
       \addplot [only marks,mark=+,thick,red] (-1 , 0);
-      \edef\temp@cmd{\noexpand\addplot[thick,\unexpanded\expandafter{\opt@plot}]}%
+      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\unexpanded\expandafter{\opt@plot}]}%
       \if@pgfarg
         \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
           {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
         \opt@commands;
       \else
-        \stepcounter{idGnuplot}%
-        \temp@cmd gnuplot[parametric,gnuplot degrees,gnuplot def] {%
+        \stepcounter{gnuplot@id}%
+        \temp@cmd gnuplot[parametric,gnuplot@degrees,gnuplot@prefix] {%
           \n@pow{10}{((\func@mag)/20)}*cos(\func@ph),
           \n@pow{10}{((\func@mag)/20)}*sin(\func@ph)};
         \opt@commands;
@@ -1262,7 +1264,7 @@
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
-      bodeStyle,
+      bode@style,
       domain=#3:#4,
       height=5cm,
       xlabel={$\Re$},
@@ -1273,14 +1275,14 @@
   }%
   \temp@cmd
       \addplot [only marks,mark=+,thick,red] (-1 , 0);
-      \edef\temp@cmd{\noexpand\addplot[thick,\unexpanded\expandafter{\opt@plot}]}%
+      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\unexpanded\expandafter{\opt@plot}]}%
       \if@pgfarg
         \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
           {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
         \opt@commands;
       \else
-        \stepcounter{idGnuplot}%
-        \temp@cmd gnuplot[parametric,gnuplot degrees,gnuplot def]{%
+        \stepcounter{gnuplot@id}%
+        \temp@cmd gnuplot[parametric,gnuplot@degrees,gnuplot@prefix]{%
           \n@pow{10}{((\func@mag)/20)}*cos(\func@ph),
           \n@pow{10}{((\func@mag)/20)}*sin(\func@ph)};
         \opt@commands;
@@ -1298,11 +1300,11 @@
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
   \if@pgfarg
-    \addplot [#1] ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
+    \addplot[variable=t,#1] ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
       {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
   \else
-    \stepcounter{idGnuplot}%
-    \addplot [#1] gnuplot[parametric,gnuplot degrees,gnuplot def]{%
+    \stepcounter{gnuplot@id}%
+    \addplot[variable=t,#1] gnuplot[parametric,gnuplot@degrees,gnuplot@prefix]{%
       \n@pow{10}{((\func@mag)/20)}*cos(\func@ph),
       \n@pow{10}{((\func@mag)/20)}*sin(\func@ph)};
   \fi
@@ -1317,11 +1319,11 @@
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
   \if@pgfarg
-    \addplot [#1] ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
+    \addplot[variable=t,#1] ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
       {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
   \else
-    \stepcounter{idGnuplot}%
-    \addplot [#1] gnuplot[parametric,gnuplot degrees,gnuplot def]{%
+    \stepcounter{gnuplot@id}%
+    \addplot[variable=t,#1] gnuplot[parametric,gnuplot@degrees,gnuplot@prefix]{%
       \n@pow{10}{((\func@mag)/20)}*cos(\func@ph),
       \n@pow{10}{((\func@mag)/20)}*sin(\func@ph)};
   \fi
@@ -1329,13 +1331,13 @@
 %    \end{macrocode}
 %\end{macro}
 %\begin{macro}{NyquistPlot}
-% An environment to host |\addNyquist...| macros that pass parametric functions to |\addplot|. Uses the defaults specified in |bodeStyle| to create a shortcut that includes the |tikzpicture| and |axis| environments. \changes{v1.0.3}{2021/11/03}{Added tikz option to environments}
+% An environment to host |\addNyquist...| macros that pass parametric functions to |\addplot|. Uses the defaults specified in |bode@style| to create a shortcut that includes the |tikzpicture| and |axis| environments. \changes{v1.0.3}{2021/11/03}{Added tikz option to environments}
 %    \begin{macrocode}
 \newenvironment{NyquistPlot}[3][]{%
   \parse@env@opt{#1}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
-      bodeStyle,
+      bode@style,
       height=5cm,
       domain=#2:#3,
       xlabel={$\Re$},
@@ -1401,7 +1403,7 @@
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
-      bodeStyle,
+      bode@style,
       domain=#3:#4,
       height=5cm,
       xlabel={Phase (degrees)},
@@ -1411,13 +1413,13 @@
     ]%
   }%
   \temp@cmd
-      \edef\temp@cmd{\noexpand\addplot[thick,\opt@plot]}%
+      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\opt@plot]}%
       \if@pgfarg
         \temp@cmd ( {\func@ph} , {\func@mag} );
         \opt@commands;
       \else
-        \stepcounter{idGnuplot}%
-        \temp@cmd gnuplot[parametric, gnuplot degrees, gnuplot def]
+        \stepcounter{gnuplot@id}%
+        \temp@cmd gnuplot[parametric, gnuplot@degrees, gnuplot@prefix]
           { \func@ph , \func@mag };
         \opt@commands;
       \fi
@@ -1431,7 +1433,7 @@
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
-      bodeStyle,
+      bode@style,
       domain=#3:#4,
       height=5cm,
       xlabel={Phase (degrees)},
@@ -1441,13 +1443,13 @@
     ]%
   }%
   \temp@cmd
-      \edef\temp@cmd{\noexpand\addplot[thick,\opt@plot]}%
+      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\opt@plot]}%
       \if@pgfarg
         \temp@cmd ( {\func@ph} , {\func@mag} );
         \opt@commands;
       \else
-        \stepcounter{idGnuplot}%
-        \temp@cmd gnuplot[parametric, gnuplot degrees, gnuplot def]
+        \stepcounter{gnuplot@id}%
+        \temp@cmd gnuplot[parametric, gnuplot@degrees, gnuplot@prefix]
           { \func@ph , \func@mag };
         \opt@commands;
       \fi
@@ -1458,7 +1460,7 @@
   \parse@env@opt{#1}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
-      bodeStyle,
+      bode@style,
       domain=#2:#3,
       height=5cm,
       xlabel={Phase (degrees)},
@@ -1476,10 +1478,10 @@
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
   \if@pgfarg
-    \addplot [#1] ( {\func@ph} , {\func@mag} );
+    \addplot[variable=t,#1] ( {\func@ph} , {\func@mag} );
   \else
-    \stepcounter{idGnuplot}%
-    \addplot [#1] gnuplot[parametric,gnuplot degrees,gnuplot def]
+    \stepcounter{gnuplot@id}%
+    \addplot[variable=t,#1] gnuplot[parametric,gnuplot@degrees,gnuplot@prefix]
       {\func@ph , \func@mag};
   \fi
 }
@@ -1488,10 +1490,10 @@
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
   \if@pgfarg
-    \addplot [#1] ( {\func@ph} , {\func@mag} );
+    \addplot[variable=t,#1] ( {\func@ph} , {\func@mag} );
   \else
-    \stepcounter{idGnuplot}%
-    \addplot [#1] gnuplot[gnuplot degrees,gnuplot def]
+    \stepcounter{gnuplot@id}%
+    \addplot[variable=t,#1] gnuplot[gnuplot@degrees,gnuplot@prefix]
       {\func@ph , \func@mag};
   \fi
 }
