@@ -190,25 +190,25 @@
           ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
         \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optmag@plot]}%
         \temp@cmd {\func@mag};
-        \optmag@commands;
+        \optmag@commands
         \expandafter\nextgroupplot\expandafter[ytick distance=45,
           ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
         \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optph@plot]}%
         \temp@cmd {\func@ph};
-        \optph@commands;
+        \optph@commands
       \else
       \stepcounter{gnuplot@id}
       \expandafter\nextgroupplot\expandafter[ytick distance=20,
         ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
       \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optmag@plot]}%
       \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\func@mag};
-      \optmag@commands;
+      \optmag@commands
       \stepcounter{gnuplot@id}
       \expandafter\nextgroupplot\expandafter[ytick distance=45,
         ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
       \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optph@plot]}%
       \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\func@ph};
-      \optph@commands;
+      \optph@commands
     \fi
     \end{groupplot}
   \end{tikzpicture}
@@ -236,25 +236,25 @@
           ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
         \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optmag@plot]}%
         \temp@cmd {\func@mag};
-        \optmag@commands;
+        \optmag@commands
         \expandafter\nextgroupplot\expandafter[ytick distance=45,
           ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
         \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optph@plot]}%
         \temp@cmd {\func@ph};
-        \optph@commands;
+        \optph@commands
       \else
         \stepcounter{gnuplot@id}%
         \expandafter\nextgroupplot\expandafter[ytick distance=20,
           ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
         \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optmag@plot]}%
         \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\func@mag};
-        \optmag@commands;
+        \optmag@commands
         \stepcounter{gnuplot@id}%
         \expandafter\nextgroupplot\expandafter[ytick distance=45,
           ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
         \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optph@plot]}%
         \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\func@ph};
-        \optph@commands;
+        \optph@commands
       \fi
     \end{groupplot}
   \end{tikzpicture}
@@ -555,13 +555,13 @@
       \if@pgfarg
         \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
           {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
-        \opt@commands;
+        \opt@commands
       \else
         \stepcounter{gnuplot@id}%
         \temp@cmd gnuplot[parametric,gnuplot@degrees,gnuplot@prefix] {%
           \n@pow{10}{((\func@mag)/20)}*cos(\func@ph),
           \n@pow{10}{((\func@mag)/20)}*sin(\func@ph)};
-        \opt@commands;
+        \opt@commands
       \fi
     \end{axis}
   \end{tikzpicture}
@@ -588,13 +588,13 @@
       \if@pgfarg
         \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
           {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
-        \opt@commands;
+        \opt@commands
       \else
         \stepcounter{gnuplot@id}%
         \temp@cmd gnuplot[parametric,gnuplot@degrees,gnuplot@prefix]{%
           \n@pow{10}{((\func@mag)/20)}*cos(\func@ph),
           \n@pow{10}{((\func@mag)/20)}*sin(\func@ph)};
-        \opt@commands;
+        \opt@commands
       \fi
     \end{axis}
   \end{tikzpicture}
@@ -691,12 +691,12 @@
       \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\opt@plot]}%
       \if@pgfarg
         \temp@cmd ( {\func@ph} , {\func@mag} );
-        \opt@commands;
+        \opt@commands
       \else
         \stepcounter{gnuplot@id}%
         \temp@cmd gnuplot[parametric, gnuplot@degrees, gnuplot@prefix]
           { \func@ph , \func@mag };
-        \opt@commands;
+        \opt@commands
       \fi
     \end{axis}
   \end{tikzpicture}
@@ -721,12 +721,12 @@
       \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\opt@plot]}%
       \if@pgfarg
         \temp@cmd ( {\func@ph} , {\func@mag} );
-        \opt@commands;
+        \opt@commands
       \else
         \stepcounter{gnuplot@id}%
         \temp@cmd gnuplot[parametric, gnuplot@degrees, gnuplot@prefix]
           { \func@ph , \func@mag };
-        \opt@commands;
+        \opt@commands
       \fi
     \end{axis}
   \end{tikzpicture}
