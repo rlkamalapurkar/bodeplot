@@ -29,7 +29,30 @@
 \documentclass{ltxdoc}
 \usepackage{bodeplot,cprotect}
 \usepackage[colorlinks]{hyperref}
-\usetikzlibrary{decorations.markings,arrows.meta}
+\usepackage{iftex}
+  \iftutex % LuaTeX, XeTeX
+    \usepackage{fontspec}
+    \setmonofont{DejaVuSansMono}[Scale=MatchUppercase]
+  \else % old engines
+    \usepackage[T1]{fontenc}
+    \usepackage{lmodern}
+    \usepackage[scaled]{DejaVuSansMono}
+  \fi
+\usepackage{showexpl}
+  \lstset{%
+    language=[LaTeX]Tex,
+    basicstyle=\ttfamily\tiny,
+    commentstyle=\itshape\ttfamily\tiny,
+    showspaces=false,
+    showstringspaces=false,
+    breaklines=true,
+    backgroundcolor=\color{white!90!black},
+    breakautoindent=true,
+    captionpos=t
+  }
+\usepackage{geometry}
+  \geometry{lmargin=2in,rmargin=1in,tmargin=1in,bmargin=1in}
+\usetikzlibrary{decorations.markings,arrows.meta,spy,backgrounds}
 \EnableCrossrefs
 \CodelineIndex
 \RecordChanges
@@ -62,8 +85,315 @@
 % \clearpage
 % \section{Introduction}
 %
-% Generate Bode, Nyquist, and Nichols plots for transfer functions in the canonical (TF) form \begin{equation}G(s) = e^{-Ts}\frac{b_ms^m+\cdots+b_1s+b_0}{a_ns^n+\cdots+a_1s+a_0}\label{eq:TF}\end{equation} and the zero-pole-gain (ZPK) form \begin{equation}G(s) = Ke^{-Ts}\frac{(s-z_1)(s-z_2)\cdots(s-z_m)}{(s-p_1)(s-p_2)\cdots(s-p_n)}.\label{eq:ZPK}\end{equation} In the equations above, $b_m,\cdots,b_0$ and $a_n,\cdots,a_0$ are real coefficients, $T\geq 0$ is the loop delay, $z_1,\cdots,z_m$ and $p_1,\cdots,p_n$ are complex zeros and poles of the transfer function, respectively, and $K\in \Re$ is the loop gain. For transfer functions in the ZPK format in (\ref{eq:ZPK}) with zero delay, this package also supports linear and asymptotic approximation of Bode plots. \textbf{Limitation:} in TF form, the phase angles are always between 0 and 360$^\circ$, As such, the Bode phase plots and the Nyquist and Nichols plots will have phase wrapping discontinuities. I do not know how this can be rectified, pull requests are welcome!
+% Generate Bode, Nyquist, and Nichols plots for transfer functions in the canonical (TF) form \begin{equation}G(s) = e^{-Ts}\frac{b_ms^m+\cdots+b_1s+b_0}{a_ns^n+\cdots+a_1s+a_0}\label{eq:TF}\end{equation} and the zero-pole-gain (ZPK) form \begin{equation}G(s) = Ke^{-Ts}\frac{(s-z_1)(s-z_2)\cdots(s-z_m)}{(s-p_1)(s-p_2)\cdots(s-p_n)}.\label{eq:ZPK}\end{equation} In the equations above, $b_m,\cdots,b_0$ and $a_n,\cdots,a_0$ are real coefficients, $T\geq 0$ is the loop delay, $z_1,\cdots,z_m$ and $p_1,\cdots,p_n$ are complex zeros and poles of the transfer function, respectively, and $K\in \Re$ is the loop gain. For transfer functions in the ZPK format in (\ref{eq:ZPK}) with zero delay, this package also supports linear and asymptotic approximation of Bode plots.
+
+% \textbf{Limitation:} in TF form, the phase angles are always between 0 and 360$^\circ$, As such, the Bode phase plots and the Nyquist and Nichols plots will have phase wrapping discontinuities. I do not know how this can be rectified, pull requests are welcome!
 %
+% \section{TL;DR}
+% All Bode plots in this section are for the transfer function (with and without a transport delay)
+% \begin{equation}
+%   G(s) = 10\frac{s(s+0.1+0.5\mathrm{i})(s+0.1-0.5\mathrm{i})}{(s+0.5+10\mathrm{i})(s+0.5-10\mathrm{i})} = \frac{s(10s^2+2s+2.6)}{(s^2+s+100.25)}.
+% \end{equation}
+% \iffalse
+%<*ignore>
+% \fi
+
+\hrulefill
+
+{\centering Bode plot in ZPK format
+\begin{LTXexample}[pos=l,hsep=20pt,width=0.5\textwidth]
+\BodeZPK{%
+  z/{0,{-0.1,-0.5},{-0.1,0.5}},
+  p/{{-0.5,-10},{-0.5,10}},
+  k/10
+}
+{0.01}
+{100}
+\end{LTXexample}
+
+\hrulefill
+\clearpage
+\hrulefill
+
+Bode plot in TF format with arrow decoration, transport delay, and color customization
+\begin{LTXexample}[pos=r,width=0.5\textwidth]
+\BodeTF[%
+  plot/mag/{blue,thick},
+  plot/ph/{green,thick},
+  tikz/{>=latex},
+  commands/mag/{
+    \draw[->](axis cs:1,40) -- (axis cs:10,60);
+    \node at (axis cs: 0.8,30) {\tiny Resonant Peak};
+  }%
+]
+{num/{10,2,2.6,0},den/{1,1,100.25},d/0.01}
+{0.01}
+{100}
+\end{LTXexample}
+
+\hrulefill
+
+Linear approximation with customization
+\begin{LTXexample}[pos=l,hsep=20pt,width=0.5\textwidth]
+\BodeZPK[%
+  plot/mag/{red,thick},
+  plot/ph/{blue,thick},
+  axes/mag/{ytick distance=40},
+  axes/ph/{ytick distance=90},
+  approx/linear%
+]{%
+  z/{0,{-0.1,-0.5},{-0.1,0.5}},
+  p/{{-0.5,-10},{-0.5,10}},
+  k/10
+}
+{0.01}
+{100}
+\end{LTXexample}
+
+\hrulefill
+\clearpage
+\hrulefill
+
+Plot with delay and customization
+\begin{LTXexample}[pos=r,hsep=20pt,width=0.5\textwidth]
+\BodeZPK[
+  plot/mag/{blue,thick},
+  plot/ph/{green,thick},
+  axes/mag/ytick distance=40,
+  axes/ph/ytick distance=90
+]{%
+  z/{0,{-0.1,-0.5},{-0.1,0.5}},
+  p/{{-0.5,-10},{-0.5,10}},
+  k/10,
+  d/0.01
+}
+{0.01}
+{100}
+\end{LTXexample}
+
+\hrulefill
+
+Individual gain and phase plots with more customization
+
+\begin{minipage}[t]{0.45\textwidth}
+\begin{LTXexample}[pos=t,width=\columnwidth]
+\begin{BodePlot}[%
+  axes/{ylabel={Gain (dB)},
+  ytick distance=40,
+  height=2cm,
+  width=4cm}
+]
+{0.01}
+{100}
+  \addBodeZPKPlots[%
+    true/{black,thick},
+    linear/{red,dashed,thick},
+    asymptotic/{blue,dotted,thick}%
+  ]
+  {magnitude}
+  {%
+    z/{0,{-0.1,-0.5},{-0.1,0.5}},
+    p/{{-0.5,-10},{-0.5,10}},
+    k/10
+  }
+\end{BodePlot}
+\end{LTXexample}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.45\textwidth}
+\begin{LTXexample}[pos=t,width=\columnwidth]
+\begin{BodePlot}[%
+  ylabel={Phase ($^{\circ}$)},
+  height=2cm,
+  width=4cm,
+  ytick distance=90
+]
+{0.01}
+{100}
+  \addBodeZPKPlots[%
+    true/{black,thick},
+    linear/{red,dashed,thick},
+    asymptotic/{blue,dotted,thick}%
+  ]
+  {phase}
+  {%
+    z/{0,{-0.1,-0.5},{-0.1,0.5}},
+    p/{{-0.5,-10},{-0.5,10}},
+    k/10
+  }
+\end{BodePlot}
+\end{LTXexample}
+\end{minipage}
+
+\hrulefill
+\clearpage
+\hrulefill
+
+Nichols chart
+\begin{LTXexample}[pos=l,hsep=20pt,width=0.5\textwidth]
+\NicholsZPK[samples=1000]
+{%
+  z/{0,{-0.1,-0.5},{-0.1,0.5}},
+  p/{{-0.5,-10},{-0.5,10}},
+  k/10
+}
+{0.001}
+{100}
+\end{LTXexample}
+
+\hrulefill
+
+Nichols chart in TF format
+\begin{LTXexample}[pos=r,hsep=20pt,width=0.5\textwidth]
+\NicholsTF[samples=1000]
+{num/{10,2,2.6,0},den/{1,1,100.25}}
+{0.001}
+{100}
+\end{LTXexample}
+
+\hrulefill
+
+Multiple Nichols charts with customization
+\begin{LTXexample}[pos=l,hsep=20pt,width=0.5\textwidth]
+\begin{NicholsChart}[%
+  ytick distance=20,
+  xtick distance=30
+]
+{0.001}
+{100}
+  \addNicholsZPKChart [red,samples=1000] {%
+    z/{0,{-0.1,-0.5},{-0.1,0.5}},
+    p/{{-0.5,-10},{-0.5,10}},
+    k/10
+  };
+  \addNicholsZPKChart [blue,samples=1000] {%
+    z/{0,{-0.1,-0.5},{-0.1,0.5}},
+    p/{{-0.5,-10},{-0.5,10}},
+    k/5
+  };
+\end{NicholsChart}
+\end{LTXexample}
+
+\hrulefill
+\clearpage
+\hrulefill
+
+Nyquist plot
+\begin{LTXexample}[pos=r,hsep=20pt,width=0.5\textwidth]
+\NyquistZPK[plot/{red,thick,samples=1000}]
+{%
+  z/{0,{-0.1,-0.5},{-0.1,0.5}},
+  p/{{-0.5,-10},{-0.5,10}},
+  k/10
+}
+{-30}
+{30}
+\end{LTXexample}
+
+\hrulefill
+
+Nyquist plot in TF format with arrows
+\begin{LTXexample}[pos=l,width=0.5\textwidth]
+\NyquistTF[%
+  plot/{%
+    samples=1000,
+    postaction=decorate,
+    decoration={%
+      markings,
+      mark=between positions 0.1 and 0.9 step 5em with {%
+        \arrow{Stealth [length=2mm, blue]}
+      }
+    }
+  }%
+]
+{num/{10,2,2.6,0},den/{1,1,100.25}}
+{-30}
+{30}
+\end{LTXexample}
+
+\hrulefill
+
+Multiple Nyquist plots with customization
+\begin{LTXexample}[pos=r,hsep=20pt,width=0.5\textwidth]
+\begin{NyquistPlot}{-30}{30}
+  \addNyquistZPKPlot [red,samples=1000] {%
+    z/{0,{-0.1,-0.5},{-0.1,0.5}},
+    p/{{-0.5,-10},{-0.5,10}},
+    k/10
+  };
+  \addNyquistZPKPlot [blue,samples=1000] {%
+    z/{0,{-0.1,-0.5},{-0.1,0.5}},
+    p/{{-0.5,-10},{-0.5,10}},
+    k/5
+  };
+\end{NyquistPlot}
+\end{LTXexample}
+
+\hrulefill
+\clearpage
+\hrulefill
+
+Nyquist plots with additional commands, using two different macros
+
+\begin{minipage}[t]{0.48\textwidth}
+\begin{LTXexample}[pos=t,width=\columnwidth]
+\begin{NyquistPlot}[%
+  tikz/{%
+    spy using outlines={%
+      circle,
+      magnification=3, 
+      connect spies,
+      size=2cm
+    }%
+  }%
+]
+{-30}{30}
+  \addNyquistZPKPlot [blue,samples=1000] {%
+    z/{0,{-0.1,-0.5},{-0.1,0.5}},
+    p/{{-0.5,-10},{-0.5,10}},
+    k/0.5
+  };
+  \coordinate (spyon) at (axis cs:0,0);
+  \coordinate (spyat) at (axis cs:-22,5);
+  \spy [green] on (spyon) in 
+    node [fill=white] at (spyat);
+\end{NyquistPlot}
+\end{LTXexample}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\begin{LTXexample}[pos=t,width=\columnwidth]
+\NyquistZPK[%
+  plot/{blue,samples=1000},
+  tikz/{%
+    spy using outlines={%
+      circle,
+      magnification=3, 
+      connect spies,
+      size=2cm
+    }%
+  },
+  commands/{%
+    \coordinate (spyon) at (axis cs:0,0);
+    \coordinate (spyat) at (axis cs:-22,5);
+    \spy [green] on (spyon) in 
+      node [fill=white] at (spyat);
+  }%
+]%
+{
+  z/{0,{-0.1,-0.5},{-0.1,0.5}},
+  p/{{-0.5,-10},{-0.5,10}},
+  k/0.5
+}
+{-30}
+{30}
+\end{LTXexample}
+\end{minipage}}
+
+\hrulefill
+
+% \iffalse
+%</ignore>
+% \fi
+% 
 % \section{Usage}
 % \subsection{Bode plots}
 % \DescribeMacro{\BodeZPK}
@@ -71,7 +401,7 @@
 % \hspace*{2em}\marg{z/\marg{zeros},p/\marg{poles},k/\marg{gain},d/\marg{delay}}\\
 % \hspace*{2em}\marg{min-freq}\marg{max-freq}
 %
-% \noindent Plots the Bode plot of a transfer function given in ZPK format using the |groupplot| environment. The three mandatory arguments include: (1) a list of tuples, comprised of the zeros, the poles, the gain, and the transport delay of the transfer function, (2) the lower end of the frequency range for the $x-$ axis, and (3) the higher end of the frequency range for the $x-$axis. The zeros and the poles are complex numbers, entered as a comma-separated list of comma-separated lists, of the form |{{real part 1,imaginary part 1},| |{real part 2,imaginary part 2},...}|. If the imaginary part is not provided, it is assumed to be zero.
+% \noindent Plots the Bode plot of a transfer function given in ZPK format using the |groupplot| environment. The three mandatory arguments include: (1) a list of tuples, comprised of the zeros, the poles, the gain, and the transport delay of the transfer function, (2) the lower end of the frequency range for the $x-$axis, and (3) the higher end of the frequency range for the $x-$axis. The zeros and the poles are complex numbers, entered as a comma-separated list of comma-separated lists, of the form |{{real part 1,imaginary part 1},| |{real part 2,imaginary part 2},...}|. If the imaginary part is not provided, it is assumed to be zero.
 %
 % The optional argument is comprised of a comma separated list of tuples, either |obj/typ/{opt}|, or |obj/{opt}|, or just |{opt}|. Each tuple passes options to different |pgfplots| macros that generate the group, the axes, and the plots according to:
 % \begin{itemize}
@@ -135,7 +465,7 @@
 % For example, given the same transfer function as (\ref{eq:ZPKExample}) in TF form and with a small transport delay, \begin{equation}G(s) = e^{-0.01s}\frac{s(10s^2+2s+2.6)}{(s^2+s+100.25)},\label{eq:TFExample}\end{equation} its Bode plot over the frequency range $[0.01,100]$ can be generated using\\
 % |\BodeTF[commands/mag/{\node at (axis cs: 2.1,0) |\\
 % |  [circle,fill,inner sep=0.05cm,label=below:{$\omega_{gc}$}]{};}]|\\
-% |  {num/{10,2,2.6,0},den/{1,0.2,100},d/0.01}|\\
+% |  {num/{10,2,2.6,0},den/{1,1,100.25},d/0.01}|\\
 % |  {0.01}{100}|\\
 % which generates the plot in Figure \ref{simpleBodeTF}. Note the $0$ added to the numerator coefficients to account for the fact that the numerator does not have a constant term in it. Note the semicolon after the TikZ command passed to the |\commands| option.
 %
@@ -179,7 +509,7 @@
 %    linear/{red,dashed,thick},
 %    asymptotic/{blue,dotted,thick}]
 %    {magnitude}
-%    {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.1,-10},{-0.1,10}},k/10}
+%    {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}
 %\end{BodePlot}
 %
 %\begin{BodePlot}[ylabel={Phase ($^{\circ}$)},
@@ -189,7 +519,7 @@
 %    linear/{red,dashed,thick},
 %    asymptotic/{blue,dotted,thick}]
 %    {phase}
-%    {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.1,-10},{-0.1,10}},k/10}
+%    {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}
 %\end{BodePlot}
 %\end{verbatim}
 % \begin{figure}
@@ -202,7 +532,7 @@
 %        linear/{red,dashed,thick},
 %        asymptotic/{blue,dotted,thick}]
 %      {magnitude}
-%      {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.1,-10},{-0.1,10}},k/10}
+%      {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}
 %    \end{BodePlot}
 %    \begin{BodePlot}[ylabel={Phase ($^{\circ}$)},
 %      height=2cm, width=4cm, ytick distance=90] {0.01} {100}
@@ -212,7 +542,7 @@
 %        linear/{red,dashed,thick},
 %        asymptotic/{blue,dotted,thick}]
 %      {phase}
-%      {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.1,-10},{-0.1,10}},k/10}
+%      {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}
 %    \end{BodePlot}
 %  \end{center}
 %  \caption{\label{multiBodeZPK}Superimposed approximate and true Bode plots using the \texttt{BodePlot} environment and the \texttt{\textbackslash addBodeZPKPlots} macro.}
@@ -446,7 +776,7 @@
 % \noindent Similar to |\addNicholsZPKChart|, with a transfer function input in the TF form.
 %
 % \StopEventually{\PrintIndex}
-%
+% \clearpage
 % \section{Implementation}
 % \subsection{Initialization}
 % \begin{macro}{\pdfstrcmp}
