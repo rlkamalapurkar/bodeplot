@@ -450,8 +450,8 @@
       \xdef\loop@delay{\values}%
     \fi
   }%
-  \xdef#2{(\n@mod{atan2((\num@im),(\num@real))-atan2((\den@im),%
-    (\den@real))+360}{360}-\loop@delay*180*t/pi)}%
+  \xdef#2{(atan2((\num@im),(\num@real))-atan2((\den@im),%
+    (\den@real))-\loop@delay*180*t/pi)}%
   \xdef#1{(20*log10(sqrt((\n@pow{\num@real}{2})+(\n@pow{\num@im}{2})))-%
     20*log10(sqrt((\n@pow{\den@real}{2})+(\n@pow{\den@im}{2}))))}%
 }
