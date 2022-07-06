@@ -5,6 +5,16 @@ Inspired by the `bodegraph` package.
 
 *Version 1.0.8 and newer store `gnuplot` temporary files in the working directory. Use class option `declutter` to restore pre-v1.0.8 behavior. Option `declutter` can cause errors if used with a `tikzexternalize` prefix.*
 
+Compilation instructions:
+1) `latex bodeplot.ins` to generate `bodeplot.sty`
+2) To compile documentation (needs `gnuplot` on system PATH):
+```
+pdflatex bodeplot.dtx --shell-escape
+makeindex -s gind.ist bodeplot.idx
+makeindex -s gglo.ist -o bodeplot.gls bodeplot.glo
+pdflatex bodeplot.dtx --shell-escape
+pdflatex bodeplot.dtx --shell-escape
+```
 Added functionality:
  - New `\BodeZPK` and `\BodeTF` commands to generate Bode plots of any transfer function given either poles, zeros, gain, and delay, or numerator and denominator coefficients and delay
  - Support for unstable poles and zeros.
