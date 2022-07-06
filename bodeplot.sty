@@ -23,7 +23,6 @@
   \pgfplotsset{compat=1.18}
   \usepgfplotslibrary{groupplots}
 
-
 \RequirePackage{ifluatex}%
 \ifluatex
   \let\pdfstrcmp\pdf@strcmp
@@ -31,6 +30,10 @@
 \newif\if@pgfarg\@pgfargfalse
 \DeclareOption{pgf}{%
   \@pgfargtrue
+}
+\newif\if@declutterarg\@declutterargfalse
+\DeclareOption{declutter}{%
+  \@declutterargtrue
 }
 \ProcessOptions\relax
 \if@pgfarg
@@ -41,12 +44,21 @@
   \newcommand{\n@mod}[2]{(#1)-(floor((#1)/(#2))*(#2))}%
   \newcounter{gnuplot@id}%
   \setcounter{gnuplot@id}{0}%
-  \tikzset{%
-    gnuplot@prefix/.style={%
-      id=\arabic{gnuplot@id},
-      prefix=gnuplot/\jobname
-    }%
-  }
+  \if@declutterarg
+    \tikzset{%
+      gnuplot@prefix/.style={%
+        id=\arabic{gnuplot@id},
+        prefix=gnuplot/\jobname
+      }%
+    }
+  \else
+    \tikzset{%
+      gnuplot@prefix/.style={%
+        id=\arabic{gnuplot@id},
+        prefix=\jobname
+      }%
+    }
+  \fi
   \pgfplotsset{%
     gnuplot@degrees/.code={%
       \ifnum\value{gnuplot@id}=1
@@ -55,7 +67,9 @@
     }%
   }
   \ifwindows\else
-    \immediate\write18{mkdir -p gnuplot}%
+    \if@declutterarg
+      \immediate\write18{mkdir -p gnuplot}%
+    \fi
   \fi
 \fi
 \pgfplotsset{%
@@ -451,7 +465,7 @@
     \fi
   }%
   \xdef#2{(\n@mod{atan2((\num@im),(\num@real))-atan2((\den@im),%
-    (\den@real))+360}{360}-\loop@delay*180*t/pi)}%
+    (\den@real))-\loop@delay*180*t/pi+360}{360})}%
   \xdef#1{(20*log10(sqrt((\n@pow{\num@real}{2})+(\n@pow{\num@im}{2})))-%
     20*log10(sqrt((\n@pow{\den@real}{2})+(\n@pow{\den@im}{2}))))}%
 }

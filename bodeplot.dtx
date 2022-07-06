@@ -40,6 +40,7 @@
   \fi
 \usepackage{showexpl}
   \lstset{%
+    explpreset={numbers=none},
     language=[LaTeX]Tex,
     basicstyle=\ttfamily\tiny,
     commentstyle=\itshape\ttfamily\tiny,
@@ -53,6 +54,7 @@
 \usepackage{geometry}
   \geometry{lmargin=2in,rmargin=1in,tmargin=1in,bmargin=1in}
 \usetikzlibrary{decorations.markings,arrows.meta,spy,backgrounds}
+\usepackage[nottoc]{tocbibind}
 \EnableCrossrefs
 \CodelineIndex
 \RecordChanges
@@ -64,21 +66,21 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1362}
+% \CheckSum{1375}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
 % \changes{v1.0.4}{2021/11/05}{Fixed unintended optional argument macro expansion}
 % \changes{v1.0.6}{2021/11/18}{Fixed issue \#3}
 % \changes{v1.0.7}{2021/12/02}{Removed unnecessary semicolons}
 % \changes{v1.0.7}{2022/01/18}{Updated documentation}
+% \changes{v1.0.8}{2022/07/06}{Added a new class option `declutter'}
 %
 % \GetFileInfo{bodeplot.sty}
-%
 % \DoNotIndex{\newcommand,\xdef,\gdef,\def,\edef,\addplot,\approx,\arabic,\opt,\typ,\obj,\else,\if@pgfarg,\fi,\begin,\end,\feature,\footnotesize,\draw,\detokenize,\DeclareOption,\foreach,\ifdim,\ifodd,\Im,\Re,\let,\newif,\nextgroupplot,\noexpand,\expandafter,\unexpanded,\PackageError,\PackageWarning,\relax,\RequirePackage,\tikzset,\pgfmathsetmacro,\pgfmathtruncatemacro,\ProcessOptions}
 %
 % \title{The \textsf{bodeplot} package\thanks{This document
-% corresponds to \textsf{bodeplot}~v1.0.7,
-% dated January 18, 2021.}}
+% corresponds to \textsf{bodeplot}~v1.0.8,
+% dated July 06, 2022.}}
 % \author{Rushikesh Kamalapurkar \\ \texttt{rlkamalapurkar@gmail.com}}
 %
 % \maketitle
@@ -87,9 +89,16 @@
 % \section{Introduction}
 %
 % Generate Bode, Nyquist, and Nichols plots for transfer functions in the canonical (TF) form \begin{equation}G(s) = e^{-Ts}\frac{b_ms^m+\cdots+b_1s+b_0}{a_ns^n+\cdots+a_1s+a_0}\label{eq:TF}\end{equation} and the zero-pole-gain (ZPK) form \begin{equation}G(s) = Ke^{-Ts}\frac{(s-z_1)(s-z_2)\cdots(s-z_m)}{(s-p_1)(s-p_2)\cdots(s-p_n)}.\label{eq:ZPK}\end{equation} In the equations above, $b_m,\cdots,b_0$ and $a_n,\cdots,a_0$ are real coefficients, $T\geq 0$ is the loop delay, $z_1,\cdots,z_m$ and $p_1,\cdots,p_n$ are complex zeros and poles of the transfer function, respectively, and $K\in \Re$ is the loop gain. For transfer functions in the ZPK format in (\ref{eq:ZPK}) \emph{with zero delay}, this package also supports linear and asymptotic approximation of Bode plots.
-
-% \textbf{Limitation:} in TF form, the phase angles are always between 0 and 360$^\circ$, As such, the Bode phase plots and the Nyquist and Nichols plots will have phase wrapping discontinuities. I do not know how this can be rectified, pull requests are welcome!
-%
+% \subsection{External Dependencies}
+% By default, the package uses |gnuplot| to do all the computations. If |gnuplot| is not available, the |pgf| package option can be used to do the calculations using the native |pgf| math engine. Compilation using the |pgf| math engine is typically slower, but the end result should be the identical.
+%\subsection{Directory Structure}
+% Since version 1.0.8, the |bodeplot| package places all |gnuplot| temporary files in the working directory. The package option |declutter| restores the original behavior where the temporary files are placed in a folder called |gnuplot|.
+% \subsection{Limitations} 
+% \begin{itemize}
+%   \item In TF form, the phase angles are always between 0 and 360$^\circ$. As such, the Bode phase plots and the Nyquist and Nichols plots will have phase wrapping discontinuities. I do not know how this can be rectified, pull requests are welcome!
+%   \item Use of the |declutter| option with other directory management tools such as a |tikzexternalize| prefix is not recommended.
+% \end{itemize}
+% \clearpage
 % \section{TL;DR}
 % All Bode plots in this section are for the transfer function (with and without a transport delay)
 % \begin{equation}
@@ -113,12 +122,11 @@
 \end{LTXexample}
 
 \hrulefill
-\clearpage
-\hrulefill
 
-Bode plot in TF format with arrow decoration, transport delay, and color customization
+Bode plot in TF format with arrow decoration, transport delay, and color customization (note the phase wrapping)
 \begin{LTXexample}[pos=r,width=0.5\textwidth]
 \BodeTF[%
+  samples=1000,
   plot/mag/{blue,thick},
   plot/ph/{green,thick},
   tikz/{>=latex},
@@ -129,9 +137,11 @@ Bode plot in TF format with arrow decoration, transport delay, and color customi
 ]
 {num/{10,2,2.6,0},den/{1,1,100.25},d/0.01}
 {0.01}
-{100}
+{500}
 \end{LTXexample}
 
+\hrulefill
+\clearpage
 \hrulefill
 
 Linear approximation with customization
@@ -152,8 +162,6 @@ Linear approximation with customization
 \end{LTXexample}
 
 \hrulefill
-\clearpage
-\hrulefill
 
 Plot with delay and customization
 \begin{LTXexample}[pos=r,hsep=20pt,width=0.5\textwidth]
@@ -172,6 +180,8 @@ Plot with delay and customization
 {100}
 \end{LTXexample}
 
+\hrulefill
+\clearpage
 \hrulefill
 
 Individual gain and phase plots with more customization
@@ -226,8 +236,6 @@ Individual gain and phase plots with more customization
 \end{minipage}
 
 \hrulefill
-\clearpage
-\hrulefill
 
 Nichols chart
 \begin{LTXexample}[pos=l,hsep=20pt,width=0.5\textwidth]
@@ -252,6 +260,8 @@ Nichols chart in TF format
 \end{LTXexample}
 
 \hrulefill
+\clearpage
+\hrulefill
 
 Multiple Nichols charts with customization
 \begin{LTXexample}[pos=l,hsep=20pt,width=0.5\textwidth]
@@ -274,8 +284,6 @@ Multiple Nichols charts with customization
 \end{NicholsChart}
 \end{LTXexample}
 
-\hrulefill
-\clearpage
 \hrulefill
 
 Nyquist plot
@@ -312,6 +320,8 @@ Nyquist plot in TF format with arrows
 \end{LTXexample}
 
 \hrulefill
+\clearpage
+\hrulefill
 
 Multiple Nyquist plots with customization
 \begin{LTXexample}[pos=r,hsep=20pt,width=0.5\textwidth]
@@ -329,8 +339,6 @@ Multiple Nyquist plots with customization
 \end{NyquistPlot}
 \end{LTXexample}
 
-\hrulefill
-\clearpage
 \hrulefill
 
 Nyquist plots with additional commands, using two different macros
@@ -390,6 +398,7 @@ Nyquist plots with additional commands, using two different macros
 \end{minipage}}
 
 \hrulefill
+\clearpage
 
 % \iffalse
 %</ignore>
@@ -794,12 +803,17 @@ Nyquist plots with additional commands, using two different macros
 % \begin{macro}{gnuplot@id}
 % \begin{macro}{gnuplot@prefix}
 % \changes{v1.0.3}{2021/11/03}{Added jobname to gnuplot prefix}
+% \changes{v1.0.8}{2022/07/06}{Fixed issue \#6}
 % \begin{macro}{gnuplot@degrees}
-% This code is needed to support both |pgfplots| and |gnuplot| simultaneously. New macros are defined for the |pow| and |mod| functions to address differences between the two math engines. We start by processing the |pgf| class option.
+% This code is needed to support both |pgfplots| and |gnuplot| simultaneously. New macros are defined for the |pow| and |mod| functions to address differences between the two math engines. We start by processing the |pgf| and |declutter| class options. 
 %    \begin{macrocode}
 \newif\if@pgfarg\@pgfargfalse
 \DeclareOption{pgf}{%
   \@pgfargtrue
+}
+\newif\if@declutterarg\@declutterargfalse
+\DeclareOption{declutter}{%
+  \@declutterargtrue
 }
 \ProcessOptions\relax
 %    \end{macrocode}
@@ -812,16 +826,25 @@ Nyquist plots with additional commands, using two different macros
   \newcommand{\n@pow}[2]{(#1)**(#2)}%
   \newcommand{\n@mod}[2]{(#1)-(floor((#1)/(#2))*(#2))}%
 %    \end{macrocode}
-% Then, we create a counter so that a new data table is generated and for each new plot. If the plot macros have not changed, the tables, once generated, can be reused by |gnuplot|, which reduces compilation time.
+% Then, we create a counter so that a new data table is generated and for each new plot. If the plot macros have not changed, the tables, once generated, can be reused by |gnuplot|, which reduces compilation time. The |declutter| option is used to enable the |gnuplot| directory to declutter the working directory.
 %    \begin{macrocode}
   \newcounter{gnuplot@id}%
   \setcounter{gnuplot@id}{0}%
-  \tikzset{%
-    gnuplot@prefix/.style={%
-      id=\arabic{gnuplot@id},
-      prefix=gnuplot/\jobname
-    }%
-  }
+  \if@declutterarg
+    \tikzset{%
+      gnuplot@prefix/.style={%
+        id=\arabic{gnuplot@id},
+        prefix=gnuplot/\jobname
+      }%
+    }
+  \else
+    \tikzset{%
+      gnuplot@prefix/.style={%
+        id=\arabic{gnuplot@id},
+        prefix=\jobname
+      }%
+    }
+  \fi
 %    \end{macrocode}
 % Then, we add |set angles degrees| to all |gnuplot| macros to avoid having to convert from degrees to radians everywhere.
 %    \begin{macrocode}
@@ -833,10 +856,12 @@ Nyquist plots with additional commands, using two different macros
     }%
   }
 %    \end{macrocode}
-% If the operating system is not Windows, we create the |gnuplot| folder if it does not already exist. \changes{v1.0.2}{2021/11/01}{Fixed issue \#1}
+% If the operating system is not Windows, and if the |declutter| option is not passed, we create the |gnuplot| folder if it does not already exist. \changes{v1.0.2}{2021/11/01}{Fixed issue \#1}
 %    \begin{macrocode}
   \ifwindows\else
-    \immediate\write18{mkdir -p gnuplot}%
+    \if@declutterarg
+      \immediate\write18{mkdir -p gnuplot}%
+    \fi
   \fi
 \fi
 %    \end{macrocode}
@@ -1399,7 +1424,7 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 %\end{macro}
 % \begin{macro}{\build@TF@plot}
-% This is an internal macro to build parametric Bode magnitude and phase functions by computing the magnitude and the phase given numerator and denominator coefficients and delay (input |#3|). The functions are assigned to user-supplied global magnitude and phase macros (inputs |#1| and |#2|).
+% This is an internal macro to build parametric Bode magnitude and phase functions by computing the magnitude and the phase given numerator and denominator coefficients and delay (input |#3|). The functions are assigned to user-supplied global magnitude and phase macros (inputs |#1| and |#2|). \changes{v1.0.8}{2022/07/05}{Included phase due to delay in wrapping.}
 %    \begin{macrocode}
 \newcommand{\build@TF@plot}[3]{%
   \gdef\num@real{0}%
@@ -1451,7 +1476,7 @@ Nyquist plots with additional commands, using two different macros
     \fi
   }%
   \xdef#2{(\n@mod{atan2((\num@im),(\num@real))-atan2((\den@im),%
-    (\den@real))+360}{360}-\loop@delay*180*t/pi)}%
+    (\den@real))-\loop@delay*180*t/pi+360}{360})}%
   \xdef#1{(20*log10(sqrt((\n@pow{\num@real}{2})+(\n@pow{\num@im}{2})))-%
     20*log10(sqrt((\n@pow{\den@real}{2})+(\n@pow{\den@im}{2}))))}%
 }

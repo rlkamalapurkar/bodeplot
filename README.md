@@ -3,7 +3,7 @@ LaTeX package to plot Bode, Nichols, and Nyquist diagrams.
 
 Inspired by the `bodegraph` package.
 
-Limitation: Phase plots from TF commands are wrapped between 0 and 360 degrees.
+*Version 1.0.8 and newer store `gnuplot` temporary files in the working directory. Use class option `declutter` to restore pre-v1.0.8 behavior. Option `declutter` can cause errors if used with a `tikzexternalize` prefix.*
 
 Added functionality:
  - New `\BodeZPK` and `\BodeTF` commands to generate Bode plots of any transfer function given either poles, zeros, gain, and delay, or numerator and denominator coefficients and delay
@@ -41,3 +41,5 @@ Other new environments and associated commands:
  - `NyquistPlot` environment
     - `\addNyquistZPKPlot[plot-options]{z/{zeros},p/{poles},k/gain,d/delay}`
     - `\addNyquistTFPlot[plot-options]{num/{coeff},den/{coeff},d/delay}`
+
+Limitation: Phase plots from TF commands are wrapped between 0 and 360 degrees.
