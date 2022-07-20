@@ -54,6 +54,7 @@
   \geometry{lmargin=2in,rmargin=1in,tmargin=1in,bmargin=1in}
 \usetikzlibrary{decorations.markings,arrows.meta,spy,backgrounds}
 \usepackage[nottoc]{tocbibind}
+\sloppy
 \EnableCrossrefs
 \CodelineIndex
 \RecordChanges
@@ -885,11 +886,11 @@ Nyquist plots with additional commands, using two different macros
 % These macros create |pgf| filters to convert plots from radians to degrees.
 %    \begin{macrocode}
 \if@radarg
-  \pgfplotsset{ph@filter/.style = {ytick distance=pi/4,ylabel={Phase (rad)}}}%
+  \pgfplotsset{ph@filter/.style = {ytick distance=pi/4, ylabel={Phase (rad)}}}%
   \pgfplotsset{ph@x@filter/.style = {xlabel={Phase (rad)}}}%
 \else
-  \pgfplotsset{ph@filter/.style = {y filter/.expression={y*180/pi},ytick distance=45,ylabel={Phase (deg)}}}%
-  \pgfplotsset{ph@x@filter/.style = {x filter/.expression={x*180/pi},xlabel={Phase (deg)}}}%
+  \pgfplotsset{ph@filter/.style = {y filter/.expression={y*180/pi}, ytick distance=45, ylabel={Phase (deg)}}}%
+  \pgfplotsset{ph@x@filter/.style = {x filter/.expression={x*180/pi}, xlabel={Phase (deg)}}}%
 \fi
 %    \end{macrocode}
 % \end{macro}
@@ -1156,7 +1157,7 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 % The |\noexpand| macros below are needed to so that only the macro |\opt@group| is expanded. \changes{v1.0.3}{2021/11/03}{Added Tikz option}
 %    \begin{macrocode}
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{groupplot}[%
       bode@style,
       xmin={#3},
@@ -1172,14 +1173,16 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 % To ensure frequency tick marks on magnitude and the phase plots are always aligned, we use the |groupplot| library. The |\expandafter| chain below is used to expand macros in the plot and group optional arguments.
 %    \begin{macrocode}
-      \edef\temp@mag@cmd{\noexpand\nextgroupplot[ytick distance=20,ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]\noexpand\addplot[variable=t,thick,\optmag@plot]}
-      \edef\temp@ph@cmd{\noexpand\nextgroupplot[ph@filter,xlabel={Frequency (rad/s)},\optph@axes]\noexpand\addplot[variable=t,thick,\optph@plot]}
+      \edef\temp@mag@cmd{\noexpand\nextgroupplot[ytick distance=20, ylabel={Gain (dB)}, xmajorticks=false, \optmag@axes]
+      \noexpand\addplot[variable=t, thick, \optmag@plot]}
+      \edef\temp@ph@cmd{\noexpand\nextgroupplot[ph@filter, xlabel={Frequency (rad/s)}, \optph@axes]
+      \noexpand\addplot[variable=t, thick, \optph@plot]}
 %    \end{macrocode}
 % In |gnuplot| mode, we increment the |gnuplot@id| counter before every plot to make sure that new and reusable |.gnuplot| and |.table| files are generated for every plot.
 %    \begin{macrocode}
       \if@pgfarg\else
-        \edef\temp@mag@cmd{\noexpand\stepcounter{gnuplot@id}\unexpanded\expandafter{\temp@mag@cmd} gnuplot[gnuplot@prefix]}
-        \edef\temp@ph@cmd{\noexpand\stepcounter{gnuplot@id}\unexpanded\expandafter{\temp@ph@cmd} gnuplot[gnuplot@prefix]}
+        \edef\temp@mag@cmd{\noexpand\stepcounter{gnuplot@id} \unexpanded\expandafter{\temp@mag@cmd} gnuplot[gnuplot@prefix]}
+        \edef\temp@ph@cmd{\noexpand\stepcounter{gnuplot@id} \unexpanded\expandafter{\temp@ph@cmd} gnuplot[gnuplot@prefix]}
       \fi
       \temp@mag@cmd {\func@mag};
       \optmag@commands
@@ -1198,7 +1201,7 @@ Nyquist plots with additional commands, using two different macros
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{groupplot}[%
       bode@style,
       xmin={#3},
@@ -1211,11 +1214,13 @@ Nyquist plots with additional commands, using two different macros
     ]%
   }%
   \temp@cmd
-      \edef\temp@mag@cmd{\noexpand\nextgroupplot[ytick distance=20,ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]\noexpand\addplot[variable=t,thick,\optmag@plot]}
-      \edef\temp@ph@cmd{\noexpand\nextgroupplot[ph@filter,xlabel={Frequency (rad/s)},\optph@axes]\noexpand\addplot[variable=t,thick,\optph@plot]}
+      \edef\temp@mag@cmd{\noexpand\nextgroupplot[ytick distance=20, ylabel={Gain (dB)}, xmajorticks=false, \optmag@axes]
+      \noexpand\addplot[variable=t, thick, \optmag@plot]}
+      \edef\temp@ph@cmd{\noexpand\nextgroupplot[ph@filter, xlabel={Frequency (rad/s)}, \optph@axes]
+      \noexpand\addplot[variable=t, thick, \optph@plot]}
       \if@pgfarg\else
-        \edef\temp@mag@cmd{\noexpand\stepcounter{gnuplot@id}\unexpanded\expandafter{\temp@mag@cmd} gnuplot[gnuplot@prefix]}
-        \edef\temp@ph@cmd{\noexpand\stepcounter{gnuplot@id}\unexpanded\expandafter{\temp@ph@cmd} gnuplot[gnuplot@prefix]}
+        \edef\temp@mag@cmd{\noexpand\stepcounter{gnuplot@id} \unexpanded\expandafter{\temp@mag@cmd} gnuplot[gnuplot@prefix]}
+        \edef\temp@ph@cmd{\noexpand\stepcounter{gnuplot@id} \unexpanded\expandafter{\temp@ph@cmd} gnuplot[gnuplot@prefix]}
       \fi
       \temp@mag@cmd {\func@mag};
       \optmag@commands
@@ -1300,7 +1305,7 @@ Nyquist plots with additional commands, using two different macros
 %    \begin{macrocode}
 \newenvironment{BodePhPlot}[3][]{%
   \parse@env@opt{#1}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]
     \noexpand\begin{semilogxaxis}[%
       ph@filter,
       bode@style,
@@ -1324,7 +1329,7 @@ Nyquist plots with additional commands, using two different macros
 %    \begin{macrocode}
 \newenvironment{BodeMagPlot}[3][]{%
   \parse@env@opt{#1}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]
     \noexpand\begin{semilogxaxis}[%
       bode@style,
       xmin={#2},
@@ -1350,7 +1355,7 @@ Nyquist plots with additional commands, using two different macros
 \newenvironment{BodePlot}[3][]{%
   \PackageWarning{bodeplot}{Since v1.1.0, the BodePlot environment returns phase plots in radian units only. Please use the BodePhPlot environment if degree units are needed.}%
   \parse@env@opt{#1}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]
     \noexpand\begin{semilogxaxis}[%
       bode@style,
       xmin={#2},
@@ -1618,7 +1623,7 @@ Nyquist plots with additional commands, using two different macros
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
       bode@style,
       domain=#3:#4,
@@ -1631,7 +1636,7 @@ Nyquist plots with additional commands, using two different macros
   }%
   \temp@cmd
       \addplot [only marks,mark=+,thick,red] (-1 , 0);
-      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\unexpanded\expandafter{\opt@plot}]}%
+      \edef\temp@cmd{\noexpand\addplot[variable=t, thick, \unexpanded\expandafter{\opt@plot}]}%
       \if@pgfarg
         \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
           {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
@@ -1656,7 +1661,7 @@ Nyquist plots with additional commands, using two different macros
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
       bode@style,
       domain=#3:#4,
@@ -1669,7 +1674,7 @@ Nyquist plots with additional commands, using two different macros
   }%
   \temp@cmd
       \addplot [only marks,mark=+,thick,red] (-1 , 0);
-      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\unexpanded\expandafter{\opt@plot}]}%
+      \edef\temp@cmd{\noexpand\addplot[variable=t, thick, \unexpanded\expandafter{\opt@plot}]}%
       \if@pgfarg
         \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos(\func@ph)},
           {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
@@ -1729,7 +1734,7 @@ Nyquist plots with additional commands, using two different macros
 %    \begin{macrocode}
 \newenvironment{NyquistPlot}[3][]{%
   \parse@env@opt{#1}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
       bode@style,
       height=5cm,
@@ -1795,7 +1800,7 @@ Nyquist plots with additional commands, using two different macros
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
       ph@x@filter,
       bode@style,
@@ -1825,7 +1830,7 @@ Nyquist plots with additional commands, using two different macros
   \gdef\func@mag{}%
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
       ph@x@filter,
       bode@style,
@@ -1852,7 +1857,7 @@ Nyquist plots with additional commands, using two different macros
 }
 \newenvironment{NicholsChart}[3][]{%
   \parse@env@opt{#1}%
-  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
       ph@x@filter,
       bode@style,
