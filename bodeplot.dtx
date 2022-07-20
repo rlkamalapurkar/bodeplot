@@ -73,7 +73,7 @@
 % \changes{v1.0.7}{2021/12/02}{Removed unnecessary semicolons}
 % \changes{v1.0.7}{2022/01/18}{Updated documentation}
 % \changes{v1.0.8}{2022/07/06}{Added a new class option `declutter'}
-% \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in |gnuplot| mode}
+% \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in gnuplot mode}
 %
 % \GetFileInfo{bodeplot.sty}
 % \DoNotIndex{\newcommand,\xdef,\gdef,\def,\edef,\addplot,\approx,\arabic,\opt,\typ,\obj,\else,\if@pgfarg,\fi,\begin,\end,\feature,\footnotesize,\draw,\detokenize,\DeclareOption,\foreach,\ifdim,\ifodd,\Im,\Re,\let,\newif,\nextgroupplot,\noexpand,\expandafter,\unexpanded,\PackageError,\PackageWarning,\relax,\RequirePackage,\tikzset,\pgfmathsetmacro,\pgfmathtruncatemacro,\ProcessOptions}
@@ -1191,7 +1191,7 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\BodeTF}
-% Implementation of this macro is very similar to the |\BodeZPK| macro above. The only difference is the lack of linear and asymptotic plots and slightly different parsing of the mandatory arguments. \changes{v1.0.3}{2021/11/03}{Added Tikz option} \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in |gnuplot| mode}
+% Implementation of this macro is very similar to the |\BodeZPK| macro above. The only difference is the lack of linear and asymptotic plots and slightly different parsing of the mandatory arguments. \changes{v1.0.3}{2021/11/03}{Added Tikz option} \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in gnuplot mode}
 %    \begin{macrocode}
 \newcommand{\BodeTF}[4][]{%
   \parse@opt{#1}%
@@ -1255,7 +1255,7 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 %\end{macro}
 % \begin{macro}{\addBodeTFPlot}
-% This macro is designed to issues a single |\addplot| macros for the set of coefficients and delay. All of the work is done by the |\build@TF@plot| macro.  \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in |gnuplot| mode}
+% This macro is designed to issues a single |\addplot| macros for the set of coefficients and delay. All of the work is done by the |\build@TF@plot| macro.  \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in gnuplot mode}
 %    \begin{macrocode}
 \newcommand{\addBodeTFPlot}[3][thick]{%
   \gdef\plot@macro{}%
