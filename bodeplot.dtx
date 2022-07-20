@@ -18,7 +18,6 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2006/05/20]
 %<package>\ProvidesPackage{bodeplot}
-%<package>\RequirePackage{tikz}
 %<package>\RequirePackage{pdftexcmds}
 %<package>\RequirePackage{ifplatform}
 %<package>\RequirePackage{pgfplots}
@@ -66,7 +65,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1375}
+% \CheckSum{1404}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
 % \changes{v1.0.4}{2021/11/05}{Fixed unintended optional argument macro expansion}
@@ -74,13 +73,12 @@
 % \changes{v1.0.7}{2021/12/02}{Removed unnecessary semicolons}
 % \changes{v1.0.7}{2022/01/18}{Updated documentation}
 % \changes{v1.0.8}{2022/07/06}{Added a new class option `declutter'}
+% \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in |gnuplot| mode}
 %
 % \GetFileInfo{bodeplot.sty}
 % \DoNotIndex{\newcommand,\xdef,\gdef,\def,\edef,\addplot,\approx,\arabic,\opt,\typ,\obj,\else,\if@pgfarg,\fi,\begin,\end,\feature,\footnotesize,\draw,\detokenize,\DeclareOption,\foreach,\ifdim,\ifodd,\Im,\Re,\let,\newif,\nextgroupplot,\noexpand,\expandafter,\unexpanded,\PackageError,\PackageWarning,\relax,\RequirePackage,\tikzset,\pgfmathsetmacro,\pgfmathtruncatemacro,\ProcessOptions}
 %
-% \title{The \textsf{bodeplot} package\thanks{This document
-% corresponds to \textsf{bodeplot}~v1.0.8,
-% dated July 06, 2022.}}
+% \title{The \textsf{bodeplot} package\thanks{This document corresponds to \textsf{bodeplot}~v1.1.0, dated July 20, 2022.}}
 % \author{Rushikesh Kamalapurkar \\ \texttt{rlkamalapurkar@gmail.com}}
 %
 % \maketitle
@@ -88,14 +86,14 @@
 % \clearpage
 % \section{Introduction}
 %
-% Generate Bode, Nyquist, and Nichols plots for transfer functions in the canonical (TF) form \begin{equation}G(s) = e^{-Ts}\frac{b_ms^m+\cdots+b_1s+b_0}{a_ns^n+\cdots+a_1s+a_0}\label{eq:TF}\end{equation} and the zero-pole-gain (ZPK) form \begin{equation}G(s) = Ke^{-Ts}\frac{(s-z_1)(s-z_2)\cdots(s-z_m)}{(s-p_1)(s-p_2)\cdots(s-p_n)}.\label{eq:ZPK}\end{equation} In the equations above, $b_m,\cdots,b_0$ and $a_n,\cdots,a_0$ are real coefficients, $T\geq 0$ is the loop delay, $z_1,\cdots,z_m$ and $p_1,\cdots,p_n$ are complex zeros and poles of the transfer function, respectively, and $K\in \Re$ is the loop gain. For transfer functions in the ZPK format in (\ref{eq:ZPK}) \emph{with zero delay}, this package also supports linear and asymptotic approximation of Bode plots.
+% Generate Bode, Nyquist, and Nichols plots for transfer functions in the canonical (TF) form \begin{equation}G(s) = e^{-Ts}\frac{b_ms^m+\cdots+b_1s+b_0}{a_ns^n+\cdots+a_1s+a_0}\label{eq:TF}\end{equation} and the zero-pole-gain (ZPK) form \begin{equation}G(s) = Ke^{-Ts}\frac{(s-z_1)(s-z_2)\cdots(s-z_m)}{(s-p_1)(s-p_2)\cdots(s-p_n)}.\label{eq:ZPK}\end{equation} In the equations above, $b_m,\cdots,b_0$ and $a_n,\cdots,a_0$ are real coefficients, $T\geq 0$ is the loop delay, $z_1,\cdots,z_m$ and $p_1,\cdots,p_n$ are complex zeros and poles of the transfer function, respectively, and $K\in \Re$ is the loop gain. For transfer functions in the ZPK format in (\ref{eq:ZPK}) \emph{with zero delay}, this package also supports linear and asymptotic approximation of Bode plots. By default, all phase plots use degrees as units. Use the |rad| package option to generate plots in radians.
 % \subsection{External Dependencies}
-% By default, the package uses |gnuplot| to do all the computations. If |gnuplot| is not available, the |pgf| package option can be used to do the calculations using the native |pgf| math engine. Compilation using the |pgf| math engine is typically slower, but the end result should be the identical.
+% By default, the package uses |gnuplot| to do all the computations. If |gnuplot| is not available, the |pgf| package option can be used to do the calculations using the native |pgf| math engine. Compilation using the |pgf| math engine is typically slower, but the end result should be the identical (other than phase wrapping in the TF format, see limitations below).
 %\subsection{Directory Structure}
 % Since version 1.0.8, the |bodeplot| package places all |gnuplot| temporary files in the working directory. The package option |declutter| restores the original behavior where the temporary files are placed in a folder called |gnuplot|.
 % \subsection{Limitations} 
 % \begin{itemize}
-%   \item In TF form, the phase angles are always between 0 and 360$^\circ$. As such, the Bode phase plots and the Nyquist and Nichols plots will have phase wrapping discontinuities. I do not know how this can be rectified, pull requests are welcome!
+%   \item When plotting Nichols charts in TF form, the phase angles are wrapped between 0 and 360$^\circ$. As such, the Nichols charts will have phase wrapping discontinuities. Phase wrapping in Bode plots was fixed in v1.1.0 using |gnuplot|. In |pgf| mode, Bode phase plots, plotted using the TF form, will also show phase wrapping discontinuities.
 %   \item Use of the |declutter| option with other directory management tools such as a |tikzexternalize| prefix is not recommended.
 % \end{itemize}
 % \clearpage
@@ -123,7 +121,7 @@
 
 \hrulefill
 
-Bode plot in TF format with arrow decoration, transport delay, and color customization (note the phase wrapping)
+Bode plot in TF format with arrow decoration, transport delay, and color customization (the phase plot will show wrapping if the |pgf| package option is used)
 \begin{LTXexample}[pos=r,width=0.5\textwidth]
 \BodeTF[%
   samples=1000,
@@ -188,10 +186,8 @@ Individual gain and phase plots with more customization
 
 \begin{minipage}[t]{0.45\textwidth}
 \begin{LTXexample}[pos=t,width=\columnwidth]
-\begin{BodePlot}[%
-  axes/{ylabel={Gain (dB)},
-  ytick distance=40,
-  height=2cm,
+\begin{BodeMagPlot}[%
+  axes/{height=2cm,
   width=4cm}
 ]
 {0.01}
@@ -207,13 +203,12 @@ Individual gain and phase plots with more customization
     p/{{-0.5,-10},{-0.5,10}},
     k/10
   }
-\end{BodePlot}
+\end{BodeMagPlot}
 \end{LTXexample}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.45\textwidth}
 \begin{LTXexample}[pos=t,width=\columnwidth]
-\begin{BodePlot}[%
-  ylabel={Phase ($^{\circ}$)},
+\begin{BodePhPlot}[%
   height=2cm,
   width=4cm,
   ytick distance=90
@@ -231,7 +226,7 @@ Individual gain and phase plots with more customization
     p/{{-0.5,-10},{-0.5,10}},
     k/10
   }
-\end{BodePlot}
+\end{BodePhPlot}
 \end{LTXexample}
 \end{minipage}
 
@@ -243,20 +238,21 @@ Nichols chart
 {%
   z/{0,{-0.1,-0.5},{-0.1,0.5}},
   p/{{-0.5,-10},{-0.5,10}},
-  k/10
+  k/10,
+  d/0.01
 }
 {0.001}
-{100}
+{500}
 \end{LTXexample}
 
 \hrulefill
 
-Nichols chart in TF format
+Same Nichols chart in TF format (shows phase wrapping discontinuity)
 \begin{LTXexample}[pos=r,hsep=20pt,width=0.5\textwidth]
 \NicholsTF[samples=1000]
-{num/{10,2,2.6,0},den/{1,1,100.25}}
+{num/{10,2,2.6,0},den/{1,1,100.25},d/0.01}
 {0.001}
-{100}
+{500}
 \end{LTXexample}
 
 \hrulefill
@@ -486,12 +482,12 @@ Nyquist plots with additional commands, using two different macros
 % \end{center}
 % \end{figure}
 %
-% \DescribeEnv{BodePlot}
-% |\begin{BodePlot}|\oarg{obj1/\marg{opt1},obj2/\marg{opt2},...}\\
+% \DescribeEnv{BodeMagPlot}
+% |\begin{BodeMagPlot}|\oarg{obj1/\marg{opt1},obj2/\marg{opt2},...}\\
 % \hspace*{3em}\marg{min-frequency}\marg{max-frequency}\\
 % \hspace*{2em}|\addBode...|\\
-% \hspace*{1.5em}|\end{BodePlot}|\\
-% The |BodePlot| environment works in conjunction with the parametric function generator macros |\addBodeZPKPlots|, |\addBodeTFPlot|, and |\addBodeComponentPlot|. The optional argument is comprised of a comma separated list of tuples, either |obj/{opt}| or just |{opt}|. Each tuple passes options to different |pgfplots| macros that generate the axes and the plots according to:
+% \hspace*{1.5em}|\end{BodeMagPlot}|\\
+% The |BodeMagPlot| environment works in conjunction with the parametric function generator macros |\addBodeZPKPlots|, |\addBodeTFPlot|, and |\addBodeComponentPlot|, intended to be used for magnitude plots. The optional argument is comprised of a comma separated list of tuples, either |obj/{opt}| or just |{opt}|. Each tuple passes options to different |pgfplots| macros that generate the axes and the plots according to:
 % \begin{itemize}
 %  \item Tuples of the form |obj/{opt}|:
 %   \begin{itemize}
@@ -503,6 +499,13 @@ Nyquist plots with additional commands, using two different macros
 % \end{itemize}
 % The frequency limits are translated to the x-axis limits and the domain of the |semilogaxis| environment. Example usage in the description of |\addBodeZPKPlots|, |\addBodeTFPlot|, and |\addBodeComponentPlot|.
 %
+%\DescribeEnv{BodePhPlot}
+% |\begin{BodePhPlot}|\oarg{obj1/\marg{opt1},obj2/\marg{opt2},...}\\
+	% \hspace*{3em}\marg{min-frequency}\marg{max-frequency}\\
+	% \hspace*{2em}|\addBode...|\\
+	% \hspace*{1.5em}|\end{BodePhPlot}|\\
+% Intended to be used for phase plots, otherwise same as the |BodeMagPlot| environment
+%
 % \DescribeMacro{\addBodeZPKPlots}
 % |\addBodeZPKPlots| \oarg{approx1/\marg{opt1},approx2/\marg{opt2},...}\\
 % \hspace*{2em}\marg{plot-type}\\
@@ -512,50 +515,44 @@ Nyquist plots with additional commands, using two different macros
 %
 % For example, given the transfer function in (\ref{eq:ZPKExample}), its linear, asymptotic, and true Bode plots can be superimposed using
 %\begin{verbatim}
-%\begin{BodePlot}[ ylabel={Gain (dB)}, ytick distance=40,
-%  height=2cm, width=4cm] {0.01} {100}
+%\begin{BodeMagPlot}[height=2cm,width=4cm] {0.01} {100}
 %  \addBodeZPKPlots[
 %    true/{black,thick},
 %    linear/{red,dashed,thick},
 %    asymptotic/{blue,dotted,thick}]
 %    {magnitude}
 %    {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}
-%\end{BodePlot}
+%\end{BodeMagPlot}
 %
-%\begin{BodePlot}[ylabel={Phase ($^{\circ}$)},
-%  height=2cm, width=4cm, ytick distance=90] {0.01} {100}
+%\begin{BodePhPlot}[height=2cm, width=4cm, ytick distance=90] {0.01} {100}
 %  \addBodeZPKPlots[
 %    true/{black,thick},
 %    linear/{red,dashed,thick},
 %    asymptotic/{blue,dotted,thick}]
 %    {phase}
 %    {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}
-%\end{BodePlot}
+%\end{BodePhPlot}
 %\end{verbatim}
 % \begin{figure}
 %  \begin{center}
-%    \begin{BodePlot}[ ylabel={Gain (dB)}, ytick distance=40,
-%      height=2cm, width=4cm] {0.01} {100}
-%
+%    \begin{BodeMagPlot}[height=2cm,width=4cm]{0.01}{100}
 %      \addBodeZPKPlots[
 %        true/{black,thick},
 %        linear/{red,dashed,thick},
 %        asymptotic/{blue,dotted,thick}]
 %      {magnitude}
 %      {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}
-%    \end{BodePlot}
-%    \begin{BodePlot}[ylabel={Phase ($^{\circ}$)},
-%      height=2cm, width=4cm, ytick distance=90] {0.01} {100}
-%
+%    \end{BodeMagPlot}
+%    \begin{BodePhPlot}[height=2cm,width=4cm,ytick distance=90]{0.01}{100}
 %      \addBodeZPKPlots[
 %        true/{black,thick},
 %        linear/{red,dashed,thick},
 %        asymptotic/{blue,dotted,thick}]
 %      {phase}
 %      {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}
-%    \end{BodePlot}
+%    \end{BodePhPlot}
 %  \end{center}
-%  \caption{\label{multiBodeZPK}Superimposed approximate and true Bode plots using the \texttt{BodePlot} environment and the \texttt{\textbackslash addBodeZPKPlots} macro.}
+%  \caption{\label{multiBodeZPK}Superimposed approximate and true Bode plots using the \texttt{BodeMagPlot} and \texttt{BodePhPlot} environments and the \texttt{\textbackslash addBodeZPKPlots} macro.}
 % \end{figure}
 % which generates the plot in Figure \ref{multiBodeZPK}.
 %
@@ -584,7 +581,7 @@ Nyquist plots with additional commands, using two different macros
 % \end{itemize}
 % All 20 of the macros defined by combinations of |Type|, |Feature|, and |Approx|, and any |gnuplot| (or |pgfplot| if the |pgf| class option is loaded) compatible function of the 20 macros can be used as |plot-command| in the |addBodeComponentPlot| macro. This is sufficient to generate the Bode plot of any rational transfer function with delay. For example, the Bode phase plot in Figure \ref{multiBodeZPK} can also be generated using:
 %\begin{verbatim}
-%\begin{BodePlot}[ylabel={Phase (degree)},ytick distance=90]{0.01}{100}
+%\begin{BodePhPlot}[ytick distance=90]{0.01}{100}
 %  \addBodeComponentPlot[black,thick]{\PhZero{0}{0} + \PhZero{-0.1}{-0.5} +
 %    \PhZero{-0.1}{0.5} + \PhPole{-0.5}{-10} + \PhPole{-0.5}{10} +
 %    \PhK{10}{0}}
@@ -594,17 +591,17 @@ Nyquist plots with additional commands, using two different macros
 %  \addBodeComponentPlot[blue,dotted,thick] {\PhZeroAsymp{0}{0} + 
 %    \PhZeroAsymp{-0.1}{-0.5} + \PhZeroAsymp{-0.1}{0.5} + 
 %    \PhPoleAsymp{-0.5}{-10} + \PhPoleAsymp{-0.5}{10} + \PhKAsymp{10}{40}}
-%\end{BodePlot}
+%\end{BodePhPlot}
 %\end{verbatim}
 %\begin{figure}
 %  \begin{center}
-%    \begin{BodePlot}[ylabel={Phase (degree)},ytick distance=90]{0.01}{100}
+%    \begin{BodePhPlot}[ytick distance=90]{0.01}{100}
 %      \addBodeComponentPlot[black,thick] {\PhZero{0}{0} + \PhZero{-0.1}{-0.5} + \PhZero{-0.1}{0.5} + \PhPole{-0.5}{-10} + \PhPole{-0.5}{10} + \PhK{10}{0}}
 %      \addBodeComponentPlot[red,dashed,thick] {\PhZeroLin{0}{0} + \PhZeroLin{-0.1}{-0.5} + \PhZeroLin{-0.1}{0.5} + \PhPoleLin{-0.5}{-10} + \PhPoleLin{-0.5}{10} + \PhKLin{10}{20}}
 %      \addBodeComponentPlot[blue,dotted,thick] {\PhZeroAsymp{0}{0} + \PhZeroAsymp{-0.1}{-0.5} + \PhZeroAsymp{-0.1}{0.5} + \PhPoleAsymp{-0.5}{-10} + \PhPoleAsymp{-0.5}{10} + \PhKAsymp{10}{40}}
-%    \end{BodePlot}
+%    \end{BodePhPlot}
 %  \end{center}
-%  \caption{\label{multiBodeComponents}Superimposed approximate and true Bode Phase plot using the \texttt{BodePlot} environment, the \texttt{\textbackslash addBodeComponentPlot} macro, and several macros of the \texttt{\textbackslash TypeFeatureApprox} form.}
+%  \caption{\label{multiBodeComponents}Superimposed approximate and true Bode Phase plot using the \texttt{BodePhPlot} environment, the \texttt{\textbackslash addBodeComponentPlot} macro, and several macros of the \texttt{\textbackslash TypeFeatureApprox} form.}
 %\end{figure}
 % which gives us the plot in Figure \ref{multiBodeComponents}.
 %
@@ -620,21 +617,21 @@ Nyquist plots with additional commands, using two different macros
 %
 % \noindent This entry describes 2 different macros of the form |\MagSOFeaturePeak| that take the the coefficients $ a_1 $ and $ a_0 $ of a general second order system as inputs, and draw a resonant peak using the |\draw| TikZ macro. The |Feature| in the macro name should be replaced by either |Poles| or |Zeros| to generate a peak for poles and a valley for zeros, respectively.  For example, the command
 %\begin{verbatim}
-%\begin{BodePlot}[xlabel={}]{0.1}{10}
+%\begin{BodeMagPlot}[xlabel={}]{0.1}{10}
 %  \addBodeComponentPlot[red,dashed,thick]{\MagSOPoles{0.2}{1}}
 %  \addBodeComponentPlot[black,thick]{\MagSOPolesLin{0.2}{1}}
 %  \MagSOPolesPeak[thick]{0.2}{1}
-%\end{BodePlot}
+%\end{BodeMagPlot}
 %\end{verbatim}
 % generates the plot in Figure \ref{BodePeak}.
 %
 % \begin{figure}
 % \begin{center}
-%  \begin{BodePlot}[xlabel={}]{0.1}{10}
+%  \begin{BodeMagPlot}[xlabel={}]{0.1}{10}
 %    \addBodeComponentPlot[red,dashed,thick]{\MagSOPoles{0.2}{1}}
 %    \addBodeComponentPlot[black,thick]{\MagSOPolesLin{0.2}{1}}
 %    \MagSOPolesPeak[very thick]{0.2}{1}
-%  \end{BodePlot}
+%  \end{BodeMagPlot}
 % \end{center}
 % \cprotect\caption{\label{BodePeak} Resonant peak in asymptotic Bode plot using |\MagSOPolesPeak|.}
 % \end{figure}
@@ -727,7 +724,7 @@ Nyquist plots with additional commands, using two different macros
 % |\addNyquistTFPlot|\oarg{plot-options}\\
 % \hspace*{2em}\marg{num/\marg{coeffs},den/\marg{coeffs},d/\marg{delay}}
 %
-% \noindent Similar to |\addNyquistZPKPlot|,  with a transfer function input in the TF form.
+% \noindent Similar to |\addNyquistZPKPlot|, with a transfer function input in the TF form.
 %
 % \subsection{Nichols charts}
 % \DescribeMacro{\NicholsZPK}
@@ -804,8 +801,7 @@ Nyquist plots with additional commands, using two different macros
 % \begin{macro}{gnuplot@prefix}
 % \changes{v1.0.3}{2021/11/03}{Added jobname to gnuplot prefix}
 % \changes{v1.0.8}{2022/07/06}{Fixed issue \#6}
-% \begin{macro}{gnuplot@degrees}
-% This code is needed to support both |pgfplots| and |gnuplot| simultaneously. New macros are defined for the |pow| and |mod| functions to address differences between the two math engines. We start by processing the |pgf| and |declutter| class options. 
+% This code is needed to support both |pgfplots| and |gnuplot| simultaneously. New macros are defined for the |pow| and |mod| functions to address differences between the two math engines. We start by processing the class options. 
 %    \begin{macrocode}
 \newif\if@pgfarg\@pgfargfalse
 \DeclareOption{pgf}{%
@@ -815,21 +811,27 @@ Nyquist plots with additional commands, using two different macros
 \DeclareOption{declutter}{%
   \@declutterargtrue
 }
+\newif\if@radarg\@radargfalse
+\DeclareOption{rad}{%
+  \@radargtrue
+}
 \ProcessOptions\relax
 %    \end{macrocode}
 % Then, we define two new macros to unify |pgfplots| and |gnuplot|.
 %    \begin{macrocode}
+\newcommand{\n@mod}[2]{(#1)-(floor((#1)/(#2))*(#2))}
 \if@pgfarg
-  \newcommand{\n@pow}[2]{(#1)^(#2)}%
-  \newcommand{\n@mod}[2]{mod((#1),(#2))}%
+  \newcommand{\n@pow}[2]{(#1)^(#2)}
+  \pgfplotsset{%
+    trig format plots=rad%
+  }
 \else
-  \newcommand{\n@pow}[2]{(#1)**(#2)}%
-  \newcommand{\n@mod}[2]{(#1)-(floor((#1)/(#2))*(#2))}%
+  \newcommand{\n@pow}[2]{(#1)**(#2)}
 %    \end{macrocode}
 % Then, we create a counter so that a new data table is generated and for each new plot. If the plot macros have not changed, the tables, once generated, can be reused by |gnuplot|, which reduces compilation time. The |declutter| option is used to enable the |gnuplot| directory to declutter the working directory.
 %    \begin{macrocode}
-  \newcounter{gnuplot@id}%
-  \setcounter{gnuplot@id}{0}%
+  \newcounter{gnuplot@id}
+  \setcounter{gnuplot@id}{0}
   \if@declutterarg
     \tikzset{%
       gnuplot@prefix/.style={%
@@ -846,26 +848,15 @@ Nyquist plots with additional commands, using two different macros
     }
   \fi
 %    \end{macrocode}
-% Then, we add |set angles degrees| to all |gnuplot| macros to avoid having to convert from degrees to radians everywhere.
-%    \begin{macrocode}
-  \pgfplotsset{%
-    gnuplot@degrees/.code={%
-      \ifnum\value{gnuplot@id}=1
-        \xdef\pgfplots@gnuplot@format{\pgfplots@gnuplot@format set angles degrees;}%
-      \fi
-    }%
-  }
-%    \end{macrocode}
 % If the operating system is not Windows, and if the |declutter| option is not passed, we create the |gnuplot| folder if it does not already exist. \changes{v1.0.2}{2021/11/01}{Fixed issue \#1}
 %    \begin{macrocode}
   \ifwindows\else
     \if@declutterarg
-      \immediate\write18{mkdir -p gnuplot}%
+      \immediate\write18{mkdir -p gnuplot}
     \fi
   \fi
 \fi
 %    \end{macrocode}
-% \end{macro}
 % \end{macro}
 % \end{macro}
 % \end{macro}
@@ -889,6 +880,20 @@ Nyquist plots with additional commands, using two different macros
 }
 %    \end{macrocode}
 % \end{macro}
+% \begin{macro}{ph@filter}
+% \begin{macro}{ph@x@filter}
+% These macros create |pgf| filters to convert plots from radians to degrees.
+%    \begin{macrocode}
+\if@radarg
+  \pgfplotsset{ph@filter/.style = {ytick distance=pi/4,ylabel={Phase (rad)}}}%
+  \pgfplotsset{ph@x@filter/.style = {xlabel={Phase (rad)}}}%
+\else
+  \pgfplotsset{ph@filter/.style = {y filter/.expression={y*180/pi},ytick distance=45,ylabel={Phase (deg)}}}%
+  \pgfplotsset{ph@x@filter/.style = {x filter/.expression={x*180/pi},xlabel={Phase (deg)}}}%
+\fi
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
 % \subsection{Parametric function generators for poles, zeros, gains, and delays.}
 % \begin{macro}{\MagK}
 % \begin{macro}{\MagKAsymp}
@@ -901,7 +906,7 @@ Nyquist plots with additional commands, using two different macros
 \newcommand*{\MagK}[2]{(20*log10(abs(#1)))}
 \newcommand*{\MagKAsymp}{\MagK}
 \newcommand*{\MagKLin}{\MagK}
-\newcommand*{\PhK}[2]{(#1<0?-180:0)}
+\newcommand*{\PhK}[2]{(#1<0?-pi:0)}
 \newcommand*{\PhKAsymp}{\PhK}
 \newcommand*{\PhKLin}{\PhK}
 %    \end{macrocode}
@@ -916,7 +921,7 @@ Nyquist plots with additional commands, using two different macros
 % True magnitude and phase parametric functions for a pure delay $G(s)=e^{-Ts}$. The macros take two arguments corresponding to real and imaginary part of the gain to facilitate code reuse between delays, gains, poles, and zeros, but only real gains are supported. The second argument, if supplied, is ignored.
 %    \begin{macrocode}
 \newcommand*{\MagDel}[2]{0}
-\newcommand*{\PhDel}[2]{-#1*180*t/pi}
+\newcommand*{\PhDel}[2]{-#1*t}
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}
@@ -945,23 +950,23 @@ Nyquist plots with additional commands, using two different macros
 % Parametric function for the true phase of a complex pole.
 %    \begin{macrocode}
 \newcommand*{\PhPole}[2]{(#1 > 0 ? (#2 > 0 ? 
-  (\n@mod{-atan2((t - (#2)),-(#1))+360}{360}) : 
+  (\n@mod{-atan2((t - (#2)),-(#1))}{2*pi}) : 
   (-atan2((t - (#2)),-(#1)))) : 
   (-atan2((t - (#2)),-(#1))))}
 %    \end{macrocode}
 % Parametric function for linear approximation of the phase of a complex pole.
 %    \begin{macrocode}
 \newcommand*{\PhPoleLin}[2]{%
-  (abs(#1)+abs(#2) == 0 ? -90 :
-  (t < (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) / 
-    (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))})) ? 
+  (abs(#1)+abs(#2) == 0 ? -pi/2 :
+  (t < (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) /
+    (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))})) ?
   (-atan2(-(#2),-(#1))) :
-  (t >= (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) * 
-    (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))})) ? 
-  (#2>0?(#1>0?270:-90):-90) :
-  (-atan2(-(#2),-(#1)) + (log10(t/(sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) / 
-    (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + 
-    \n@pow{#2}{2}))}))))*((#2>0?(#1>0?270:-90):-90) + atan2(-(#2),-(#1)))/
+  (t >= (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) *
+    (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))})) ?
+  (#2>0?(#1>0?3*pi/2:-pi/2):-pi/2) :
+  (-atan2(-(#2),-(#1)) + (log10(t/(sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) /
+    (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} +
+    \n@pow{#2}{2}))}))))*((#2>0?(#1>0?3*pi/2:-pi/2):-pi/2) + atan2(-(#2),-(#1)))/
     (log10(\n@pow{10}{sqrt((4*\n@pow{#1}{2})/
     (\n@pow{#1}{2} + \n@pow{#2}{2}))}))))))}
 %    \end{macrocode}
@@ -969,7 +974,7 @@ Nyquist plots with additional commands, using two different macros
 %    \begin{macrocode}
 \newcommand*{\PhPoleAsymp}[2]{(t < (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2})) ? 
   (-atan2(-(#2),-(#1))) :
-  (#2>0?(#1>0?270:-90):-90))}
+  (#2>0?(#1>0?3*pi/2:-pi/2):-pi/2))}
 %    \end{macrocode}
 % \end{macro}
 % \end{macro}
@@ -1026,10 +1031,10 @@ Nyquist plots with additional commands, using two different macros
 \newcommand*{\PhCSPolesLin}[2]{(t < (#2 / (\n@pow{10}{abs(#1)})) ? 
   0 :
   (t >= (#2 * (\n@pow{10}{abs(#1)})) ? 
-  (#1>0 ? -180 : 180) :
-  (#1>0 ? (-180*(log10(t*(\n@pow{10}{#1})/#2))/(2*#1)) : 
-    (180*(log10(t*(\n@pow{10}{abs(#1)})/#2))/(2*abs(#1))))))}
-\newcommand*{\PhCSPolesAsymp}[2]{(#1>0?(t<#2?0:-180):(t<#2?0:180))}
+  (#1>0 ? -pi : pi) :
+  (#1>0 ? (-pi*(log10(t*(\n@pow{10}{#1})/#2))/(2*#1)) : 
+    (pi*(log10(t*(\n@pow{10}{abs(#1)})/#2))/(2*abs(#1))))))}
+\newcommand*{\PhCSPolesAsymp}[2]{(#1>0?(t<#2?0:-pi):(t<#2?0:pi))}
 %    \end{macrocode}
 % Plots of the inverse function $G(s)=s^2+2\zeta\omega_n s+\omega_n^2$ are defined to be negative of plots of poles. The |0-| is necessary due to a bug in |gnuplot| (fixed in version 5.4, patchlevel 3).
 %    \begin{macrocode}
@@ -1092,10 +1097,10 @@ Nyquist plots with additional commands, using two different macros
 \newcommand*{\PhSOPoles}[2]{(-atan2((#1)*t,((#2) - \n@pow{t}{2})))}
 \newcommand*{\PhSOPolesLin}[2]{(#2>0 ?
   \PhCSPolesLin{(#1/(2*sqrt(#2)))}{(sqrt(#2))} :
-  (#1>0 ? -180 : 180))}
+  (#1>0 ? -pi : pi))}
 \newcommand*{\PhSOPolesAsymp}[2]{(#2>0 ?
   \PhCSPolesAsymp{(#1/(2*sqrt(#2)))}{(sqrt(#2))} :
-  (#1>0 ? -180 : 180))}
+  (#1>0 ? -pi : pi))}
 %    \end{macrocode}
 % Plots of the inverse function $G(s)=s^2+as+b$ are defined to be negative of plots of poles. The |0-| is necessary due to a bug in |gnuplot| (fixed in version 5.4, patchlevel 3).
 %    \begin{macrocode}
@@ -1167,41 +1172,26 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 % To ensure frequency tick marks on magnitude and the phase plots are always aligned, we use the |groupplot| library. The |\expandafter| chain below is used to expand macros in the plot and group optional arguments.
 %    \begin{macrocode}
-      \if@pgfarg
-        \expandafter\nextgroupplot\expandafter[ytick distance=20,
-          ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-        \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optmag@plot]}%
-        \temp@cmd {\func@mag};
-        \optmag@commands
-        \expandafter\nextgroupplot\expandafter[ytick distance=45,
-          ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-        \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optph@plot]}%
-        \temp@cmd {\func@ph};
-        \optph@commands
-      \else
+      \edef\temp@mag@cmd{\noexpand\nextgroupplot[ytick distance=20,ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]\noexpand\addplot[variable=t,thick,\optmag@plot]}
+      \edef\temp@ph@cmd{\noexpand\nextgroupplot[ph@filter,xlabel={Frequency (rad/s)},\optph@axes]\noexpand\addplot[variable=t,thick,\optph@plot]}
 %    \end{macrocode}
 % In |gnuplot| mode, we increment the |gnuplot@id| counter before every plot to make sure that new and reusable |.gnuplot| and |.table| files are generated for every plot.
 %    \begin{macrocode}
-      \stepcounter{gnuplot@id}
-      \expandafter\nextgroupplot\expandafter[ytick distance=20,
-        ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optmag@plot]}%
-      \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\func@mag};
+      \if@pgfarg\else
+        \edef\temp@mag@cmd{\noexpand\stepcounter{gnuplot@id}\unexpanded\expandafter{\temp@mag@cmd} gnuplot[gnuplot@prefix]}
+        \edef\temp@ph@cmd{\noexpand\stepcounter{gnuplot@id}\unexpanded\expandafter{\temp@ph@cmd} gnuplot[gnuplot@prefix]}
+      \fi
+      \temp@mag@cmd {\func@mag};
       \optmag@commands
-      \stepcounter{gnuplot@id}
-      \expandafter\nextgroupplot\expandafter[ytick distance=45,
-        ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-      \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optph@plot]}%
-      \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\func@ph};
+      \temp@ph@cmd {\func@ph};
       \optph@commands
-    \fi
     \end{groupplot}
   \end{tikzpicture}
 }
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\BodeTF}
-% Implementation of this macro is very similar to the |\BodeZPK| macro above. The only difference is the lack of linear and asymptotic plots and slightly different parsing of the mandatory arguments. \changes{v1.0.3}{2021/11/03}{Added Tikz option}
+% Implementation of this macro is very similar to the |\BodeZPK| macro above. The only difference is the lack of linear and asymptotic plots and slightly different parsing of the mandatory arguments. \changes{v1.0.3}{2021/11/03}{Added Tikz option} \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in |gnuplot| mode}
 %    \begin{macrocode}
 \newcommand{\BodeTF}[4][]{%
   \parse@opt{#1}%
@@ -1221,31 +1211,20 @@ Nyquist plots with additional commands, using two different macros
     ]%
   }%
   \temp@cmd
-      \if@pgfarg
-        \expandafter\nextgroupplot\expandafter[ytick distance=20,
-          ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-        \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optmag@plot]}%
-        \temp@cmd {\func@mag};
-        \optmag@commands
-        \expandafter\nextgroupplot\expandafter[ytick distance=45,
-          ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-        \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optph@plot]}%
-        \temp@cmd {\func@ph};
-        \optph@commands
-      \else
-        \stepcounter{gnuplot@id}%
-        \expandafter\nextgroupplot\expandafter[ytick distance=20,
-          ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]
-        \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optmag@plot]}%
-        \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\func@mag};
-        \optmag@commands
-        \stepcounter{gnuplot@id}%
-        \expandafter\nextgroupplot\expandafter[ytick distance=45,
-          ylabel={Phase ($^{\circ}$)},xlabel={Frequency (rad/s)},\optph@axes]
-        \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\optph@plot]}%
-        \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\func@ph};
-        \optph@commands
+      \edef\temp@mag@cmd{\noexpand\nextgroupplot[ytick distance=20,ylabel={Gain (dB)},xmajorticks=false,\optmag@axes]\noexpand\addplot[variable=t,thick,\optmag@plot]}
+      \edef\temp@ph@cmd{\noexpand\nextgroupplot[ph@filter,xlabel={Frequency (rad/s)},\optph@axes]\noexpand\addplot[variable=t,thick,\optph@plot]}
+      \if@pgfarg\else
+        \edef\temp@mag@cmd{\noexpand\stepcounter{gnuplot@id}\unexpanded\expandafter{\temp@mag@cmd} gnuplot[gnuplot@prefix]}
+        \edef\temp@ph@cmd{\noexpand\stepcounter{gnuplot@id}\unexpanded\expandafter{\temp@ph@cmd} gnuplot[gnuplot@prefix]}
       \fi
+      \temp@mag@cmd {\func@mag};
+      \optmag@commands
+      \if@pgfarg
+        \temp@ph@cmd {\n@mod{\func@ph}{2*pi}};
+      \else
+        \temp@ph@cmd {'+' using (t):\func@ph smooth unwrap};
+      \fi
+      \optph@commands
     \end{groupplot}
   \end{tikzpicture}
 }
@@ -1269,14 +1248,14 @@ Nyquist plots with additional commands, using two different macros
     \else
       \stepcounter{gnuplot@id}%
       \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\opt]}
-      \temp@cmd gnuplot[gnuplot@degrees,gnuplot@prefix] {\plot@macro};
+      \temp@cmd gnuplot[gnuplot@prefix] {\plot@macro};
     \fi
   }%
 }
 %    \end{macrocode}
 %\end{macro}
 % \begin{macro}{\addBodeTFPlot}
-% This macro is designed to issues a single |\addplot| macros for the set of coefficients and delay. All of the work is done by the |\build@TF@plot| macro.
+% This macro is designed to issues a single |\addplot| macros for the set of coefficients and delay. All of the work is done by the |\build@TF@plot| macro.  \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in |gnuplot| mode}
 %    \begin{macrocode}
 \newcommand{\addBodeTFPlot}[3][thick]{%
   \gdef\plot@macro{}%
@@ -1287,10 +1266,18 @@ Nyquist plots with additional commands, using two different macros
     \build@TF@plot{\plot@macro}{\temp@macro}{#3}%
   \fi
   \if@pgfarg
-    \addplot[variable=t,#1]{\plot@macro};
+    \ifnum\pdfstrcmp{#2}{phase}=0
+      \addplot[variable=t,#1]{\n@mod{\plot@macro}{2*pi}};
+    \else
+      \addplot[variable=t,#1]{\plot@macro};
+    \fi
   \else
     \stepcounter{gnuplot@id}%
-    \addplot[variable=t,#1] gnuplot[gnuplot@degrees, gnuplot@prefix] {\plot@macro};
+    \ifnum\pdfstrcmp{#2}{phase}=0
+      \addplot[variable=t,#1] gnuplot[gnuplot@prefix] {'+' using (t):\plot@macro smooth unwrap}
+    \else
+      \addplot[variable=t,#1] gnuplot[gnuplot@prefix] {\plot@macro};
+    \fi
   \fi
 }
 %    \end{macrocode}
@@ -1303,15 +1290,65 @@ Nyquist plots with additional commands, using two different macros
     \addplot[variable=t,#1]{#2};
   \else
     \stepcounter{gnuplot@id}%
-    \addplot[variable=t,#1] gnuplot[gnuplot@degrees,gnuplot@prefix] {#2};
+    \addplot[variable=t,#1] gnuplot[gnuplot@prefix] {#2};
   \fi
 }
 %    \end{macrocode}
 %\end{macro}
+% \begin{environment}{BodePhPlot}
+% An environment to host phase plot macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bode@style| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments.\changes{v1.1.0}{2022/07/20}{Added separate environments for phase and magnitude plots}
+%    \begin{macrocode}
+\newenvironment{BodePhPlot}[3][]{%
+  \parse@env@opt{#1}%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]
+    \noexpand\begin{semilogxaxis}[%
+      ph@filter,
+      bode@style,
+      xmin={#2},
+      xmax={#3},
+      domain=#2:#3,
+      height=2.5cm,
+      xlabel={Frequency (rad/s)},
+      \unexpanded\expandafter{\opt@axes}
+    ]%
+  }
+  \temp@cmd
+}{
+    \end{semilogxaxis}
+  \end{tikzpicture}
+}
+%    \end{macrocode}
+% \end{environment}
+% \begin{environment}{BodeMagPlot}
+% An environment to host magnitude plot macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bode@style| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments.\changes{v1.1.0}{2022/07/20}{Added separate environments for phase and magnitude plots}
+%    \begin{macrocode}
+\newenvironment{BodeMagPlot}[3][]{%
+  \parse@env@opt{#1}%
+  \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]
+    \noexpand\begin{semilogxaxis}[%
+      bode@style,
+      xmin={#2},
+      xmax={#3},
+      domain=#2:#3,
+      height=2.5cm,
+      xlabel={Frequency (rad/s)},
+      ylabel={Gain (dB)},
+      ytick distance=40,
+      \unexpanded\expandafter{\opt@axes}
+    ]%
+  }
+  \temp@cmd
+}{
+    \end{semilogxaxis}
+  \end{tikzpicture}
+}
+%    \end{macrocode}
+% \end{environment}
 % \begin{environment}{BodePlot}
-% An environment to host macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bode@style| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments. \changes{v1.0.3}{2021/11/03}{Added tikz option to environments}
+% Same as |BodeMagPlot|. The |BodePlot| environment is deprecated as of v1.1.0, please use the |BodePhPlot| and |BodeMagPlot| environments instead.\changes{v1.0.3}{2021/11/03}{Added tikz option to environments}\changes{v1.1.0}{2022/02/20}{Deprecated BodePlot environment}
 %    \begin{macrocode}
 \newenvironment{BodePlot}[3][]{%
+  \PackageWarning{bodeplot}{Since v1.1.0, the BodePlot environment returns phase plots in radian units only. Please use the BodePhPlot environment if degree units are needed.}%
   \parse@env@opt{#1}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]
     \noexpand\begin{semilogxaxis}[%
@@ -1323,7 +1360,7 @@ Nyquist plots with additional commands, using two different macros
       xlabel={Frequency (rad/s)},
       \unexpanded\expandafter{\opt@axes}
     ]%
-  }%
+  }
   \temp@cmd
 }{
     \end{semilogxaxis}
@@ -1475,8 +1512,8 @@ Nyquist plots with additional commands, using two different macros
       \xdef\loop@delay{\values}%
     \fi
   }%
-  \xdef#2{(\n@mod{atan2((\num@im),(\num@real))-atan2((\den@im),%
-    (\den@real))-\loop@delay*180*t/pi+360}{360})}%
+  \xdef#2{(atan2((\num@im),(\num@real))-atan2((\den@im),%
+    (\den@real))-\loop@delay*t)}%
   \xdef#1{(20*log10(sqrt((\n@pow{\num@real}{2})+(\n@pow{\num@im}{2})))-%
     20*log10(sqrt((\n@pow{\den@real}{2})+(\n@pow{\den@im}{2}))))}%
 }
@@ -1601,7 +1638,7 @@ Nyquist plots with additional commands, using two different macros
         \opt@commands
       \else
         \stepcounter{gnuplot@id}%
-        \temp@cmd gnuplot[parametric,gnuplot@degrees,gnuplot@prefix] {%
+        \temp@cmd gnuplot[parametric,gnuplot@prefix] {%
           \n@pow{10}{((\func@mag)/20)}*cos(\func@ph),
           \n@pow{10}{((\func@mag)/20)}*sin(\func@ph)};
         \opt@commands
@@ -1639,7 +1676,7 @@ Nyquist plots with additional commands, using two different macros
         \opt@commands
       \else
         \stepcounter{gnuplot@id}%
-        \temp@cmd gnuplot[parametric,gnuplot@degrees,gnuplot@prefix]{%
+        \temp@cmd gnuplot[parametric,gnuplot@prefix]{%
           \n@pow{10}{((\func@mag)/20)}*cos(\func@ph),
           \n@pow{10}{((\func@mag)/20)}*sin(\func@ph)};
         \opt@commands
@@ -1661,7 +1698,7 @@ Nyquist plots with additional commands, using two different macros
       {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
   \else
     \stepcounter{gnuplot@id}%
-    \addplot[variable=t,#1] gnuplot[parametric,gnuplot@degrees,gnuplot@prefix]{%
+    \addplot[variable=t,#1] gnuplot[parametric,gnuplot@prefix]{%
       \n@pow{10}{((\func@mag)/20)}*cos(\func@ph),
       \n@pow{10}{((\func@mag)/20)}*sin(\func@ph)};
   \fi
@@ -1680,7 +1717,7 @@ Nyquist plots with additional commands, using two different macros
       {\n@pow{10}{((\func@mag)/20)}*sin(\func@ph)} );
   \else
     \stepcounter{gnuplot@id}%
-    \addplot[variable=t,#1] gnuplot[parametric,gnuplot@degrees,gnuplot@prefix]{%
+    \addplot[variable=t,#1] gnuplot[parametric,gnuplot@prefix]{%
       \n@pow{10}{((\func@mag)/20)}*cos(\func@ph),
       \n@pow{10}{((\func@mag)/20)}*sin(\func@ph)};
   \fi
@@ -1760,10 +1797,10 @@ Nyquist plots with additional commands, using two different macros
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
+      ph@x@filter,
       bode@style,
       domain=#3:#4,
       height=5cm,
-      xlabel={Phase (degrees)},
       ylabel={Gain (dB)},
       samples=500,
       \unexpanded\expandafter{\opt@axes}
@@ -1776,7 +1813,7 @@ Nyquist plots with additional commands, using two different macros
         \opt@commands
       \else
         \stepcounter{gnuplot@id}%
-        \temp@cmd gnuplot[parametric, gnuplot@degrees, gnuplot@prefix]
+        \temp@cmd gnuplot[parametric,gnuplot@prefix]
           { \func@ph , \func@mag };
         \opt@commands
       \fi
@@ -1790,10 +1827,10 @@ Nyquist plots with additional commands, using two different macros
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
+      ph@x@filter,
       bode@style,
       domain=#3:#4,
       height=5cm,
-      xlabel={Phase (degrees)},
       ylabel={Gain (dB)},
       samples=500,
       \unexpanded\expandafter{\opt@axes}
@@ -1802,12 +1839,12 @@ Nyquist plots with additional commands, using two different macros
   \temp@cmd
       \edef\temp@cmd{\noexpand\addplot[variable=t,thick,\opt@plot]}%
       \if@pgfarg
-        \temp@cmd ( {\func@ph} , {\func@mag} );
+        \temp@cmd ( {\n@mod{\func@ph}{2*pi}} , {\func@mag} );
         \opt@commands
       \else
         \stepcounter{gnuplot@id}%
-        \temp@cmd gnuplot[parametric, gnuplot@degrees, gnuplot@prefix]
-          { \func@ph , \func@mag };
+        \temp@cmd gnuplot[parametric,gnuplot@prefix]
+          { \n@mod{\func@ph}{2*pi} , \func@mag };
         \opt@commands
       \fi
     \end{axis}
@@ -1817,10 +1854,10 @@ Nyquist plots with additional commands, using two different macros
   \parse@env@opt{#1}%
   \edef\temp@cmd{\noexpand\begin{tikzpicture}[\unexpanded\expandafter{\opt@tikz}]%
     \noexpand\begin{axis}[%
+      ph@x@filter,
       bode@style,
       domain=#2:#3,
       height=5cm,
-      xlabel={Phase (degrees)},
       ylabel={Gain (dB)},
       \unexpanded\expandafter{\opt@axes}
     ]%
@@ -1838,7 +1875,7 @@ Nyquist plots with additional commands, using two different macros
     \addplot[variable=t,#1] ( {\func@ph} , {\func@mag} );
   \else
     \stepcounter{gnuplot@id}%
-    \addplot[variable=t,#1] gnuplot[parametric,gnuplot@degrees,gnuplot@prefix]
+    \addplot[variable=t,#1] gnuplot[parametric,gnuplot@prefix]
       {\func@ph , \func@mag};
   \fi
 }
@@ -1847,11 +1884,11 @@ Nyquist plots with additional commands, using two different macros
   \gdef\func@ph{}%
   \build@TF@plot{\func@mag}{\func@ph}{#2}%
   \if@pgfarg
-    \addplot[variable=t,#1] ( {\func@ph} , {\func@mag} );
+    \addplot[variable=t,#1] ( {\n@mod{\func@ph}{2*pi}} , {\func@mag} );
   \else
     \stepcounter{gnuplot@id}%
-    \addplot[variable=t,#1] gnuplot[gnuplot@degrees,gnuplot@prefix]
-      {\func@ph , \func@mag};
+    \addplot[variable=t,#1] gnuplot[gnuplot@prefix]
+      {\n@mod{\func@ph}{2*pi} , \func@mag};
   \fi
 }
 %    \end{macrocode}
