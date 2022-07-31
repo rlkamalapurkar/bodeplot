@@ -52,4 +52,4 @@ Other new environments and associated commands:
     - `\addNyquistZPKPlot[plot-options]{z/{zeros},p/{poles},k/gain,d/delay}`
     - `\addNyquistTFPlot[plot-options]{num/{coeff},den/{coeff},d/delay}`
 
-Limitation: Nichols charts from TF commands are wrapped between 0 and 360 degrees.
+Limitation: TF commands are wrapped between 0 and 360 degrees in `pgf` mode.
