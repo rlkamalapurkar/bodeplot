@@ -239,6 +239,9 @@ pythontex-files-*/
 # Latexian
 TSWLatexianTemp*
 
+# hypdestopt
+*.hd
+
 ## Editors:
 # WinEdt
 *.bak
