@@ -1160,6 +1160,7 @@ Nyquist plots with additional commands, using two different macros
 % \begin{macro}{\PhSOZerosAsymp}
 % \begin{macro}{\PhSOZerosLin}
 % Consider a general second order transfer function $G(s) = \frac{1}{s^2 + a s + b}$. We start with true, linear, and asymptotic magnitude plots for this transfer function.
+% \changes{v1.1.2}{2022/10/29}{Fix scaling bug introduced in v1.1.1}
 %    \begin{macrocode}
 \newcommand*{\MagSOPoles}[2]{
   (-20*log10(sqrt(\n@pow{#2 - \n@pow{t}{2}}{2} + \n@pow{#1*t}{2})))}
@@ -1172,10 +1173,10 @@ Nyquist plots with additional commands, using two different macros
 \newcommand*{\PhSOPoles}[2]{((-atan2((#1)*t,((#2) - \n@pow{t}{2})))*\ph@scale)}
 \newcommand*{\PhSOPolesLin}[2]{((#2>0 ?
   \PhCSPolesLin{(#1/(2*sqrt(#2)))}{(sqrt(#2))} :
-  (#1>0 ? -pi : pi))*\ph@scale)}
+  (#1>0 ? -pi : pi)))}
 \newcommand*{\PhSOPolesAsymp}[2]{((#2>0 ?
   \PhCSPolesAsymp{(#1/(2*sqrt(#2)))}{(sqrt(#2))} :
-  (#1>0 ? -pi : pi))*\ph@scale)}
+  (#1>0 ? -pi : pi)))}
 %    \end{macrocode}
 % Plots of the inverse function $G(s)=s^2+as+b$ are defined to be negative of plots of poles. The |0-| is necessary due to a bug in |gnuplot| (fixed in version 5.4, patchlevel 3).
 %    \begin{macrocode}
