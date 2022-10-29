@@ -21,6 +21,8 @@ Added functionality:
  - Support for complex poles and zeros.
  - Support for general stable and unstable second order transfer functions.
  - Support for both `gnuplot` (default) and `pgfplots` (package option `pgf`).
+ - Support for `rad/s` (default) and `Hz` (package option `Hz` or `pgf` key `frequency unit=Hz` for per-plot change) frequency units.
+ - Support for `deg` (default) and `rad` (package option `rad` or `pgf` key `phase unit=rad` for per-plot change) phase units.
  - Support for linear and asymptotic approximation of magnitude and phase plots of any transfer function given poles, zeros, and gain.
 
 Main Bode/Nyquist/Nichols commands:
