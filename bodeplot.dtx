@@ -1461,7 +1461,7 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 %\end{macro}
 % \begin{environment}{BodePhPlot}
-% An environment to host phase plot macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bode@style| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments.\changes{v1.1.0}{2022/07/20}{Added separate environments for phase and magnitude plots}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEniron' command from the `environ' package to fix conflicts with externalization}
+% An environment to host phase plot macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bode@style| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments.\changes{v1.1.0}{2022/07/20}{Added separate environments for phase and magnitude plots}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEnviron' command from the `environ' package to fix conflicts with externalization}
 %    \begin{macrocode}
 \NewEnviron{BodePhPlot}[3][]{
   \parse@env@opt{#1}
@@ -1485,7 +1485,7 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 % \end{environment}
 % \begin{environment}{BodeMagPlot}
-% An environment to host magnitude plot macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bode@style| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments.\changes{v1.1.0}{2022/07/20}{Added separate environments for phase and magnitude plots}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEniron' command from the `environ' package to fix conflicts with externalization}
+% An environment to host magnitude plot macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bode@style| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments.\changes{v1.1.0}{2022/07/20}{Added separate environments for phase and magnitude plots}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEnviron' command from the `environ' package to fix conflicts with externalization}
 %    \begin{macrocode}
 \NewEnviron{BodeMagPlot}[3][]{
   \parse@env@opt{#1}
@@ -1509,7 +1509,7 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 % \end{environment}
 % \begin{environment}{BodePlot}
-% Same as |BodeMagPlot|. The |BodePlot| environment is deprecated as of v1.1.0, please use the |BodePhPlot| and |BodeMagPlot| environments instead.\changes{v1.0.3}{2021/11/03}{Added tikz option to environments}\changes{v1.1.0}{2022/02/20}{Deprecated BodePlot environment}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEniron' command from the `environ' package to fix conflicts with externalization}
+% Same as |BodeMagPlot|. The |BodePlot| environment is deprecated as of v1.1.0, please use the |BodePhPlot| and |BodeMagPlot| environments instead.\changes{v1.0.3}{2021/11/03}{Added tikz option to environments}\changes{v1.1.0}{2022/02/20}{Deprecated BodePlot environment}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEnviron' command from the `environ' package to fix conflicts with externalization}
 %    \begin{macrocode}
 \NewEnviron{BodePlot}[3][]{
   \parse@env@opt{#1}
