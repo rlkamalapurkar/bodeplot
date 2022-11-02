@@ -68,7 +68,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1629}
+% \CheckSum{1641}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
 % \changes{v1.0.4}{2021/11/05}{Fixed unintended optional argument macro expansion}
@@ -1396,9 +1396,11 @@ Nyquist plots with additional commands, using two different macros
   \fi
   \if@pgfarg
     \ifnum\pdf@strcmp{#2}{phase}=0
-      \addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]{\n@mod{\plot@macro}{2*pi}};
+      \edef\temp@cmd{\noexpand\addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+      \temp@cmd {\n@mod{\plot@macro}{2*pi}};
     \else
-      \addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]{\plot@macro};
+      \edef\temp@cmd{\noexpand\addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+      \temp@cmd {\plot@macro};
     \fi
   \else
     \stepcounter{gnuplot@id}
@@ -1434,7 +1436,8 @@ Nyquist plots with additional commands, using two different macros
 %    \begin{macrocode}
 \newcommand{\addBodeComponentPlot}[2][thick]{
   \if@pgfarg
-    \addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1] {#2};
+    \edef\temp@cmd{\noexpand\addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \temp@cmd {#2};
   \else
     \stepcounter{gnuplot@id}
     \addplot [variable=t, #1] gnuplot [raw gnuplot, gnuplot@prefix]
