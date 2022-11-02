@@ -68,7 +68,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1726}
+% \CheckSum{1629}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
 % \changes{v1.0.4}{2021/11/05}{Fixed unintended optional argument macro expansion}
@@ -82,7 +82,7 @@
 % \GetFileInfo{bodeplot.sty}
 % \DoNotIndex{\newcommand,\xdef,\gdef,\def,\edef,\addplot,\approx,\arabic,\opt,\typ,\obj,\else,\if@pgfarg,\if@Hzarg,\if@radarg,\if@declutterarg,\fi,\begin,\end,\feature,\footnotesize,\draw,\detokenize,\DeclareOption,\foreach,\ifdim,\ifodd,\Im,\Re,\let,\newif,\nextgroupplot,\noexpand,\expandafter,\unexpanded,\PackageError,\PackageWarning,\relax,\RequirePackage,\tikzset,\pgfmathsetmacro,\pgfmathtruncatemacro,\ProcessOptions}
 %
-% \title{The \textsf{bodeplot} package\\version 1.1.2}
+% \title{The \textsf{bodeplot} package\\version 1.1.3}
 % \author{Rushikesh Kamalapurkar \\ \texttt{rlkamalapurkar@gmail.com}}
 %
 % \maketitle
@@ -1351,7 +1351,7 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode} 
 % \end{macro}
 % \begin{macro}{\addBodeZPKPlots}
-% This macro is designed to issues multiple |\addplot| macros for the same set of poles, zeros, gain, and delay. All of the work is done by the |\build@ZPK@plot| macro. \changes{v1.0.1}{2021/10/29}{Improved optional argument handling.}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}
+% This macro is designed to issues multiple |\addplot| macros for the same set of poles, zeros, gain, and delay. All of the work is done by the |\build@ZPK@plot| macro. \changes{v1.0.1}{2021/10/29}{Improved optional argument handling.}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}
 %    \begin{macrocode}
 \newcommand{\addBodeZPKPlots}[3][true/{}]{
   \foreach \approx/\opt in {#1} {
@@ -1362,11 +1362,8 @@ Nyquist plots with additional commands, using two different macros
     \else
       \build@ZPK@plot{\plot@macro}{\temp@macro}{\approx}{#3}
     \fi
-    \edef\supplied@domain{\pgfkeysvalueof{/pgfplots/domain}}
-    \edef\domain@start{\expandafter\get@interval@start\supplied@domain\@nil}
-    \edef\domain@end{\expandafter\get@interval@end\supplied@domain\@nil}
     \if@pgfarg
-      \edef\temp@cmd{\noexpand\addplot [freq@filter, domain=\domain@start*\freq@scale:\domain@end*\freq@scale, variable=t, thick, \opt]}
+      \edef\temp@cmd{\noexpand\addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, thick, \opt]}
       \temp@cmd {\plot@macro};
     \else
       \stepcounter{gnuplot@id}
@@ -1375,7 +1372,7 @@ Nyquist plots with additional commands, using two different macros
       { set table $meta;
         set dummy t;
         set logscale x 10;
-        set xrange [\domain@start*\freq@scale:\domain@end*\freq@scale];
+        set xrange [\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale];
         set samples \pgfkeysvalueof{/pgfplots/samples};
         plot \plot@macro;
         set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
@@ -1387,7 +1384,7 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 %\end{macro}
 % \begin{macro}{\addBodeTFPlot}
-% This macro is designed to issues a single |\addplot| macros for the set of coefficients and delay. All of the work is done by the |\build@TF@plot| macro.  \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in gnuplot mode}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}
+% This macro is designed to issues a single |\addplot| macros for the set of coefficients and delay. All of the work is done by the |\build@TF@plot| macro.  \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in gnuplot mode}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}
 %    \begin{macrocode}
 \newcommand{\addBodeTFPlot}[3][thick]{
   \gdef\plot@macro{}
@@ -1397,14 +1394,11 @@ Nyquist plots with additional commands, using two different macros
   \else
     \build@TF@plot{\plot@macro}{\temp@macro}{#3}
   \fi
-  \edef\supplied@domain{\pgfkeysvalueof{/pgfplots/domain}}
-  \edef\domain@start{\expandafter\get@interval@start\supplied@domain\@nil}
-  \edef\domain@end{\expandafter\get@interval@end\supplied@domain\@nil}
   \if@pgfarg
     \ifnum\pdf@strcmp{#2}{phase}=0
-      \addplot [freq@filter, domain=\domain@start*\freq@scale:\domain@end*\freq@scale, variable=t, #1]{\n@mod{\plot@macro}{2*pi}};
+      \addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]{\n@mod{\plot@macro}{2*pi}};
     \else
-      \addplot [freq@filter, domain=\domain@start*\freq@scale:\domain@end*\freq@scale, variable=t, #1]{\plot@macro};
+      \addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]{\plot@macro};
     \fi
   \else
     \stepcounter{gnuplot@id}
@@ -1413,7 +1407,7 @@ Nyquist plots with additional commands, using two different macros
       { set table $meta;
         set dummy t;
         set logscale x 10;
-        set trange [\domain@start*\freq@scale:\domain@end*\freq@scale];
+        set trange [\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale];
         set samples \pgfkeysvalueof{/pgfplots/samples};
         plot '+' using (t) : ((\plot@macro)/(\ph@scale)) smooth unwrap;
         set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
@@ -1424,7 +1418,7 @@ Nyquist plots with additional commands, using two different macros
         { set table $meta;
           set dummy t;
           set logscale x 10;
-          set xrange [\domain@start*\freq@scale:\domain@end*\freq@scale];
+          set xrange [\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale];
           set samples \pgfkeysvalueof{/pgfplots/samples};
           plot \plot@macro;
           set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
@@ -1436,21 +1430,18 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 %\end{macro}
 % \begin{macro}{\addBodeComponentPlot}
-% This macro is designed to issue a single |\addplot| macro capable of plotting linear combinations of the basic components described in Section \ref{sec:BasicComponents}. The only work to do here is to handle the |pgf| package option.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}
+% This macro is designed to issue a single |\addplot| macro capable of plotting linear combinations of the basic components described in Section \ref{sec:BasicComponents}. The only work to do here is to handle the |pgf| package option.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}
 %    \begin{macrocode}
 \newcommand{\addBodeComponentPlot}[2][thick]{
-  \edef\supplied@domain{\pgfkeysvalueof{/pgfplots/domain}}
-  \edef\domain@start{\expandafter\get@interval@start\supplied@domain\@nil}
-  \edef\domain@end{\expandafter\get@interval@end\supplied@domain\@nil}
   \if@pgfarg
-    \addplot [freq@filter, domain=\domain@start*\freq@scale:\domain@end*\freq@scale, variable=t, #1] {#2};
+    \addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1] {#2};
   \else
     \stepcounter{gnuplot@id}
     \addplot [variable=t, #1] gnuplot [raw gnuplot, gnuplot@prefix]
     { set table $meta;
       set dummy t;
       set logscale x 10;
-      set xrange [\domain@start*\freq@scale:\domain@end*\freq@scale];
+      set xrange [\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale];
       set samples \pgfkeysvalueof{/pgfplots/samples};
       plot #2;
       set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
@@ -1852,21 +1843,20 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\addNyquistZPKPlot}
-% Adds Nyquist plot of a transfer function in ZPK form. This macro is designed to pass two parametric function to an |\addplot| macro. The parametric functions for phase (|\func@ph|) and magnitude (|\func@mag|) are built using the |\build@ZPK@plot| macro, converted to real and imaginary parts and passed to |\addplot| commands.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}
+% Adds Nyquist plot of a transfer function in ZPK form. This macro is designed to pass two parametric function to an |\addplot| macro. The parametric functions for phase (|\func@ph|) and magnitude (|\func@mag|) are built using the |\build@ZPK@plot| macro, converted to real and imaginary parts and passed to |\addplot| commands.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}
 %    \begin{macrocode}
 \newcommand{\addNyquistZPKPlot}[2][]{
   \gdef\func@mag{}
   \gdef\func@ph{}
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}
-  \edef\supplied@domain{\pgfkeysvalueof{/pgfplots/domain}}
-  \edef\domain@start{\expandafter\get@interval@start\supplied@domain\@nil}
-  \edef\domain@end{\expandafter\get@interval@end\supplied@domain\@nil}
   \if@pgfarg
-    \addplot [domain=\domain@start*\freq@scale:\domain@end*\freq@scale, variable=t, #1] ( {\n@pow{10}{((\func@mag)/20)}*cos((\func@ph)/(\ph@scale))},
+    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos((\func@ph)/(\ph@scale))},
       {\n@pow{10}{((\func@mag)/20)}*sin((\func@ph)/(\ph@scale))} );
   \else
     \stepcounter{gnuplot@id}
-    \addplot [domain=\domain@start*\freq@scale:\domain@end*\freq@scale, variable=t, #1] gnuplot [parametric, gnuplot@prefix] {
+    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \temp@cmd gnuplot [parametric, gnuplot@prefix] {
       \n@pow{10}{((\func@mag)/20)}*cos((\func@ph)/(\ph@scale)),
       \n@pow{10}{((\func@mag)/20)}*sin((\func@ph)/(\ph@scale))
     };
@@ -1875,21 +1865,20 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 %\end{macro}
 % \begin{macro}{\addNyquistTFPlot}
-% Adds Nyquist plot of a transfer function in TF form. This macro is designed to pass two parametric function to an |\addplot| macro. The parametric functions for phase (|\func@ph|) and magnitude (|\func@mag|) are built using the |\build@TF@plot| macro, converted to real and imaginary parts and passed to |\addplot| commands.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}
+% Adds Nyquist plot of a transfer function in TF form. This macro is designed to pass two parametric function to an |\addplot| macro. The parametric functions for phase (|\func@ph|) and magnitude (|\func@mag|) are built using the |\build@TF@plot| macro, converted to real and imaginary parts and passed to |\addplot| commands.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}
 %    \begin{macrocode}
 \newcommand{\addNyquistTFPlot}[2][]{
   \gdef\func@mag{}
   \gdef\func@ph{}
   \build@TF@plot{\func@mag}{\func@ph}{#2}
-  \edef\supplied@domain{\pgfkeysvalueof{/pgfplots/domain}}
-  \edef\domain@start{\expandafter\get@interval@start\supplied@domain\@nil}
-  \edef\domain@end{\expandafter\get@interval@end\supplied@domain\@nil}
   \if@pgfarg
-    \addplot [domain=\domain@start*\freq@scale:\domain@end*\freq@scale, variable=t, #1] ( {\n@pow{10}{((\func@mag)/20)}*cos((\func@ph)/(\ph@scale))},
+    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos((\func@ph)/(\ph@scale))},
       {\n@pow{10}{((\func@mag)/20)}*sin((\func@ph)/(\ph@scale))} );
   \else
     \stepcounter{gnuplot@id}
-    \addplot [domain=\domain@start*\freq@scale:\domain@end*\freq@scale, variable=t, #1] gnuplot [parametric, gnuplot@prefix]{
+    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \temp@cmd gnuplot [parametric, gnuplot@prefix]{
       \n@pow{10}{((\func@mag)/20)}*cos((\func@ph)/(\ph@scale)),
       \n@pow{10}{((\func@mag)/20)}*sin((\func@ph)/(\ph@scale))
     };
@@ -1960,8 +1949,9 @@ Nyquist plots with additional commands, using two different macros
 % \begin{macro}{NicholsChart}
 % \changes{v1.0.3}{2021/11/03}{Added tikz option to environments}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEniron' command from the `environ' package to fix conflicts with externalization}
 % \begin{macro}{\addNicholsZPKChart}
+% \changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}
 % \begin{macro}{\addNicholsTFChart}
-% These macros and the |NicholsChart| environment generate Nichols charts, and they are implemented similar to their Nyquist counterparts.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}
+% These macros and the |NicholsChart| environment generate Nichols charts, and they are implemented similar to their Nyquist counterparts.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}
 %    \begin{macrocode}
 \newcommand{\NicholsZPK}[4][]{
   \parse@N@opt{#1}
@@ -2064,11 +2054,9 @@ Nyquist plots with additional commands, using two different macros
   \gdef\func@mag{}
   \gdef\func@ph{}
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}
-  \edef\supplied@domain{\pgfkeysvalueof{/pgfplots/domain}}
-  \edef\domain@start{\expandafter\get@interval@start\supplied@domain\@nil}
-  \edef\domain@end{\expandafter\get@interval@end\supplied@domain\@nil}
   \if@pgfarg
-    \addplot [variable=t, domain=\domain@start*\freq@scale:\domain@end*\freq@scale, #1] ( {\func@ph} , {\func@mag} );
+    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \temp@cmd ( {\func@ph} , {\func@mag} );
   \else
     \stepcounter{gnuplot@id}
     \addplot [#1] gnuplot [raw gnuplot, gnuplot@prefix]
@@ -2076,7 +2064,7 @@ Nyquist plots with additional commands, using two different macros
       set logscale x 10;
       set dummy t;
       set samples \pgfkeysvalueof{/pgfplots/samples};
-      set trange [\domain@start*\freq@scale:\domain@end*\freq@scale];
+      set trange [\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale];
       plot '+' using (\func@mag) : ((\func@ph)/(\ph@scale));
       unset logscale x;
       set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
@@ -2088,11 +2076,9 @@ Nyquist plots with additional commands, using two different macros
   \gdef\func@mag{}
   \gdef\func@ph{}
   \build@TF@plot{\func@mag}{\func@ph}{#2}
-  \edef\supplied@domain{\pgfkeysvalueof{/pgfplots/domain}}
-  \edef\domain@start{\expandafter\get@interval@start\supplied@domain\@nil}
-  \edef\domain@end{\expandafter\get@interval@end\supplied@domain\@nil}
   \if@pgfarg
-    \addplot [variable=t, domain=\domain@start*\freq@scale:\domain@end*\freq@scale, #1] ( {\n@mod{\func@ph}{2*pi*\ph@scale}} , {\func@mag} );
+    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \temp@cmd ( {\n@mod{\func@ph}{2*pi*\ph@scale}} , {\func@mag} );
   \else
     \stepcounter{gnuplot@id}
     \addplot [#1] gnuplot [raw gnuplot, gnuplot@prefix]
@@ -2100,7 +2086,7 @@ Nyquist plots with additional commands, using two different macros
       set logscale x 10;
       set dummy t;
       set samples \pgfkeysvalueof{/pgfplots/samples};
-      set trange [\domain@start*\freq@scale:\domain@end*\freq@scale];
+      set trange [\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale];
       plot '+' using (\func@mag) : ((\func@ph)/(\ph@scale));
       unset logscale x;
       set table $meta2;
