@@ -68,7 +68,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1641}
+% \CheckSum{1645}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
 % \changes{v1.0.4}{2021/11/05}{Fixed unintended optional argument macro expansion}
@@ -82,7 +82,7 @@
 % \GetFileInfo{bodeplot.sty}
 % \DoNotIndex{\newcommand,\xdef,\gdef,\def,\edef,\addplot,\approx,\arabic,\opt,\typ,\obj,\else,\if@pgfarg,\if@Hzarg,\if@radarg,\if@declutterarg,\fi,\begin,\end,\feature,\footnotesize,\draw,\detokenize,\DeclareOption,\foreach,\ifdim,\ifodd,\Im,\Re,\let,\newif,\nextgroupplot,\noexpand,\expandafter,\unexpanded,\PackageError,\PackageWarning,\relax,\RequirePackage,\tikzset,\pgfmathsetmacro,\pgfmathtruncatemacro,\ProcessOptions}
 %
-% \title{The \textsf{bodeplot} package\\version 1.1.3}
+% \title{The \textsf{bodeplot} package\\version 1.1.4}
 % \author{Rushikesh Kamalapurkar \\ \texttt{rlkamalapurkar@gmail.com}}
 %
 % \maketitle
@@ -103,7 +103,7 @@
 % Since version 1.0.8, the |bodeplot| package places all |gnuplot| temporary files in the working directory. The package option |declutter| restores the original behavior where the temporary files are placed in a folder called |gnuplot|.
 % \subsection{Limitations} 
 % \begin{itemize}
-%   \item In |pgf| mode, Bode phase plots and Nichols charts in TF form wrap angles so that they are always between 0 and 360$^\circ$ or 0 and $2\pi$ radian. As such, these plots will show phase wrapping discontinuities. Since v1.1.1, in |gnuplot| mode, the package uses the |smooth unwrap| filter to correct wrapping discontinuities. As of now, I have not found a way to do this in |pgf| mode, any merge requests or ideas you may have are welcome!
+%   \item In |pgf| mode, Bode phase plots and Nichols charts in TF form wrap angles so that they are always between -180 and 180$^\circ$ or $-\pi$ and $-\pi$ radian. As such, these plots will show phase wrapping discontinuities. Since v1.1.1, in |gnuplot| mode, the package uses the |smooth unwrap| filter to correct wrapping discontinuities. As of now, I have not found a way to do this in |pgf| mode, any merge requests or ideas you may have are welcome! Since v1.1.4, you can redefine the |n@mod| macro using the commands |\makeatletter\renewcommand{\n@mod}{\n@mod@p}\makeatother| to wrap the phase between 0 and 360$^\circ$ or $0$ and $2\pi$ radian. The commands |\makeatletter\renewcommand{\n@mod}{\n@mod@n}\makeatother| will wrap the phase between -360 and 0$^\circ$ or $-2\pi$ and $0$ radian.
 %   \item Use of the |declutter| option with other directory management tools such as a |tikzexternalize| prefix is not recommended.
 % \end{itemize}
 % \clearpage
@@ -813,11 +813,14 @@ Nyquist plots with additional commands, using two different macros
 % \section{Implementation}
 % \subsection{Initialization}
 % \begin{macro}{\n@mod}
+% \begin{macro}{\n@mod@p}
+% \begin{macro}{\n@mod@n}
 % \begin{macro}{\n@pow}
 % \begin{macro}{gnuplot@id}
 % \begin{macro}{gnuplot@prefix}
 % \changes{v1.0.3}{2021/11/03}{Added jobname to gnuplot prefix}
 % \changes{v1.0.8}{2022/07/06}{Fixed issue \#6}
+% \changes{v1.1.4}{2023/10/12}{Changed phase wrapping in pgf mode}
 % This code is needed to support both |pgfplots| and |gnuplot| simultaneously. New macros are defined for the |pow| and |mod| functions to address differences between the two math engines. We start by processing the class options. 
 %    \begin{macrocode}
 \newif\if@pgfarg\@pgfargfalse
@@ -838,9 +841,11 @@ Nyquist plots with additional commands, using two different macros
 }
 \ProcessOptions\relax
 %    \end{macrocode}
-% Then, we define two new macros to unify |pgfplots| and |gnuplot|.
+% Then, we define new macros to unify |pgfplots| and |gnuplot|.
 %    \begin{macrocode}
-\newcommand{\n@mod}[2]{(#1)-(floor((#1)/(#2))*(#2))}
+\newcommand{\n@mod}[2]{(#1)-((round((#1)/(#2)))*(#2))}
+\newcommand{\n@mod@p}[2]{(#1)-((floor((#1)/(#2)))*(#2))}
+\newcommand{\n@mod@n}[2]{(#1)-((floor((#1)/(#2))+1)*(#2))}
 \if@pgfarg
   \newcommand{\n@pow}[2]{(#1)^(#2)}
   \pgfplotsset{
@@ -874,6 +879,8 @@ Nyquist plots with additional commands, using two different macros
   \fi
 \fi
 %    \end{macrocode}
+% \end{macro}
+% \end{macro}
 % \end{macro}
 % \end{macro}
 % \end{macro}
@@ -1026,7 +1033,7 @@ Nyquist plots with additional commands, using two different macros
 % Parametric function for the true phase of a complex pole.
 %    \begin{macrocode}
 \newcommand*{\PhPole}[2]{((#1 > 0 ? (#2 > 0 ?
-  (\n@mod{-atan2((t - (#2)),-(#1))}{2*pi}) :
+  (\n@mod@p{-atan2((t - (#2)),-(#1))}{2*pi}) :
   (-atan2((t - (#2)),-(#1)))) :
   (-atan2((t - (#2)),-(#1))))*\ph@scale)}
 %    \end{macrocode}
@@ -1290,7 +1297,7 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\BodeTF}
-% Implementation of this macro is very similar to the |\BodeZPK| macro above. The only difference is the lack of linear and asymptotic plots and slightly different parsing of the mandatory arguments. \changes{v1.0.3}{2021/11/03}{Added Tikz option} \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in gnuplot mode}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}
+% Implementation of this macro is very similar to the |\BodeZPK| macro above. The only difference is the lack of linear and asymptotic plots and slightly different parsing of the mandatory arguments. \changes{v1.0.3}{2021/11/03}{Added Tikz option} \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in gnuplot mode}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.4}{2023/10/12}{Changed phase wrapping in pgf mode}
 %    \begin{macrocode}
 \newcommand{\BodeTF}[4][]{
   \parse@opt{#1}
@@ -1384,7 +1391,7 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 %\end{macro}
 % \begin{macro}{\addBodeTFPlot}
-% This macro is designed to issues a single |\addplot| macros for the set of coefficients and delay. All of the work is done by the |\build@TF@plot| macro.  \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in gnuplot mode}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}
+% This macro is designed to issues a single |\addplot| macros for the set of coefficients and delay. All of the work is done by the |\build@TF@plot| macro.  \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in gnuplot mode}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}\changes{v1.1.4}{2023/10/12}{Changed phase wrapping in pgf mode}
 %    \begin{macrocode}
 \newcommand{\addBodeTFPlot}[3][thick]{
   \gdef\plot@macro{}
@@ -1954,7 +1961,7 @@ Nyquist plots with additional commands, using two different macros
 % \begin{macro}{\addNicholsZPKChart}
 % \changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}
 % \begin{macro}{\addNicholsTFChart}
-% These macros and the |NicholsChart| environment generate Nichols charts, and they are implemented similar to their Nyquist counterparts.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}
+% These macros and the |NicholsChart| environment generate Nichols charts, and they are implemented similar to their Nyquist counterparts.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}\changes{v1.1.4}{2023/10/12}{Changed phase wrapping in pgf mode}
 %    \begin{macrocode}
 \newcommand{\NicholsZPK}[4][]{
   \parse@N@opt{#1}
