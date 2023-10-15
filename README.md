@@ -22,6 +22,7 @@ pdflatex bodeplot.dtx --shell-escape
 ```
 ## Added functionality over `bodegraph`
  - New `\BodeZPK` and `\BodeTF` commands to generate Bode plots of any transfer function given either poles, zeros, gain, and delay, or numerator and denominator coefficients and delay
+ - All plots are fully customizable using `pgf` options (see package documentation for a full list of commands, environments, and options)
  - Support for unstable poles and zeros.
  - Support for complex poles and zeros.
  - Support for general stable and unstable second order transfer functions.
@@ -30,59 +31,29 @@ pdflatex bodeplot.dtx --shell-escape
  - Support for `deg` (default) and `rad` (package option `rad` or `pgf` key `phase unit=rad` for per-plot change) phase units.
  - Support for linear and asymptotic approximation of magnitude and phase plots of any transfer function given poles, zeros, and gain.
 
-## Main Bode/Nyquist/Nichols commands
-Given Zeros, Poles, Gain, and Delay (Bode plots support asymptotic and linear approximation for systems without delays):
- - `\BodeZPK[object1/type1/{options1},object2/type2/{options2},...]{z/{zeros},p/{poles},k/gain,d/delay}{min-frequency}{max-frequency}`
- - `\NicholsZPK[plot/{options},axes/{options}]{z/{zeros},p/{poles},k/gain,d/delay}{min-frequency}{max-frequency}`
- - `\NyquistZPK[plot/{options},axes/{options}]{z/{zeros},p/{poles},k/gain,d/delay}{min-frequency}{max-frequency}`
+## Basic Bode/Nyquist/Nichols commands 
+*See package documentation for a full list of commands, environments, and options.*
+ - Given Zeros, Poles, Gain, and Delay (asymptotic and linear approximation available for systems without delay):
+```
+\BodeZPK % (OR \NicholsZPK[samples=1000] OR NyquistZPK[samples=1000])
+{% 
+  z/{0,{-0.1,-0.5},{-0.1,0.5}}, % zeros at s = 0, s = -0.1 + 0.5j, and s = -0.1 - 0.5j
+  p/{{-0.5,-10},{-0.5,10}}, % poles at s = -0.5 + 10j, and s = -0.5 - 10j
+  k/10, % gain
+  d/0.01, % delay
+}
+{0.01} % frequency range start
+{100} % frequency range end
+```
 
-Given Numerator and denominator coefficients and delay (does not support approximation yet):
- - `\BodeTF[object1/type1/{options1},object2/type2/{options2},...]{num/{coeff},den/{coeff},d/delay}{min-frequency}{max-frequency}`
- - `\NicholsTF[plot/{options},axes/{options}]{num/{coeff},den/{coeff},d/delay}{min-frequency}{max-frequency}`
- - `\NyquistTF[plot/{options},axes/{options}]{num/{coeff},den/{coeff},d/delay}{min-frequency}{max-frequency}`
- 
-## Other new environments and associated commands
- - `BodeMagPlot` and `BodePhPlot` environments
-    - The `addBodeZPKPlots` command
-
-          \begin{BodeMagPlot (or BodePhPlot)}{min-frequency}{max-frequency}
-            \addBodeZPKPlots[{approximation1/{plot-options1}},{approximation2/{plot-options2}},...]{magnitude(or phase)}{z/{zeros},p/{poles},k/gain,d/delay}
-          \end{BodeMagPlot (or BodePhPlot)}
-    - The `addBodeTFPlot` command
-
-          \begin{BodePhPlot (or BodeMagPlot)}{min-frequency}{max-frequency}
-            \addBodeTFPlot[plot-options]{phase(or magnitude)}{num/{coeff},den/{coeff},d/delay}
-          \end{BodePhPlot (or BodeMagPlot)}
-    - The `addBodeComponentPlot` command
-
-          \begin{BodeMagPlot (or BodePhPlot)}{min-frequency}{max-frequency}
-            \addBodeComponentPlot[plot-options]{component_plot_command}
-          \end{BodeMagPlot (or BodePhPlot)}
-      where the component plot commands are variations of the following five commands ***(append `Lin` to get linear approximation and `Asymp` to get asymptotic approximation)*** ***(change `Pole` to `Zero` to get inverse plots)*** ***(change `Mag` to `Ph` to get phase plots)***
-      - `\MagK{a}` - Pure gain, G(s) = a.
-      - `\MagPole{a}{b}` - Single pole at s = a+bi, G(s) = 1/(s - a-bi).
-      - `\MagCSPoles{z}{w}` - Cannonical Second order system, G(s) = 1/(s^2 + 2zws + w^2).
-      - `\MagSOPoles{a}{b}` - Second Order system, G(s) = 1/(s^2 + as + b).
-      - `\MagDel{T}` - Pure delay, G(s) = exp(-Ts) (does not admit asymptotic approximation).
- - `NicholsChart` environment
-    - The `addNicholsZPKChart` command
-
-          \begin{NicholsChart}{min-frequency}{max-frequency}
-            \addNicholsZPKChart[plot-options]{z/{zeros},p/{poles},k/gain,d/delay}
-          \end{NicholsChart}
-    - The `addNicholsTFChart` command
-
-          \begin{NicholsChart}{min-frequency}{max-frequency}
-            \addNicholsTFChart[plot-options]{num/{coeff},den/{coeff},d/delay}
-          \end{NicholsChart}
- - `NyquistPlot` environment
-    - The `addNyquistZPKPlot` command
-
-          \begin{NyquistPlot}{min-frequency}{max-frequency}
-            \addNyquistZPKPlot[plot-options]{z/{zeros},p/{poles},k/gain,d/delay}
-          \end{NyquistPlot}
-    - The `addNyquistTFPlot` command
-
-          \begin{NyquistPlot}{min-frequency}{max-frequency}
-            \addNyquistTFPlot[plot-options]{num/{coeff},den/{coeff},d/delay}
-          \end{NyquistPlot}
+ - Given Numerator and denominator coefficients and delay (does not support approximation yet):
+```
+\BodeTF % (OR \NicholsTF[samples=1000] OR NyquistTF[samples=1000])
+{%
+  num/{10,2,2.6,0}, % numerator coefficients
+  den/{1,1,100.25}, % denominator coefficients
+  d/0.01, % delay
+}
+{0.001}
+{100}
+```
