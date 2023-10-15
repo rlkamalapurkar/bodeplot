@@ -37,8 +37,8 @@ pdflatex bodeplot.dtx --shell-escape
 ```
 \BodeZPK % (OR \NicholsZPK[samples=1000] OR NyquistZPK[samples=1000])
 {% 
-  z/{0,{-0.1,-0.5},{-0.1,0.5}}, % zeros at s = 0, s = -0.1 + 0.5j, and s = -0.1 - 0.5j
-  p/{{-0.5,-10},{-0.5,10}}, % poles at s = -0.5 + 10j, and s = -0.5 - 10j
+  z/{0,{-0.1,-0.5},{-0.1,0.5}}, % zeros at s = 0, s = -0.1 - 0.5j, and s = -0.1 + 0.5j
+  p/{{-0.5,-10},{-0.5,10}}, % poles at s = -0.5 - 10j, and s = -0.5 + 10j
   k/10, % gain
   d/0.01, % delay
 }
