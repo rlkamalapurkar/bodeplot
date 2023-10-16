@@ -46,7 +46,7 @@ pdflatex bodeplot.dtx --shell-escape
 {100} % frequency range end
 ```
 
- - Given Numerator and denominator coefficients and delay (does not support approximation yet):
+ - Given Numerator and denominator coefficients and delay (does not support approximation):
 ```
 \BodeTF % (OR \NicholsTF[samples=1000] OR NyquistTF[samples=1000])
 {%
@@ -54,6 +54,6 @@ pdflatex bodeplot.dtx --shell-escape
   den/{1,1,100.25}, % denominator coefficients
   d/0.01, % delay
 }
-{0.001}
-{100}
+{0.001} % frequency range start
+{100} % frequency range end
 ```
