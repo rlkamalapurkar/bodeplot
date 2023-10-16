@@ -460,22 +460,24 @@ Nyquist plots with additional commands, using two different macros
 % |\BodeZPK [blue,thick]|\\
 % |  {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}|\\
 % |  {0.01}{100}|\\
-% which generates the plot in Figure \ref{simpleBode}. If a delay is not specified, it is assumed to be zero. If a gain is not specified, it is assumed to be 1. By default, each of the axes, excluding ticks and labels, are 5cm wide and 2.5cm high. The width and the height, along with other properties of the plots, the axes, and the group can be customized using native |pgf| keys as shown in the example below.
+% which generates the plot in Figure \ref{simpleBode}. In this example, a delay is not specified, so it is assumed to be zero. A gain is not specified, so it is assumed to be 1. A single comma-separated list of options |[blue,thick]| is passed, so it is passed on to the |\addplot| commands in both the magnitude and the phase plots. The default plots are thick black lines and each of the axes, excluding ticks and labels, are 5cm wide and 2.5cm high. 
 %
 % \begin{figure}
 % \begin{center}
 % \BodeZPK[blue,thick]{z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}{0.01}{100}
-% \cprotect\caption{\label{simpleBode}Output of the default |\BodeZPK| macro.}
+% \cprotect\caption{\label{simpleBode}Output of the |\BodeZPK| macro.}
 % \end{center}
 % \end{figure}
-%  As demonstrated in this example, if a single comma-separated list of options is passed, it applies to both the magnitude and the phase plots. Without any optional arguments, we gets a thick black Bode plot.
 %
-% A linear approximation of the Bode plot with customization of the plots, the axes, and the group can be generated using\\
-% |\BodeZPK[plot/mag/{red,thick},plot/ph/{blue,thick},|\\
+% The width and the height, along with other properties of the plots, the axes, and the group can be customized using native |pgf| keys. For example, a linear approximation of the Bode plot with customization of the plots, the axes, and the group can be generated using\\
+% |\BodeZPK[%|\\
+% |  plot/mag/{red,thick},|\\
+% |  plot/ph/{blue,thick},|\\
 % |  axes/mag/{ytick distance=40,xmajorticks=true,|\\
-% |  xlabel={Frequency (rad/s)}},axes/ph/{ytick distance=90},|\\
+% |    xlabel={Frequency (rad/s)}},|\\
+% |  axes/ph/{ytick distance=90},|\\
 % |  group/{group style={group size=2 by 1,horizontal sep=2cm,|\\
-% |  width=4cm,height=2cm}},approx/linear]|\\
+% |    width=4cm,height=2cm}},approx/linear]|\\
 % |  {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}|\\
 % |  {0.01}{100}|\\
 % which generates the plot in Figure \ref{customBode}.
@@ -495,8 +497,9 @@ Nyquist plots with additional commands, using two different macros
 % \noindent Plots the Bode plot of a transfer function given in TF format. The three mandatory arguments include: (1) a list of tuples comprised of the coefficients in the numerator and the denominator of the transfer function and the transport delay, (2) the lower end of the frequency range for the $x-$ axis, and (3) the higher end of the frequency range for the $x-$axis. The coefficients are entered as a comma-separated list, in order from the highest degree of $s$ to the lowest, with zeros for missing degrees. The optional arguments are the same as |\BodeZPK|, except that linear/asymptotic approximation is not supported, so |approx/...| is ignored.
 %
 % For example, given the same transfer function as (\ref{eq:ZPKExample}) in TF form and with a small transport delay, \begin{equation}G(s) = e^{-0.01s}\frac{s(10s^2+2s+2.6)}{(s^2+s+100.25)},\label{eq:TFExample}\end{equation} its Bode plot over the frequency range $[0.01,100]$ can be generated using\\
-% |\BodeTF[commands/mag/{\node at (axis cs: 2.1,0) |\\
-% |  [circle,fill,inner sep=0.05cm,label=below:{$\omega_{gc}$}]{};}]|\\
+% |\BodeTF[%|\\
+% |  commands/mag/{\node at (axis cs: 2.1,0) |\\
+% |    [circle,fill,inner sep=0.05cm,label=below:{$\omega_{gc}$}]{};}]|\\
 % |  {num/{10,2,2.6,0},den/{1,1,100.25},d/0.01}|\\
 % |  {0.01}{100}|\\
 % which generates the plot in Figure \ref{simpleBodeTF}. Note the $0$ added to the numerator coefficients to account for the fact that the numerator does not have a constant term in it. Note the semicolon after the TikZ command passed to the |\commands| option.
@@ -608,9 +611,9 @@ Nyquist plots with additional commands, using two different macros
 % All 20 of the macros defined by combinations of |Type|, |Feature|, and |Approx|, and any |gnuplot| (or |pgfplot| if the |pgf| class option is loaded) compatible function of the 20 macros can be used as |plot-command| in the |addBodeComponentPlot| macro. This is sufficient to generate the Bode plot of any rational transfer function with delay. For example, the Bode phase plot in Figure \ref{multiBodeZPK} can also be generated using:
 %\begin{verbatim}
 %\begin{BodePhPlot}[ytick distance=90]{0.01}{100}
-%  \addBodeComponentPlot[black,thick]{\PhZero{0}{0} + \PhZero{-0.1}{-0.5} +
-%    \PhZero{-0.1}{0.5} + \PhPole{-0.5}{-10} + \PhPole{-0.5}{10} +
-%    \PhK{10}{0}}
+%  \addBodeComponentPlot[black,thick]{%
+%    \PhZero{0}{0} + \PhZero{-0.1}{-0.5} + \PhZero{-0.1}{0.5} + 
+%    \PhPole{-0.5}{-10} + \PhPole{-0.5}{10} + \PhK{10}{0}}
 %  \addBodeComponentPlot[red,dashed,thick] {\PhZeroLin{0}{0} + 
 %    \PhZeroLin{-0.1}{-0.5} + \PhZeroLin{-0.1}{0.5} +
 %    \PhPoleLin{-0.5}{-10} + \PhPoleLin{-0.5}{10} + \PhKLin{10}{20}}
