@@ -30,6 +30,7 @@
 \usepackage{cprotect}
 \usepackage[declutter]{bodeplot}
 \usepackage[colorlinks]{hyperref}
+\usepackage{fancyvrb }
 \usepackage{iftex}
   \iftutex % LuaTeX, XeTeX
     \usepackage{fontspec}
@@ -456,10 +457,12 @@ Nyquist plots with additional commands, using two different macros
 % \end{itemize}
 % The options |{opt}| can be any |key=value| options that are supported by the |pgfplots| macros they are added to.
 
-% For example, given a transfer function \begin{equation}G(s) = 10\frac{s(s+0.1+0.5\mathrm{i})(s+0.1-0.5\mathrm{i})}{(s+0.5+10\mathrm{i})(s+0.5-10\mathrm{i})},\label{eq:ZPKExample}\end{equation} its Bode plot over the frequency range $[0.01,100]$ can be generated using\\
-% |\BodeZPK [blue,thick]|\\
-% |  {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}|\\
-% |  {0.01}{100}|\\
+% For example, given a transfer function \begin{equation}G(s) = 10\frac{s(s+0.1+0.5\mathrm{i})(s+0.1-0.5\mathrm{i})}{(s+0.5+10\mathrm{i})(s+0.5-10\mathrm{i})},\label{eq:ZPKExample}\end{equation} its Bode plot over the frequency range $[0.01,100]$ can be generated using
+%\begin{verbatim}
+%\BodeZPK [blue,thick]
+%  {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}
+%  {0.01}{100}
+%\end{verbatim}
 % which generates the plot in Figure \ref{simpleBode}. In this example, a delay is not specified, so it is assumed to be zero. A gain is not specified, so it is assumed to be 1. A single comma-separated list of options |[blue,thick]| is passed, so it is passed on to the |\addplot| commands in both the magnitude and the phase plots. The default plots are thick black lines and each of the axes, excluding ticks and labels, are 5cm wide and 2.5cm high. 
 %
 % \begin{figure}
@@ -469,17 +472,18 @@ Nyquist plots with additional commands, using two different macros
 % \end{center}
 % \end{figure}
 %
-% The width and the height, along with other properties of the plots, the axes, and the group can be customized using native |pgf| keys. For example, a linear approximation of the Bode plot with customization of the plots, the axes, and the group can be generated using\\
-% |\BodeZPK[%|\\
-% |  plot/mag/{red,thick},|\\
-% |  plot/ph/{blue,thick},|\\
-% |  axes/mag/{ytick distance=40,xmajorticks=true,|\\
-% |    xlabel={Frequency (rad/s)}},|\\
-% |  axes/ph/{ytick distance=90},|\\
-% |  group/{group style={group size=2 by 1,horizontal sep=2cm,|\\
-% |    width=4cm,height=2cm}},approx/linear]|\\
-% |  {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}|\\
-% |  {0.01}{100}|\\
+% The width and the height, along with other properties of the plots, the axes, and the group can be customized using native |pgf| keys. For example, a linear approximation of the Bode plot with customization of the plots, the axes, and the group can be generated using
+%\begin{verbatim}
+%\BodeZPK[%
+%  plot/mag/{red,thick},
+%  plot/ph/{blue,thick},
+%  axes/mag/{ytick distance=40,xmajorticks=true,xlabel={Frequency (rad/s)}},
+%  axes/ph/{ytick distance=90},
+%  group/{group style={group size=2 by 1,horizontal sep=2cm,width=4cm,height=2cm}},
+%  approx/linear]
+%  {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}
+%  {0.01}{100}
+%\end{verbatim}
 % which generates the plot in Figure \ref{customBode}.
 %
 % \begin{figure}
@@ -496,12 +500,14 @@ Nyquist plots with additional commands, using two different macros
 %
 % \noindent Plots the Bode plot of a transfer function given in TF format. The three mandatory arguments include: (1) a list of tuples comprised of the coefficients in the numerator and the denominator of the transfer function and the transport delay, (2) the lower end of the frequency range for the $x-$ axis, and (3) the higher end of the frequency range for the $x-$axis. The coefficients are entered as a comma-separated list, in order from the highest degree of $s$ to the lowest, with zeros for missing degrees. The optional arguments are the same as |\BodeZPK|, except that linear/asymptotic approximation is not supported, so |approx/...| is ignored.
 %
-% For example, given the same transfer function as (\ref{eq:ZPKExample}) in TF form and with a small transport delay, \begin{equation}G(s) = e^{-0.01s}\frac{s(10s^2+2s+2.6)}{(s^2+s+100.25)},\label{eq:TFExample}\end{equation} its Bode plot over the frequency range $[0.01,100]$ can be generated using\\
-% |\BodeTF[%|\\
-% |  commands/mag/{\node at (axis cs: 2.1,0) |\\
-% |    [circle,fill,inner sep=0.05cm,label=below:{$\omega_{gc}$}]{};}]|\\
-% |  {num/{10,2,2.6,0},den/{1,1,100.25},d/0.01}|\\
-% |  {0.01}{100}|\\
+% For example, given the same transfer function as (\ref{eq:ZPKExample}) in TF form and with a small transport delay, \begin{equation}G(s) = e^{-0.01s}\frac{s(10s^2+2s+2.6)}{(s^2+s+100.25)},\label{eq:TFExample}\end{equation} its Bode plot over the frequency range $[0.01,100]$ can be generated using
+%\begin{verbatim}
+%\BodeTF[%
+%  commands/mag/{\node at (axis cs: 2.1,0) [circle,fill,inner sep=0.05cm,
+%    label=below:{$\omega_{gc}$}]{};}]
+%  {num/{10,2,2.6,0},den/{1,1,100.25},d/0.01}
+%  {0.01}{100}
+%\end{verbatim}
 % which generates the plot in Figure \ref{simpleBodeTF}. Note the $0$ added to the numerator coefficients to account for the fact that the numerator does not have a constant term in it. Note the semicolon after the TikZ command passed to the |\commands| option.
 %
 % \begin{figure}
@@ -614,11 +620,11 @@ Nyquist plots with additional commands, using two different macros
 %  \addBodeComponentPlot[black,thick]{%
 %    \PhZero{0}{0} + \PhZero{-0.1}{-0.5} + \PhZero{-0.1}{0.5} + 
 %    \PhPole{-0.5}{-10} + \PhPole{-0.5}{10} + \PhK{10}{0}}
-%  \addBodeComponentPlot[red,dashed,thick] {\PhZeroLin{0}{0} + 
-%    \PhZeroLin{-0.1}{-0.5} + \PhZeroLin{-0.1}{0.5} +
+%  \addBodeComponentPlot[red,dashed,thick] {%
+%    \PhZeroLin{0}{0} + \PhZeroLin{-0.1}{-0.5} + \PhZeroLin{-0.1}{0.5} +
 %    \PhPoleLin{-0.5}{-10} + \PhPoleLin{-0.5}{10} + \PhKLin{10}{20}}
-%  \addBodeComponentPlot[blue,dotted,thick] {\PhZeroAsymp{0}{0} + 
-%    \PhZeroAsymp{-0.1}{-0.5} + \PhZeroAsymp{-0.1}{0.5} + 
+%  \addBodeComponentPlot[blue,dotted,thick] {%
+%    \PhZeroAsymp{0}{0} + \PhZeroAsymp{-0.1}{-0.5} + \PhZeroAsymp{-0.1}{0.5} + 
 %    \PhPoleAsymp{-0.5}{-10} + \PhPoleAsymp{-0.5}{10} + \PhKAsymp{10}{40}}
 %\end{BodePhPlot}
 %\end{verbatim}
@@ -686,16 +692,20 @@ Nyquist plots with additional commands, using two different macros
 % \hspace*{2em}\marg{z/\marg{zeros},p/\marg{poles},k/\marg{gain},d/\marg{delay}}\\
 % \hspace*{2em}\marg{min-freq}\marg{max-freq}
 %
-% \noindent Plots the Nyquist plot of a transfer function given in ZPK format with a thick red $+$ marking the critical point (-1,0). The mandatory arguments are the same as |\BodeZPK|. Since there is only one plot in a Nyquist diagram, the |\typ| specifier in the optional argument tuples is not needed. As such, the supported optional argument tuples are |plot/{opt}|, which passes |{opt}| to |\addplot|, |axes/{opt}|, which passes |{\opt}| to the |axis| environment, and |tikz/{opt}|, which passes |{\opt}| to the |tikzpicture| environment. Asymptotic/linear approximations are not supported in Nyquist plots. If just |{opt}| is provided as the optional argument, it is interpreted as |plot/{opt}|. Arrows to indicate the direction of increasing $\omega$ can be added by adding |\usetikzlibrary{decorations.markings}| and |\usetikzlibrary{arrows.meta}| to the preamble and then passing a tuple of the form\\
-%|plot/{postaction=decorate,decoration={markings,|\\
-%|  mark=between positions 0.1 and 0.9 step 5em with|\\
-%|  {\arrow{Stealth| |[length=2mm, blue]}}}}|\\
+% \noindent Plots the Nyquist plot of a transfer function given in ZPK format with a thick red $+$ marking the critical point (-1,0). The mandatory arguments are the same as |\BodeZPK|. Since there is only one plot in a Nyquist diagram, the |\typ| specifier in the optional argument tuples is not needed. As such, the supported optional argument tuples are |plot/{opt}|, which passes |{opt}| to |\addplot|, |axes/{opt}|, which passes |{\opt}| to the |axis| environment, and |tikz/{opt}|, which passes |{\opt}| to the |tikzpicture| environment. Asymptotic/linear approximations are not supported in Nyquist plots. If just |{opt}| is provided as the optional argument, it is interpreted as |plot/{opt}|. Arrows to indicate the direction of increasing $\omega$ can be added by adding |\usetikzlibrary{decorations.markings}| and |\usetikzlibrary{arrows.meta}| to the preamble and then passing a tuple of the form
+%\begin{verbatim}
+%plot/{postaction=decorate,decoration={markings,
+%  mark=between positions 0.1 and 0.9 step 5em with {%
+%    \arrow{Stealth| |[length=2mm, blue]}}}}
+%\end{verbatim}
 %\textbf{Caution:} with a high number of samples, adding arrows in this way may cause the error message |! Dimension too big|.
 %
-% For example, the command\\
-% |\NyquistZPK[plot/{red,thick,samples=2000},axes/{blue,thick}]|\\
-% |  {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}|\\
-% |  {-30}{30}|\\
+% For example, the command
+%\begin{verbatim}
+%\NyquistZPK[plot/{red,thick,samples=2000},axes/{blue,thick}]
+%  {z/{0,{-0.1,-0.5},{-0.1,0.5}},p/{{-0.5,-10},{-0.5,10}},k/10}
+%  {-30}{30}
+%\end{verbatim}
 % generates the Nyquist plot in Figure \ref{simpleNyquistZPK}.
 %
 % \begin{figure}
@@ -710,13 +720,15 @@ Nyquist plots with additional commands, using two different macros
 % \hspace*{2em}\marg{num/\marg{coeffs},den/\marg{coeffs},d/\marg{delay}}\\
 % \hspace*{2em}\marg{min-freq}\marg{max-freq}
 %
-% \noindent Nyquist plot of a transfer function given in TF format. Same mandatory arguments as |\BodeTF| and same optional arguments as |\NyquistZPK|. For example, the command\\
-% |\NyquistTF[plot/{green,thick,samples=500,postaction=decorate,|\\
-% |  decoration={markings,|\\
-% |  mark=between positions 0.1 and 0.9 step 5em|\\
-% |  with{\arrow{Stealth[length=2mm, blue]}}}}]|\\
-% |  {num/{10,2,2.6,0},den/{1,1,100.25}}|\\
-% |  {-30}{30}|\\
+% \noindent Nyquist plot of a transfer function given in TF format. Same mandatory arguments as |\BodeTF| and same optional arguments as |\NyquistZPK|. For example, the command
+%\begin{verbatim}
+%\NyquistTF[plot/{green,thick,samples=500,postaction=decorate,
+%  decoration={markings,
+%  mark=between positions 0.1 and 0.9 step 5em
+%  with{\arrow{Stealth[length=2mm, blue]}}}}]
+%  {num/{10,2,2.6,0},den/{1,1,100.25}}
+%  {-30}{30}
+%\end{verbatim}
 % generates the Nyquist plot in Figure \ref{simpleNyquistTF}.
 %
 % \begin{figure}
@@ -768,10 +780,12 @@ Nyquist plots with additional commands, using two different macros
 % \hspace*{2em}\marg{num/\marg{coeffs},den/\marg{coeffs},d/\marg{delay}}\\
 % \hspace*{2em}\marg{min-freq}\marg{max-freq}
 %
-% \noindent Nichols chart of a transfer function given in TF format. Same arguments as |\NyquistTF|. For example, the command\\
-% |\NicholsTF[plot/{green,thick,samples=2000}]|\\
-% |  {num/{10,2,2.6,0},den/{1,1,100.25},d/0.01}|\\
-% |  {0.001}{100}|\\
+% \noindent Nichols chart of a transfer function given in TF format. Same arguments as |\NyquistTF|. For example, the command
+%\begin{verbatim}
+%\NicholsTF[plot/{green,thick,samples=2000}]
+%  {num/{10,2,2.6,0},den/{1,1,100.25},d/0.01}
+%  {0.001}{100}
+%\end{verbatim}
 % generates the Nichols chart in Figure \ref{simpleNicholsTF}.
 %
 % \begin{figure}
