@@ -7,9 +7,8 @@ Author: Rushikesh Kamalapurkar ([rlkamalapurkar@gmail.com](mailto:rlkamalapurkar
 License: [LPPL-1.3c](https://github.com/rlkamalapurkar/bodeplot/blob/main/LICENSE)
 
 ## Limitations
- 1. If `bable` is used with the French language option, it needs to be loaded before `bodeplot` is loaded. Also, the `french` option to `babel` has to be passed locally, not via class options.
- 2. TF commands are wrapped between -180 and 180 degrees in `pgf` mode.
- 3. Version 1.0.8 and newer store `gnuplot` temporary files in the working directory. Use class option `declutter` to restore pre-v1.0.8 behavior. Option `declutter` can cause errors if used with a `tikzexternalize` prefix.
+ 1. TF commands are wrapped between -180 and 180 degrees in `pgf` mode.
+ 2. Version 1.0.8 and newer store `gnuplot` temporary files in the working directory. Use class option `declutter` to restore pre-v1.0.8 behavior. Option `declutter` can cause errors if used with a `tikzexternalize` prefix.
 
 ## Compilation instructions
 1) `latex bodeplot.ins` to generate `bodeplot.sty`
