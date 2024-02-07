@@ -69,7 +69,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1769}
+% \CheckSum{1858}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
 % \changes{v1.0.4}{2021/11/05}{Fixed unintended optional argument macro expansion}
@@ -79,12 +79,12 @@
 % \changes{v1.0.8}{2022/07/06}{Added a new class option `declutter'}
 % \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in gnuplot mode}
 % \changes{v1.1.1}{2022/07/31}{Enable Hz and rad units}
-% \changes{v1.1.5}{2024/01/11}{Detect `babel-french' to handle active characters}
+% \changes{v1.1.7}{2024/02/06}{Detect and turn off shorthands to improve `babel' compatibility}
 %
 % \GetFileInfo{bodeplot.sty}
-% \DoNotIndex{\newcommand,\xdef,\gdef,\def,\edef,\addplot,\approx,\arabic,\opt,\typ,\obj,\else,\if@pgfarg,\if@Hzarg,\if@radarg,\if@declutterarg,\if@babel@french,\fi,\begin,\end,\feature,\footnotesize,\draw,\detokenize,\DeclareOption,\foreach,\ifdim,\ifodd,\Im,\Re,\let,\newif,\nextgroupplot,\noexpand,\expandafter,\unexpanded,\PackageError,\PackageWarning,\relax,\RequirePackage,\tikzset,\pgfmathsetmacro,\pgfmathtruncatemacro,\ProcessOptions}
+% \DoNotIndex{\newcommand,\xdef,\gdef,\def,\edef,\addplot,\approx,\arabic,\opt,\typ,\obj,\else,\if@pgfarg,\if@Hzarg,\if@radarg,\if@declutterarg,\if@babel,\fi,\begin,\end,\feature,\footnotesize,\draw,\detokenize,\DeclareOption,\foreach,\ifdim,\ifodd,\Im,\Re,\let,\newif,\nextgroupplot,\noexpand,\expandafter,\unexpanded,\PackageError,\PackageWarning,\relax,\RequirePackage,\tikzset,\pgfmathsetmacro,\pgfmathtruncatemacro,\ProcessOptions}
 %
-% \title{The \textsf{bodeplot} package\\version 1.1.6}
+% \title{The \textsf{bodeplot} package\\version 1.1.7}
 % \author{Rushikesh Kamalapurkar \\ \texttt{rlkamalapurkar@gmail.com}}
 %
 % \maketitle
@@ -839,7 +839,6 @@ Nyquist plots with additional commands, using two different macros
 % \changes{v1.0.3}{2021/11/03}{Added jobname to gnuplot prefix}
 % \changes{v1.0.8}{2022/07/06}{Fixed issue \#6}
 % \changes{v1.1.4}{2023/10/12}{Changed phase wrapping in pgf mode}
-% \changes{v1.1.5}{2024/01/11}{Added babel option to handle active characters}
 % We start by processing the class options. 
 %    \begin{macrocode}
 \newif\if@pgfarg\@pgfargfalse
@@ -904,16 +903,26 @@ Nyquist plots with additional commands, using two different macros
 % \end{macro}
 % \end{macro}
 % \end{macro}
-% \begin{macro}{\if@babel@french}
-% Check if the |babel| package is loaded with French language option.\changes{v1.1.6}{2024/01/14}{Detect `babel-french' using `frenchbsetup'}
+% \begin{macro}{\if@babel}
+% \begin{macro}{\shorthand@list}
+% Check if the |babel| package is loaded and generate a list of shorthands if it is. The code is based on \href{https://tex.stackexchange.com/a/708797/110602}{this stackexchange answer}.\changes{v1.1.6}{2024/01/14}{Detect `babel-french' using `frenchbsetup'}\changes{v1.1.7}{2024/02/06}{Directly detect shorthands instead of detecting the language.}
 %    \begin{macrocode}
-\newif\if@babel@french\@babel@frenchfalse
-\AtBeginDocument{
-  \ifdefined\frenchbsetup
-    \@babel@frenchtrue
-  \fi
+\newif\if@babel\@babelfalse
+\AtBeginDocument{%
+  \@ifpackageloaded{babel}{%
+    \@babeltrue
+    \let\shorthand@list\@empty
+    \def\do#1{%
+      \begingroup
+        \lccode`\~=`#1\relax
+        \lowercase{\ifbabelshorthand~{\g@addto@macro\shorthand@list{~}}{}}
+      \endgroup
+    }
+    \dospecials
+  }{}
 }
 %    \end{macrocode}
+% \end{macro}
 % \end{macro}
 % \begin{macro}{bode@style}
 % Default axis properties for all plot macros are collected in this |pgf| style.
@@ -1325,19 +1334,19 @@ Nyquist plots with additional commands, using two different macros
   \end{tikzpicture}
 }
 %    \end{macrocode}
-% The following code handles active characters to avoid conflicts with `babel.'\changes{v1.1.5}{2023/01/11}{Added code to handle active characters}
+% The following code handles active characters to avoid conflicts with `babel.'\changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}
 %    \begin{macrocode}
-\AtBeginDocument{
-  \if@babel@french
-    \let\Orig@BodeZPK\BodeZPK
-    \renewcommand{\BodeZPK}{%
-      \shorthandoff{;:!?}%
-      \BodeZPK@Shorthandoff
-    }
-    \newcommand{\BodeZPK@Shorthandoff}[4][]{%
-      \Orig@BodeZPK[#1]{#2}{#3}{#4}%
-      \shorthandon{;:!?}%
-    }
+\AtBeginDocument{%
+  \if@babel
+  \let\Orig@BodeZPK\BodeZPK
+  \renewcommand{\BodeZPK}{%
+    \expandafter\shorthandoff\expandafter{\shorthand@list}
+    \BodeZPK@Shorthandoff
+  }
+  \newcommand{\BodeZPK@Shorthandoff}[4][]{%
+    \Orig@BodeZPK[#1]{#2}{#3}{#4}
+    \expandafter\shorthandon\expandafter{\shorthand@list}
+  }
   \fi
 }
 %    \end{macrocode}
@@ -1402,19 +1411,19 @@ Nyquist plots with additional commands, using two different macros
   \end{tikzpicture}
 }
 %    \end{macrocode}
-% The following code handles active characters to avoid conflicts with `babel.'\changes{v1.1.5}{2023/01/11}{Added code to handle active characters}
+% The following code handles active characters to avoid conflicts with `babel.'\changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}
 %    \begin{macrocode}
 \AtBeginDocument{
-  \if@babel@french
-    \let\Orig@BodeTF\BodeTF
-    \renewcommand{\BodeTF}{%
-      \shorthandoff{;:!?}%
-      \BodeTF@Shorthandoff
-    }
-    \newcommand{\BodeTF@Shorthandoff}[4][]{%
-      \Orig@BodeTF[#1]{#2}{#3}{#4}%
-      \shorthandon{;:!?}%
-    }
+  \if@babel
+  \let\Orig@BodeTF\BodeTF
+  \renewcommand{\BodeTF}{%
+    \expandafter\shorthandoff\expandafter{\shorthand@list}
+    \BodeTF@Shorthandoff
+  }
+  \newcommand{\BodeTF@Shorthandoff}[4][]{%
+    \Orig@BodeTF[#1]{#2}{#3}{#4}
+    \expandafter\shorthandon\expandafter{\shorthand@list}
+  }
   \fi
 }
 %    \end{macrocode}
@@ -1524,11 +1533,12 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 %\end{macro}
 % \begin{environment}{BodePhPlot}
-% An environment to host phase plot macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bode@style| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments.\changes{v1.1.0}{2022/07/20}{Added separate environments for phase and magnitude plots}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEnviron' command from the `environ' package to fix conflicts with externalization}\changes{v1.1.5}{2023/01/11}{Defined using the `NewDocumentEnvironment' command from the `xparse' package and added a hook to handle active characters}
+% An environment to host phase plot macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bode@style| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments. The body of the environment is grabbed as a macro to maintain compatibility with externalization in |tikz|.\changes{v1.1.0}{2022/07/20}{Added separate environments for phase and magnitude plots}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEnviron' command from the `environ' package to fix conflicts with externalization}\changes{v1.1.5}{2024/01/11}{Defined using the `NewDocumentEnvironment' command from the `xparse' package and added a hook to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of active characters instead of manually entering them.}
 %    \begin{macrocode}
-\AtBeginDocument{
-  \if@babel@french
-    \AddToHook{env/BodePhPlot/begin}{\shorthandoff{;:!?}}
+\AtBeginDocument{%
+  \if@babel
+    \AddToHook{env/BodePhPlot/begin}{\expandafter\shorthandoff\expandafter{\shorthand@list}}
+    \AddToHook{env/BodePhPlot/end}{\expandafter\shorthandon\expandafter{\shorthand@list}}
   \fi
 }
 \NewDocumentEnvironment{BodePhPlot}{O{}mm+b}{
@@ -1553,11 +1563,12 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 % \end{environment}
 % \begin{environment}{BodeMagPlot}
-% An environment to host magnitude plot macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bode@style| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments.\changes{v1.1.0}{2022/07/20}{Added separate environments for phase and magnitude plots}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEnviron' command from the `environ' package to fix conflicts with externalization}\changes{v1.1.5}{2023/01/11}{Defined using the `NewDocumentEnvironment' command from the `xparse' package and added a hook to handle active characters}
+% An environment to host magnitude plot macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bode@style| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments.\changes{v1.1.0}{2022/07/20}{Added separate environments for phase and magnitude plots}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEnviron' command from the `environ' package to fix conflicts with externalization}\changes{v1.1.5}{2024/01/11}{Defined using the `NewDocumentEnvironment' command from the `xparse' package and added a hook to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of active characters instead of manually entering them.}
 %    \begin{macrocode}
-\AtBeginDocument{
-  \if@babel@french
-    \AddToHook{env/BodeMagPlot/begin}{\shorthandoff{;:!?}}
+\AtBeginDocument{%
+  \if@babel
+    \AddToHook{env/BodeMagPlot/begin}{\expandafter\shorthandoff\expandafter{\shorthand@list}}
+    \AddToHook{env/BodeMagPlot/end}{\expandafter\shorthandon\expandafter{\shorthand@list}}
   \fi
 }
 \NewDocumentEnvironment{BodeMagPlot}{O{}mm+b}{
@@ -1582,11 +1593,12 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 % \end{environment}
 % \begin{environment}{BodePlot}
-% Same as |BodeMagPlot|. The |BodePlot| environment is deprecated as of v1.1.0, please use the |BodePhPlot| and |BodeMagPlot| environments instead.\changes{v1.0.3}{2021/11/03}{Added tikz option to environments}\changes{v1.1.0}{2022/02/20}{Deprecated BodePlot environment}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEnviron' command from the `environ' package to fix conflicts with externalization}\changes{v1.1.5}{2023/01/11}{Defined using the `NewDocumentEnvironment' command from the `xparse' package and added a hook to handle active characters}
+% Same as |BodeMagPlot|. The |BodePlot| environment is deprecated as of v1.1.0, please use the |BodePhPlot| and |BodeMagPlot| environments instead.\changes{v1.0.3}{2021/11/03}{Added tikz option to environments}\changes{v1.1.0}{2022/02/20}{Deprecated BodePlot environment}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEnviron' command from the `environ' package to fix conflicts with externalization}\changes{v1.1.5}{2024/01/11}{Defined using the `NewDocumentEnvironment' command from the `xparse' package and added a hook to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of active characters instead of manually entering them.}
 %    \begin{macrocode}
-\AtBeginDocument{
-  \if@babel@french
-    \AddToHook{env/BodePlot/begin}{\shorthandoff{;:!?}}
+\AtBeginDocument{%
+  \if@babel
+    \AddToHook{env/BodePlot/begin}{\expandafter\shorthandoff\expandafter{\shorthand@list}}
+    \AddToHook{env/BodePlot/end}{\expandafter\shorthandon\expandafter{\shorthand@list}}
   \fi
 }
 \NewDocumentEnvironment{BodePlot}{O{}mm+b}{
@@ -1889,19 +1901,19 @@ Nyquist plots with additional commands, using two different macros
   \end{tikzpicture}
 }
 %    \end{macrocode}
-% The following code handles active characters to avoid conflicts with `babel.'\changes{v1.1.5}{2023/01/11}{Added code to handle active characters}
+% The following code handles active characters to avoid conflicts with `babel.'\changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}
 %    \begin{macrocode}
-\AtBeginDocument{
-  \if@babel@french
-    \let\Orig@NyquistZPK\NyquistZPK
-    \renewcommand{\NyquistZPK}{%
-      \shorthandoff{;:!?}%
-      \NyquistZPK@Shorthandoff
-    }
-    \newcommand{\NyquistZPK@Shorthandoff}[4][]{%
-      \Orig@NyquistZPK[#1]{#2}{#3}{#4}%
-      \shorthandon{;:!?}%
-    }
+\AtBeginDocument{%
+  \if@babel
+  \let\Orig@NyquistZPK\NyquistZPK
+  \renewcommand{\NyquistZPK}{%
+    \expandafter\shorthandoff\expandafter{\shorthand@list}
+    \NyquistZPK@Shorthandoff
+  }
+  \newcommand{\NyquistZPK@Shorthandoff}[4][]{%
+    \Orig@NyquistZPK[#1]{#2}{#3}{#4}
+    \expandafter\shorthandon\expandafter{\shorthand@list}
+  }
   \fi
 }
 %    \end{macrocode}
@@ -1944,19 +1956,19 @@ Nyquist plots with additional commands, using two different macros
   \end{tikzpicture}
 }
 %    \end{macrocode}
-% The following code handles active characters to avoid conflicts with `babel.'\changes{v1.1.5}{2023/01/11}{Added code to handle active characters}
+% The following code handles active characters to avoid conflicts with `babel.'\changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}
 %    \begin{macrocode}
-\AtBeginDocument{
-  \if@babel@french
-    \let\Orig@NyquistTF\NyquistTF
-    \renewcommand{\NyquistTF}{%
-      \shorthandoff{;:!?}%
-      \NyquistTF@Shorthandoff
-    }
-    \newcommand{\NyquistTF@Shorthandoff}[4][]{%
-      \Orig@NyquistTF[#1]{#2}{#3}{#4}%
-      \shorthandon{;:!?}%
-    }
+\AtBeginDocument{%
+  \if@babel
+  \let\Orig@NyquistTF\NyquistTF
+  \renewcommand{\NyquistTF}{%
+    \expandafter\shorthandoff\expandafter{\shorthand@list}
+    \NyquistTF@Shorthandoff
+  }
+  \newcommand{\NyquistTF@Shorthandoff}[4][]{%
+    \Orig@NyquistTF[#1]{#2}{#3}{#4}
+    \expandafter\shorthandon\expandafter{\shorthand@list}
+  }
   \fi
 }
 %    \end{macrocode}
@@ -2006,11 +2018,12 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 %\end{macro}
 %\begin{macro}{NyquistPlot}
-% An environment to host |\addNyquist...| macros that pass parametric functions to |\addplot|. Uses the defaults specified in |bode@style| to create a shortcut that includes the |tikzpicture| and |axis| environments. \changes{v1.0.3}{2021/11/03}{Added tikz option to environments}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEniron' command from the `environ' package to fix conflicts with externalization}\changes{v1.1.5}{2023/01/11}{Defined using the `NewDocumentEnvironment' command from the `xparse' package and added a hook to handle active characters}
+% An environment to host |\addNyquist...| macros that pass parametric functions to |\addplot|. Uses the defaults specified in |bode@style| to create a shortcut that includes the |tikzpicture| and |axis| environments. \changes{v1.0.3}{2021/11/03}{Added tikz option to environments}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEniron' command from the `environ' package to fix conflicts with externalization}\changes{v1.1.5}{2024/01/11}{Defined using the `NewDocumentEnvironment' command from the `xparse' package and added a hook to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of active characters instead of manually entering them.}
 %    \begin{macrocode}
-\AtBeginDocument{
-  \if@babel@french
-    \AddToHook{env/NyquistPlot/begin}{\shorthandoff{;:!?}}
+\AtBeginDocument{%
+  \if@babel
+    \AddToHook{env/NyquistPlot/begin}{\expandafter\shorthandoff\expandafter{\shorthand@list}}
+    \AddToHook{env/NyquistPlot/end}{\expandafter\shorthandon\expandafter{\shorthand@list}}
   \fi
 }
 \NewDocumentEnvironment{NyquistPlot}{O{}mm+b}{
@@ -2067,11 +2080,11 @@ Nyquist plots with additional commands, using two different macros
 % \end{macro}
 % \subsection{Nichols charts}
 % \begin{macro}{\NicholsZPK}
-% \changes{v1.0.3}{2021/11/03}{Added commands and tikz options}\changes{v1.1.5}{2023/01/11}{Added code to handle active characters}
+% \changes{v1.0.3}{2021/11/03}{Added commands and tikz options}\changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}
 % \begin{macro}{\NicholsTF}
-% \changes{v1.0.3}{2021/11/03}{Added commands and tikz options}\changes{v1.1.5}{2023/01/11}{Added code to handle active characters}
+% \changes{v1.0.3}{2021/11/03}{Added commands and tikz options}\changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}
 % \begin{macro}{NicholsChart}
-% \changes{v1.0.3}{2021/11/03}{Added tikz option to environments}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEniron' command from the `environ' package to fix conflicts with externalization}\changes{v1.1.5}{2023/01/11}{Defined using the `NewDocumentEnvironment' command from the `xparse' package and added a hook to handle active characters}
+% \changes{v1.0.3}{2021/11/03}{Added tikz option to environments}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEniron' command from the `environ' package to fix conflicts with externalization}\changes{v1.1.5}{2024/01/11}{Defined using the `NewDocumentEnvironment' command from the `xparse' package and added a hook to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of active characters instead of manually entering them.}
 % \begin{macro}{\addNicholsZPKChart}
 % \changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}
 % \begin{macro}{\addNicholsTFChart}
@@ -2116,17 +2129,17 @@ Nyquist plots with additional commands, using two different macros
     \end{axis}
   \end{tikzpicture}
 }
-\AtBeginDocument{
-  \if@babel@french
-    \let\Orig@NicholsZPK\NicholsZPK
-    \renewcommand{\NicholsZPK}{%
-      \shorthandoff{;:!?}%
-      \NicholsZPK@Shorthandoff
-    }
-    \newcommand{\NicholsZPK@Shorthandoff}[4][]{%
-      \Orig@NicholsZPK[#1]{#2}{#3}{#4}%
-      \shorthandon{;:!?}%
-    }
+\AtBeginDocument{%
+  \if@babel
+  \let\Orig@NicholsZPK\NicholsZPK
+  \renewcommand{\NicholsZPK}{%
+    \expandafter\shorthandoff\expandafter{\shorthand@list}
+    \NicholsZPK@Shorthandoff
+  }
+  \newcommand{\NicholsZPK@Shorthandoff}[4][]{%
+    \Orig@NicholsZPK[#1]{#2}{#3}{#4}
+    \expandafter\shorthandon\expandafter{\shorthand@list}
+  }
   \fi
 }
 \newcommand{\NicholsTF}[4][]{
@@ -2171,17 +2184,18 @@ Nyquist plots with additional commands, using two different macros
   \end{tikzpicture}
 }
 \AtBeginDocument{
-  \if@babel@french
+  \if@babel
     \let\Orig@NicholsTF\NicholsTF
     \renewcommand{\NicholsTF}{%
-      \shorthandoff{;:!?}%
+      \expandafter\shorthandoff\expandafter{\shorthand@list}
       \NicholsTF@Shorthandoff
     }
     \newcommand{\NicholsTF@Shorthandoff}[4][]{%
-      \Orig@NicholsTF[#1]{#2}{#3}{#4}%
-      \shorthandon{;:!?}%
+      \Orig@NicholsTF[#1]{#2}{#3}{#4}
+      \expandafter\shorthandon\expandafter{\shorthand@list}
     }
-    \AddToHook{env/NicholsChart/begin}{\shorthandoff{;:!?}}
+    \AddToHook{env/NicholsChart/begin}{\expandafter\shorthandoff\expandafter{\shorthand@list}}
+    \AddToHook{env/NicholsChart/end}{\expandafter\shorthandon\expandafter{\shorthand@list}}
   \fi
 }
 \NewDocumentEnvironment{NicholsChart}{O{}mm+b}{
