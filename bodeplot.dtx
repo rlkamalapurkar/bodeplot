@@ -16,8 +16,10 @@
 % \fi
 %
 % \iffalse
-%<package>\NeedsTeXFormat{LaTeX2e}[2006/05/20]
-%<package>\ProvidesPackage{bodeplot}
+%<package>\NeedsTeXFormat{LaTeX2e}[2018/04/01]
+%<package>\DeclareRelease{}{2024-02-06}{bodeplot-2024-02-06.sty}
+%<package>\DeclareCurrentRelease{}{2024/04/18}
+%<package>\ProvidesPackage{bodeplot}[2024/04/18 v1.2 Generate Bode, Nichols, and Nyquist plots]
 %<package>\RequirePackage{pdftexcmds}
 %<package>\RequirePackage{ifplatform}
 %<package>\RequirePackage{xparse}
@@ -69,7 +71,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{1858}
+% \CheckSum{1857}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
 % \changes{v1.0.4}{2021/11/05}{Fixed unintended optional argument macro expansion}
@@ -80,11 +82,12 @@
 % \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in gnuplot mode}
 % \changes{v1.1.1}{2022/07/31}{Enable Hz and rad units}
 % \changes{v1.1.7}{2024/02/06}{Detect and turn off shorthands to improve `babel' compatibility}
+% \changes{v1.2}{2024/04/18}{Removed global option to process pgf commands in radians}
 %
 % \GetFileInfo{bodeplot.sty}
 % \DoNotIndex{\newcommand,\xdef,\gdef,\def,\edef,\addplot,\approx,\arabic,\opt,\typ,\obj,\else,\if@pgfarg,\if@Hzarg,\if@radarg,\if@declutterarg,\if@babel,\fi,\begin,\end,\feature,\footnotesize,\draw,\detokenize,\DeclareOption,\foreach,\ifdim,\ifodd,\Im,\Re,\let,\newif,\nextgroupplot,\noexpand,\expandafter,\unexpanded,\PackageError,\PackageWarning,\relax,\RequirePackage,\tikzset,\pgfmathsetmacro,\pgfmathtruncatemacro,\ProcessOptions}
 %
-% \title{The \textsf{bodeplot} package\\version 1.1.7}
+% \title{The \textsf{bodeplot} package\\version 1.2}
 % \author{Rushikesh Kamalapurkar \\ \texttt{rlkamalapurkar@gmail.com}}
 %
 % \maketitle
@@ -105,6 +108,7 @@
 % Since version 1.0.8, the |bodeplot| package places all |gnuplot| temporary files in the working directory. The package option |declutter| restores the original behavior where the temporary files are placed in a folder called |gnuplot|.
 % \subsection{Limitations} 
 % \begin{itemize}
+%   \item Before version 1.2, in |pgf| mode, the package set |trig format plots| to |rad| globally. Version 1.2 onwards, this option is passed to each |addplot| command individually so that it does not affect other plots in the document. To roll back to the pre-1.2 behavior, load the package with |\usepackage[pgf]{bodeplot}[=2024-02-06]|.
 %   \item In |pgf| mode, Bode phase plots and Nichols charts in TF form wrap angles so that they are always between -180 and 180$^\circ$ or $-\pi$ and $-\pi$ radian. As such, these plots will show phase wrapping discontinuities. Since v1.1.1, in |gnuplot| mode, the package uses the |smooth unwrap| filter to correct wrapping discontinuities. As of now, I have not found a way to do this in |pgf| mode, any merge requests or ideas you may have are welcome! Since v1.1.4, you can redefine the |n@mod| macro using the commands |\makeatletter\renewcommand{\n@mod}{\n@mod@p}\makeatother| to wrap the phase between 0 and 360$^\circ$ or $0$ and $2\pi$ radian. The commands |\makeatletter\renewcommand{\n@mod}{\n@mod@n}\makeatother| will wrap the phase between -360 and 0$^\circ$ or $-2\pi$ and $0$ radian.
 %   \item Use of the |declutter| option with other directory management tools such as a |tikzexternalize| prefix is not recommended.
 % \end{itemize}
@@ -602,7 +606,7 @@ Nyquist plots with additional commands, using two different macros
 % \DescribeMacro{\addBodeComponentPlot}
 % |\addBodeComponentPlot|\oarg{plot-options}\marg{plot-command}
 %
-% \noindent Generates a single parametric function corresponding to the mandatory argument |plot-command| and passes it to the |\addplot| macro. The plot command can be any parametric function that uses |t| as the independent variable. The parametric function must be |gnuplot| compatible (or |pgfplots| compatible if the package is loaded using the |pgf| option). The intended use of this macro is to plot the parametric functions generated using the basic component macros described in Section \ref{sec:BasicComponents} below.
+% \noindent Generates a single parametric function corresponding to the mandatory argument |plot-command| and passes it to the |\addplot| macro. The plot command can be any parametric function that uses |t| as the independent variable. The parametric function must be |gnuplot| compatible (or |pgfplots| compatible if the package is loaded using the |pgf| option, \textbf{with angles passed to trigonometric functions in radian}). The intended use of this macro is to plot the parametric functions generated using the basic component macros described in Section \ref{sec:BasicComponents} below.
 %
 % \subsubsection{Basic components up to first order\label{sec:BasicComponents}}
 %
@@ -839,6 +843,7 @@ Nyquist plots with additional commands, using two different macros
 % \changes{v1.0.3}{2021/11/03}{Added jobname to gnuplot prefix}
 % \changes{v1.0.8}{2022/07/06}{Fixed issue \#6}
 % \changes{v1.1.4}{2023/10/12}{Changed phase wrapping in pgf mode}
+% \changes{v1.2}{2024/04/18}{Removed global option to process pgf commands in radians}
 % We start by processing the class options. 
 %    \begin{macrocode}
 \newif\if@pgfarg\@pgfargfalse
@@ -866,9 +871,6 @@ Nyquist plots with additional commands, using two different macros
 \newcommand{\n@mod@n}[2]{(#1)-((floor((#1)/(#2))+1)*(#2))}
 \if@pgfarg
   \newcommand{\n@pow}[2]{(#1)^(#2)}
-  \pgfplotsset{
-    trig format plots=rad
-  }
 \else
   \newcommand{\n@pow}[2]{(#1)**(#2)}
 %    \end{macrocode}
@@ -1295,7 +1297,7 @@ Nyquist plots with additional commands, using two different macros
       \edef\temp@mag@cmd{\noexpand\nextgroupplot [ylabel={Gain (dB)}, xmajorticks=false, \optmag@axes]
       \noexpand\addplot [freq@filter, variable=t, thick, \optmag@plot]}
       \edef\temp@ph@cmd{\noexpand\nextgroupplot [ph@y@label, freq@label, \optph@axes]
-      \noexpand\addplot [freq@filter, variable=t, thick, \optph@plot]}
+      \noexpand\addplot [freq@filter, variable=t, thick, trig format plots=rad, \optph@plot]}
       \if@pgfarg
         \temp@mag@cmd {\func@mag};
         \optmag@commands
@@ -1375,7 +1377,7 @@ Nyquist plots with additional commands, using two different macros
       \edef\temp@mag@cmd{\noexpand\nextgroupplot [ylabel={Gain (dB)}, xmajorticks=false, \optmag@axes]
       \noexpand\addplot [freq@filter, variable=t, thick, \optmag@plot]}
       \edef\temp@ph@cmd{\noexpand\nextgroupplot [ph@y@label, freq@label, \optph@axes]
-      \noexpand\addplot [freq@filter, variable=t, thick, \optph@plot]}
+      \noexpand\addplot [freq@filter, variable=t, thick, trig format plots=rad, \optph@plot]}
       \if@pgfarg
         \temp@mag@cmd {\func@mag};
         \optmag@commands
@@ -1441,7 +1443,7 @@ Nyquist plots with additional commands, using two different macros
       \build@ZPK@plot{\plot@macro}{\temp@macro}{\approx}{#3}
     \fi
     \if@pgfarg
-      \edef\temp@cmd{\noexpand\addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, thick, \opt]}
+      \edef\temp@cmd{\noexpand\addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, thick, trig format plots=rad, \opt]}
       \temp@cmd {\plot@macro};
     \else
       \stepcounter{gnuplot@id}
@@ -1474,7 +1476,7 @@ Nyquist plots with additional commands, using two different macros
   \fi
   \if@pgfarg
     \ifnum\pdf@strcmp{#2}{phase}=0
-      \edef\temp@cmd{\noexpand\addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+      \edef\temp@cmd{\noexpand\addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, trig format plots=rad, #1]}
       \temp@cmd {\n@mod{\plot@macro}{2*pi}};
     \else
       \edef\temp@cmd{\noexpand\addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
@@ -1510,11 +1512,11 @@ Nyquist plots with additional commands, using two different macros
 %    \end{macrocode}
 %\end{macro}
 % \begin{macro}{\addBodeComponentPlot}
-% This macro is designed to issue a single |\addplot| macro capable of plotting linear combinations of the basic components described in Section \ref{sec:BasicComponents}. The only work to do here is to handle the |pgf| package option.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}
+% This macro is designed to create a single |\addplot| macro capable of plotting linear combinations of the basic components described in Section \ref{sec:BasicComponents}. The only work to do here is to handle the |pgf| package option.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}
 %    \begin{macrocode}
 \newcommand{\addBodeComponentPlot}[2][thick]{
   \if@pgfarg
-    \edef\temp@cmd{\noexpand\addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \edef\temp@cmd{\noexpand\addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, trig format plots=rad, #1]}
     \temp@cmd {#2};
   \else
     \stepcounter{gnuplot@id}
@@ -1884,7 +1886,7 @@ Nyquist plots with additional commands, using two different macros
     ]}
     \temp@cmd
       \addplot [only marks,mark=+,thick,red] (-1 , 0);
-      \edef\temp@cmd{\noexpand\addplot [variable=t, thick, \unexpanded\expandafter{\opt@plot}]}
+      \edef\temp@cmd{\noexpand\addplot [variable=t, thick, trig format plots=rad, \unexpanded\expandafter{\opt@plot}]}
       \if@pgfarg
         \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos((\func@ph)/(\ph@scale))},
           {\n@pow{10}{((\func@mag)/20)}*sin((\func@ph)/(\ph@scale))} );
@@ -1939,7 +1941,7 @@ Nyquist plots with additional commands, using two different macros
     ]}
     \temp@cmd
       \addplot [only marks, mark=+, thick, red] (-1 , 0);
-      \edef\temp@cmd{\noexpand\addplot [variable=t, thick, \unexpanded\expandafter{\opt@plot}]}
+      \edef\temp@cmd{\noexpand\addplot [variable=t, thick, trig format plots=rad, \unexpanded\expandafter{\opt@plot}]}
       \if@pgfarg
         \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos((\func@ph)/(\ph@scale))},
           {\n@pow{10}{((\func@mag)/20)}*sin((\func@ph)/(\ph@scale))} );
@@ -1981,7 +1983,7 @@ Nyquist plots with additional commands, using two different macros
   \gdef\func@ph{}
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}
   \if@pgfarg
-    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, trig format plots=rad, #1]}
     \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos((\func@ph)/(\ph@scale))},
       {\n@pow{10}{((\func@mag)/20)}*sin((\func@ph)/(\ph@scale))} );
   \else
@@ -2003,7 +2005,7 @@ Nyquist plots with additional commands, using two different macros
   \gdef\func@ph{}
   \build@TF@plot{\func@mag}{\func@ph}{#2}
   \if@pgfarg
-    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, trig format plots=rad, #1]}
     \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos((\func@ph)/(\ph@scale))},
       {\n@pow{10}{((\func@mag)/20)}*sin((\func@ph)/(\ph@scale))} );
   \else
@@ -2107,7 +2109,7 @@ Nyquist plots with additional commands, using two different macros
       \unexpanded\expandafter{\opt@axes}
     ]}
     \temp@cmd
-      \edef\temp@cmd{\noexpand\addplot [variable=t,thick,\opt@plot]}
+      \edef\temp@cmd{\noexpand\addplot [variable=t, thick, trig format plots=rad, \opt@plot]}
       \if@pgfarg
         \temp@cmd ( {\func@ph} , {\func@mag} );
         \opt@commands
@@ -2159,7 +2161,7 @@ Nyquist plots with additional commands, using two different macros
       \unexpanded\expandafter{\opt@axes}
     ]}
     \temp@cmd
-      \edef\temp@cmd{\noexpand\addplot [variable=t,thick, \opt@plot]}
+      \edef\temp@cmd{\noexpand\addplot [variable=t, thick, trig format plots=rad, \opt@plot]}
       \if@pgfarg
         \temp@cmd ( {\n@mod{\func@ph}{2*pi*\ph@scale}} , {\func@mag} );
         \opt@commands
@@ -2220,7 +2222,7 @@ Nyquist plots with additional commands, using two different macros
   \gdef\func@ph{}
   \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}
   \if@pgfarg
-    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, trig format plots=rad, #1]}
     \temp@cmd ( {\func@ph} , {\func@mag} );
   \else
     \stepcounter{gnuplot@id}
@@ -2242,7 +2244,7 @@ Nyquist plots with additional commands, using two different macros
   \gdef\func@ph{}
   \build@TF@plot{\func@mag}{\func@ph}{#2}
   \if@pgfarg
-    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, trig format plots=rad, #1]}
     \temp@cmd ( {\n@mod{\func@ph}{2*pi*\ph@scale}} , {\func@mag} );
   \else
     \stepcounter{gnuplot@id}

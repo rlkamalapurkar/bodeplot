@@ -1,0 +1,1112 @@
+%%
+%% This is file `bodeplot.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% bodeplot.dtx  (with options: `package')
+%% This is a generated file.
+%% Copyright (C) 2021 by Rushikesh Kamalapurkar
+%% This file may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either
+%% version 1.3c of this license or (at your option) any later
+%% version. The latest version of this license is in:
+%% http://www.latex-project.org/lppl.txt
+%% and version 1.3c or later is part of all distributions of
+%% LaTeX version 2006/05/20 or later.
+\NeedsTeXFormat{LaTeX2e}[2006/05/20]
+\ProvidesPackage{bodeplot}
+\RequirePackage{pdftexcmds}
+\RequirePackage{ifplatform}
+\RequirePackage{xparse}
+\RequirePackage{pgfplots}
+  \pgfplotsset{compat=1.18}
+  \usepgfplotslibrary{groupplots}
+
+\newif\if@pgfarg\@pgfargfalse
+\DeclareOption{pgf}{
+  \@pgfargtrue
+}
+\newif\if@declutterarg\@declutterargfalse
+\DeclareOption{declutter}{
+  \@declutterargtrue
+}
+\newif\if@radarg\@radargfalse
+\DeclareOption{rad}{
+  \@radargtrue
+}
+\newif\if@hzarg\@hzargfalse
+\DeclareOption{Hz}{
+  \@hzargtrue
+}
+\ProcessOptions\relax
+\newcommand{\n@mod}[2]{(#1)-((round((#1)/(#2)))*(#2))}
+\newcommand{\n@mod@p}[2]{(#1)-((floor((#1)/(#2)))*(#2))}
+\newcommand{\n@mod@n}[2]{(#1)-((floor((#1)/(#2))+1)*(#2))}
+\if@pgfarg
+  \newcommand{\n@pow}[2]{(#1)^(#2)}
+  \pgfplotsset{
+    trig format plots=rad
+  }
+\else
+  \newcommand{\n@pow}[2]{(#1)**(#2)}
+  \newcounter{gnuplot@id}
+  \setcounter{gnuplot@id}{0}
+  \if@declutterarg
+    \edef\bodeplot@prefix{gnuplot/\jobname}
+  \else
+    \edef\bodeplot@prefix{\jobname}
+  \fi
+  \tikzset{
+    gnuplot@prefix/.style={
+      id=\arabic{gnuplot@id},
+      prefix=\bodeplot@prefix
+    }
+  }
+  \ifwindows\else
+    \if@declutterarg
+      \immediate\write18{mkdir -p gnuplot}
+    \fi
+  \fi
+\fi
+\newif\if@babel\@babelfalse
+\AtBeginDocument{%
+  \@ifpackageloaded{babel}{%
+    \@babeltrue
+    \let\shorthand@list\@empty
+    \def\do#1{%
+      \begingroup
+        \lccode`\~=`#1\relax
+        \lowercase{\ifbabelshorthand~{\g@addto@macro\shorthand@list{~}}{}}
+      \endgroup
+    }
+    \dospecials
+  }{}
+}
+\pgfplotsset{
+  bode@style/.style = {
+    label style={font=\footnotesize},
+    tick label style={font=\footnotesize},
+    grid=both,
+    major grid style={color=gray!80},
+    minor grid style={color=gray!20},
+    x label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+    y label style={at={(ticklabel cs:0.5)},anchor=near ticklabel},
+    scale only axis,
+    samples=200,
+    width=5cm,
+    log basis x=10
+  }
+}
+\pgfplotsset{freq@filter/.style = {}}
+\def\freq@scale{1}
+\pgfplotsset{freq@label/.style = {xlabel = {Frequency (rad/s)}}}
+\pgfplotsset{ph@x@label/.style = {xlabel={Phase (deg)}}}
+\pgfplotsset{ph@y@label/.style = {ylabel={Phase (deg)}}}
+\def\ph@scale{180/pi}
+\if@radarg
+  \pgfplotsset{ph@y@label/.style = {ylabel={Phase (rad)}}}
+  \pgfplotsset{ph@x@label/.style = {xlabel={Phase (rad)}}}
+  \def\ph@scale{1}
+\fi
+\if@hzarg
+  \def\freq@scale{2*pi}
+  \pgfplotsset{freq@label/.style = {xlabel = {Frequency (Hz)}}}
+  \if@pgfarg
+    \pgfplotsset{freq@filter/.style = {x filter/.expression={x-log10(2*pi)}}}
+  \fi
+\fi
+\tikzset{
+  phase unit/.initial={deg},
+  phase unit/.default={deg},
+  phase unit/.is choice,
+  phase unit/deg/.code={
+    \renewcommand{\ph@scale}{180/pi}
+    \pgfplotsset{ph@x@label/.style = {xlabel={Phase (deg)}}}
+    \pgfplotsset{ph@y@label/.style = {ylabel={Phase (deg)}}}
+  },
+  phase unit/rad/.code={
+    \renewcommand{\ph@scale}{1}
+    \pgfplotsset{ph@y@label/.style = {ylabel={Phase (rad)}}}
+    \pgfplotsset{ph@x@label/.style = {xlabel={Phase (rad)}}}
+  },
+  frequency unit/.initial={rad},
+  frequency unit/.default={rad},
+  frequency unit/.is choice,
+  frequency unit/Hz/.code={
+    \renewcommand{\freq@scale}{2*pi}
+    \pgfplotsset{freq@label/.style = {xlabel = {Frequency (Hz)}}}
+    \if@pgfarg
+      \pgfplotsset{freq@filter/.style = {x filter/.expression={x-log10(2*pi)}}}
+    \fi
+  },
+  frequency unit/rad/.code={
+    \renewcommand{\freq@scale}{1}
+    \pgfplotsset{freq@label/.style = {xlabel = {Frequency (rad/s)}}}
+  }
+}
+\def\get@interval@start#1:#2\@nil{#1}
+\def\get@interval@end#1:#2\@nil{#2}
+\newcommand*{\MagK}[2]{(20*log10(abs(#1)))}
+\newcommand*{\MagKAsymp}{\MagK}
+\newcommand*{\MagKLin}{\MagK}
+\newcommand*{\PhK}[2]{((#1<0?-pi:0)*\ph@scale)}
+\newcommand*{\PhKAsymp}{\PhK}
+\newcommand*{\PhKLin}{\PhK}
+\newcommand*{\MagDel}[2]{0}
+\newcommand*{\PhDel}[2]{(-#1*t*\ph@scale)}
+\newcommand*{\MagPole}[2]
+  {(-20*log10(sqrt(\n@pow{#1}{2} + \n@pow{t - (#2)}{2})))}
+\newcommand*{\MagPoleLin}[2]{(t < sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) ?
+  -20*log10(sqrt(\n@pow{#1}{2} + \n@pow{#2}{2})) :
+  -20*log10(t)
+  )}
+\newcommand*{\MagPoleAsymp}{\MagPoleLin}
+\newcommand*{\PhPole}[2]{((#1 > 0 ? (#2 > 0 ?
+  (\n@mod@p{-atan2((t - (#2)),-(#1))}{2*pi}) :
+  (-atan2((t - (#2)),-(#1)))) :
+  (-atan2((t - (#2)),-(#1))))*\ph@scale)}
+\newcommand*{\PhPoleLin}[2]{
+  ((abs(#1)+abs(#2) == 0 ? -pi/2 :
+  (t < (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) /
+    (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))})) ?
+  (-atan2(-(#2),-(#1))) :
+  (t >= (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) *
+    (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} + \n@pow{#2}{2}))})) ?
+  (#2>0?(#1>0?3*pi/2:-pi/2):-pi/2) :
+  (-atan2(-(#2),-(#1)) + (log10(t/(sqrt(\n@pow{#1}{2} + \n@pow{#2}{2}) /
+    (\n@pow{10}{sqrt(\n@pow{#1}{2}/(\n@pow{#1}{2} +
+    \n@pow{#2}{2}))}))))*((#2>0?(#1>0?3*pi/2:-pi/2):-pi/2) + atan2(-(#2),-(#1)))/
+    (log10(\n@pow{10}{sqrt((4*\n@pow{#1}{2})/
+    (\n@pow{#1}{2} + \n@pow{#2}{2}))}))))))*\ph@scale)}
+\newcommand*{\PhPoleAsymp}[2]{((t < (sqrt(\n@pow{#1}{2} + \n@pow{#2}{2})) ?
+  (-atan2(-(#2),-(#1))) :
+  (#2>0?(#1>0?3*pi/2:-pi/2):-pi/2))*\ph@scale)}
+\newcommand*{\MagZero}{0-\MagPole}
+\newcommand*{\MagZeroLin}{0-\MagPoleLin}
+\newcommand*{\MagZeroAsymp}{0-\MagPoleAsymp}
+\newcommand*{\PhZero}{0-\PhPole}
+\newcommand*{\PhZeroLin}{0-\PhPoleLin}
+\newcommand*{\PhZeroAsymp}{0-\PhPoleAsymp}
+\newcommand*{\MagCSPoles}[2]{(-20*log10(sqrt(\n@pow{\n@pow{#2}{2}
+    - \n@pow{t}{2}}{2} + \n@pow{2*#1*#2*t}{2})))}
+\newcommand*{\MagCSPolesLin}[2]{(t < #2 ? -40*log10(#2) : - 40*log10(t))}
+\newcommand*{\MagCSPolesAsymp}{\MagCSPolesLin}
+\newcommand*{\PhCSPoles}[2]{((-atan2((2*(#1)*(#2)*t),(\n@pow{#2}{2}
+  - \n@pow{t}{2})))*\ph@scale)}
+\newcommand*{\PhCSPolesLin}[2]{((t < (#2 / (\n@pow{10}{abs(#1)})) ?
+  0 :
+  (t >= (#2 * (\n@pow{10}{abs(#1)})) ?
+  (#1>0 ? -pi : pi) :
+  (#1>0 ? (-pi*(log10(t*(\n@pow{10}{#1})/#2))/(2*#1)) :
+    (pi*(log10(t*(\n@pow{10}{abs(#1)})/#2))/(2*abs(#1))))))*\ph@scale)}
+\newcommand*{\PhCSPolesAsymp}[2]{((#1>0?(t<#2?0:-pi):(t<#2?0:pi))*\ph@scale)}
+\newcommand*{\MagCSZeros}{0-\MagCSPoles}
+\newcommand*{\MagCSZerosLin}{0-\MagCSPolesLin}
+\newcommand*{\MagCSZerosAsymp}{0-\MagCSPolesAsymp}
+\newcommand*{\PhCSZeros}{0-\PhCSPoles}
+\newcommand*{\PhCSZerosLin}{0-\PhCSPolesLin}
+\newcommand*{\PhCSZerosAsymp}{0-\PhCSPolesAsymp}
+\newcommand*{\MagCSPolesPeak}[3][]{
+  \draw[#1,->] (axis cs:{#3},{-40*log10(#3)}) --
+  (axis cs:{#3},{-40*log10(#3)-20*log10(2*abs(#2))})
+}
+\newcommand*{\MagCSZerosPeak}[3][]{
+  \draw[#1,->] (axis cs:{#3},{40*log10(#3)}) --
+  (axis cs:{#3},{40*log10(#3)+20*log10(2*abs(#2))})
+}
+\newcommand*{\MagSOPoles}[2]{
+  (-20*log10(sqrt(\n@pow{#2 - \n@pow{t}{2}}{2} + \n@pow{#1*t}{2})))}
+\newcommand*{\MagSOPolesLin}[2]{
+  (t < sqrt(abs(#2)) ? -20*log10(abs(#2)) : - 40*log10(t))}
+\newcommand*{\MagSOPolesAsymp}{\MagSOPolesLin}
+\newcommand*{\PhSOPoles}[2]{((-atan2((#1)*t,((#2) - \n@pow{t}{2})))*\ph@scale)}
+\newcommand*{\PhSOPolesLin}[2]{((#2>0 ?
+  \PhCSPolesLin{(#1/(2*sqrt(#2)))}{(sqrt(#2))} :
+  (#1>0 ? -pi : pi)))}
+\newcommand*{\PhSOPolesAsymp}[2]{((#2>0 ?
+  \PhCSPolesAsymp{(#1/(2*sqrt(#2)))}{(sqrt(#2))} :
+  (#1>0 ? -pi : pi)))}
+\newcommand*{\MagSOZeros}{0-\MagSOPoles}
+\newcommand*{\MagSOZerosLin}{0-\MagSOPolesLin}
+\newcommand*{\MagSOZerosAsymp}{0-\MagSOPolesAsymp}
+\newcommand*{\PhSOZeros}{0-\PhSOPoles}
+\newcommand*{\PhSOZerosLin}{0-\PhSOPolesLin}
+\newcommand*{\PhSOZerosAsymp}{0-\PhSOPolesAsymp}
+\newcommand*{\MagSOPolesPeak}[3][]{
+  \draw[#1,->] (axis cs:{sqrt(abs(#3))},{-20*log10(abs(#3))}) --
+  (axis cs:{sqrt(abs(#3))},{-20*log10(abs(#3)) -
+    20*log10(abs(#2/sqrt(abs(#3))))});
+}
+\newcommand*{\MagSOZerosPeak}[3][]{
+  \draw[#1,->] (axis cs:{sqrt(abs(#3))},{20*log10(abs(#3))}) --
+  (axis cs:{sqrt(abs(#3))},{20*log10(abs(#3)) +
+    20*log10(abs(#2/sqrt(abs(#3))))});
+}
+\newcommand{\BodeZPK}[4][approx/true]{
+  \parse@opt{#1}
+  \gdef\func@mag{}
+  \gdef\func@ph{}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]}
+  \temp@cmd
+  \build@ZPK@plot{\func@mag}{\func@ph}{\opt@approx}{#2}
+    \edef\temp@cmd{\noexpand\begin{groupplot}[
+      bode@style,
+      xmin=#3,
+      xmax=#4,
+      domain=#3*\freq@scale:#4*\freq@scale,
+      height=2.5cm,
+      xmode=log,
+      group style = {group size = 1 by 2,vertical sep=0.25cm},
+      \opt@group
+    ]}
+    \temp@cmd
+      \edef\temp@mag@cmd{\noexpand\nextgroupplot [ylabel={Gain (dB)}, xmajorticks=false, \optmag@axes]
+      \noexpand\addplot [freq@filter, variable=t, thick, \optmag@plot]}
+      \edef\temp@ph@cmd{\noexpand\nextgroupplot [ph@y@label, freq@label, \optph@axes]
+      \noexpand\addplot [freq@filter, variable=t, thick, \optph@plot]}
+      \if@pgfarg
+        \temp@mag@cmd {\func@mag};
+        \optmag@commands
+        \temp@ph@cmd {\func@ph};
+        \optph@commands
+      \else
+        \stepcounter{gnuplot@id}
+        \temp@mag@cmd gnuplot [raw gnuplot, gnuplot@prefix]
+        { set table $meta;
+          set dummy t;
+          set logscale x 10;
+          set xrange [#3*\freq@scale:#4*\freq@scale];
+          set samples \pgfkeysvalueof{/pgfplots/samples};
+          plot \func@mag;
+          set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
+          plot "$meta" using ($1/(\freq@scale)):($2);
+        };
+        \optmag@commands
+        \stepcounter{gnuplot@id}
+        \temp@ph@cmd gnuplot [raw gnuplot, gnuplot@prefix]
+        { set table $meta;
+          set dummy t;
+          set logscale x 10;
+          set xrange [#3*\freq@scale:#4*\freq@scale];
+          set samples \pgfkeysvalueof{/pgfplots/samples};
+          plot \func@ph;
+          set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
+          plot "$meta" using ($1/(\freq@scale)):($2);
+        };
+        \optph@commands
+      \fi
+    \end{groupplot}
+  \end{tikzpicture}
+}
+\AtBeginDocument{%
+  \if@babel
+  \let\Orig@BodeZPK\BodeZPK
+  \renewcommand{\BodeZPK}{%
+    \expandafter\shorthandoff\expandafter{\shorthand@list}
+    \BodeZPK@Shorthandoff
+  }
+  \newcommand{\BodeZPK@Shorthandoff}[4][]{%
+    \Orig@BodeZPK[#1]{#2}{#3}{#4}
+    \expandafter\shorthandon\expandafter{\shorthand@list}
+  }
+  \fi
+}
+\newcommand{\BodeTF}[4][]{
+  \parse@opt{#1}
+  \gdef\func@mag{}
+  \gdef\func@ph{}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]}
+  \temp@cmd
+  \build@TF@plot{\func@mag}{\func@ph}{#2}
+    \edef\temp@cmd{\noexpand\begin{groupplot}[
+      bode@style,
+      xmin=#3,
+      xmax=#4,
+      domain=#3*\freq@scale:#4*\freq@scale,
+      height=2.5cm,
+      xmode=log,
+      group style = {group size = 1 by 2,vertical sep=0.25cm},
+      \opt@group
+    ]}
+    \temp@cmd
+      \edef\temp@mag@cmd{\noexpand\nextgroupplot [ylabel={Gain (dB)}, xmajorticks=false, \optmag@axes]
+      \noexpand\addplot [freq@filter, variable=t, thick, \optmag@plot]}
+      \edef\temp@ph@cmd{\noexpand\nextgroupplot [ph@y@label, freq@label, \optph@axes]
+      \noexpand\addplot [freq@filter, variable=t, thick, \optph@plot]}
+      \if@pgfarg
+        \temp@mag@cmd {\func@mag};
+        \optmag@commands
+        \temp@ph@cmd {\n@mod{\func@ph}{2*pi*\ph@scale}};
+        \optph@commands
+      \else
+        \stepcounter{gnuplot@id}
+        \temp@mag@cmd gnuplot [raw gnuplot, gnuplot@prefix]
+        { set table $meta;
+          set dummy t;
+          set logscale x 10;
+          set xrange [#3*\freq@scale:#4*\freq@scale];
+          set samples \pgfkeysvalueof{/pgfplots/samples};
+          plot \func@mag;
+          set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
+          plot "$meta" using ($1/(\freq@scale)):($2);
+        };
+        \optmag@commands
+        \stepcounter{gnuplot@id}
+        \temp@ph@cmd gnuplot [raw gnuplot, gnuplot@prefix]
+        { set table $meta;
+          set dummy t;
+          set logscale x 10;
+          set trange [#3*\freq@scale:#4*\freq@scale];
+          set samples \pgfkeysvalueof{/pgfplots/samples};
+          plot '+' using (t) : ((\func@ph)/(\ph@scale)) smooth unwrap;
+          set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
+          plot "$meta" using ($1/(\freq@scale)):($2*\ph@scale);
+        };
+        \optph@commands
+      \fi
+    \end{groupplot}
+  \end{tikzpicture}
+}
+\AtBeginDocument{
+  \if@babel
+  \let\Orig@BodeTF\BodeTF
+  \renewcommand{\BodeTF}{%
+    \expandafter\shorthandoff\expandafter{\shorthand@list}
+    \BodeTF@Shorthandoff
+  }
+  \newcommand{\BodeTF@Shorthandoff}[4][]{%
+    \Orig@BodeTF[#1]{#2}{#3}{#4}
+    \expandafter\shorthandon\expandafter{\shorthand@list}
+  }
+  \fi
+}
+\newcommand{\addBodeZPKPlots}[3][true/{}]{
+  \foreach \approx/\opt in {#1} {
+    \gdef\plot@macro{}
+    \gdef\temp@macro{}
+    \ifnum\pdf@strcmp{#2}{phase}=0
+      \build@ZPK@plot{\temp@macro}{\plot@macro}{\approx}{#3}
+    \else
+      \build@ZPK@plot{\plot@macro}{\temp@macro}{\approx}{#3}
+    \fi
+    \if@pgfarg
+      \edef\temp@cmd{\noexpand\addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, thick, \opt]}
+      \temp@cmd {\plot@macro};
+    \else
+      \stepcounter{gnuplot@id}
+      \edef\temp@cmd{\noexpand\addplot [variable=t, thick, \opt]}
+      \temp@cmd gnuplot [raw gnuplot, gnuplot@prefix]
+      { set table $meta;
+        set dummy t;
+        set logscale x 10;
+        set xrange [\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale];
+        set samples \pgfkeysvalueof{/pgfplots/samples};
+        plot \plot@macro;
+        set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
+        plot "$meta" using ($1/(\freq@scale)):($2);
+      };
+    \fi
+  }
+}
+\newcommand{\addBodeTFPlot}[3][thick]{
+  \gdef\plot@macro{}
+  \gdef\temp@macro{}
+  \ifnum\pdf@strcmp{#2}{phase}=0
+    \build@TF@plot{\temp@macro}{\plot@macro}{#3}
+  \else
+    \build@TF@plot{\plot@macro}{\temp@macro}{#3}
+  \fi
+  \if@pgfarg
+    \ifnum\pdf@strcmp{#2}{phase}=0
+      \edef\temp@cmd{\noexpand\addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+      \temp@cmd {\n@mod{\plot@macro}{2*pi}};
+    \else
+      \edef\temp@cmd{\noexpand\addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+      \temp@cmd {\plot@macro};
+    \fi
+  \else
+    \stepcounter{gnuplot@id}
+    \ifnum\pdf@strcmp{#2}{phase}=0
+      \addplot [variable=t, #1] gnuplot [raw gnuplot, gnuplot@prefix]
+      { set table $meta;
+        set dummy t;
+        set logscale x 10;
+        set trange [\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale];
+        set samples \pgfkeysvalueof{/pgfplots/samples};
+        plot '+' using (t) : ((\plot@macro)/(\ph@scale)) smooth unwrap;
+        set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
+        plot "$meta" using ($1/(\freq@scale)):($2*\ph@scale);
+      };
+    \else
+      \addplot [variable=t, #1] gnuplot [raw gnuplot, gnuplot@prefix]
+        { set table $meta;
+          set dummy t;
+          set logscale x 10;
+          set xrange [\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale];
+          set samples \pgfkeysvalueof{/pgfplots/samples};
+          plot \plot@macro;
+          set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
+          plot "$meta" using ($1/(\freq@scale)):($2);
+        };
+    \fi
+  \fi
+}
+\newcommand{\addBodeComponentPlot}[2][thick]{
+  \if@pgfarg
+    \edef\temp@cmd{\noexpand\addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \temp@cmd {#2};
+  \else
+    \stepcounter{gnuplot@id}
+    \addplot [variable=t, #1] gnuplot [raw gnuplot, gnuplot@prefix]
+    { set table $meta;
+      set dummy t;
+      set logscale x 10;
+      set xrange [\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale];
+      set samples \pgfkeysvalueof{/pgfplots/samples};
+      plot #2;
+      set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
+      plot "$meta" using ($1/(\freq@scale)):($2);
+    };
+  \fi
+}
+\AtBeginDocument{%
+  \if@babel
+    \AddToHook{env/BodePhPlot/begin}{\expandafter\shorthandoff\expandafter{\shorthand@list}}
+    \AddToHook{env/BodePhPlot/end}{\expandafter\shorthandon\expandafter{\shorthand@list}}
+  \fi
+}
+\NewDocumentEnvironment{BodePhPlot}{O{}mm+b}{
+  \parse@env@opt{#1}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]}
+  \temp@cmd
+    \edef\temp@cmd{\noexpand\begin{semilogxaxis}[
+      ph@y@label,
+      freq@label,
+      bode@style,
+      xmin={#2},
+      xmax={#3},
+      domain=#2:#3,
+      height=2.5cm,
+      \unexpanded\expandafter{\opt@axes}
+    ]}
+    \temp@cmd
+      #4
+    \end{semilogxaxis}
+  \end{tikzpicture}
+}{}
+\AtBeginDocument{%
+  \if@babel
+    \AddToHook{env/BodeMagPlot/begin}{\expandafter\shorthandoff\expandafter{\shorthand@list}}
+    \AddToHook{env/BodeMagPlot/end}{\expandafter\shorthandon\expandafter{\shorthand@list}}
+  \fi
+}
+\NewDocumentEnvironment{BodeMagPlot}{O{}mm+b}{
+  \parse@env@opt{#1}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]}
+  \temp@cmd
+    \edef\temp@cmd{\noexpand\begin{semilogxaxis}[
+      bode@style,
+      freq@label,
+      xmin={#2},
+      xmax={#3},
+      domain=#2:#3,
+      height=2.5cm,
+      ylabel={Gain (dB)},
+      \unexpanded\expandafter{\opt@axes}
+    ]}
+    \temp@cmd
+      #4
+    \end{semilogxaxis}
+  \end{tikzpicture}
+}{}
+\AtBeginDocument{%
+  \if@babel
+    \AddToHook{env/BodePlot/begin}{\expandafter\shorthandoff\expandafter{\shorthand@list}}
+    \AddToHook{env/BodePlot/end}{\expandafter\shorthandon\expandafter{\shorthand@list}}
+  \fi
+}
+\NewDocumentEnvironment{BodePlot}{O{}mm+b}{
+  \parse@env@opt{#1}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]}
+  \temp@cmd
+    \edef\temp@cmd{\noexpand\begin{semilogxaxis}[
+      bode@style,
+      freq@label,
+      xmin={#2},
+      xmax={#3},
+      domain=#2:#3,
+      height=2.5cm,
+      \unexpanded\expandafter{\opt@axes}
+    ]}
+    \temp@cmd
+      #4
+    \end{semilogxaxis}
+  \end{tikzpicture}
+}{}
+\newcommand*{\add@feature}[3]{
+  \ifcat$\detokenize\expandafter{#1}$
+    \xdef#1{\unexpanded\expandafter{#1 0+#2}}
+  \else
+    \xdef#1{\unexpanded\expandafter{#1+#2}}
+  \fi
+  \foreach \y [count=\n] in #3 {
+    \xdef#1{\unexpanded\expandafter{#1}{\y}}
+    \xdef\Last@LoopValue{\n}
+  }
+  \ifnum\Last@LoopValue=1
+    \xdef#1{\unexpanded\expandafter{#1}{0}}
+  \fi
+}
+\newcommand{\build@ZPK@plot}[4]{
+  \foreach \feature/\values in {#4} {
+    \ifnum\pdf@strcmp{\feature}{z}=0
+      \foreach \z in \values {
+        \ifnum\pdf@strcmp{#3}{linear}=0
+          \add@feature{#2}{\PhZeroLin}{\z}
+          \add@feature{#1}{\MagZeroLin}{\z}
+        \else
+          \ifnum\pdf@strcmp{#3}{asymptotic}=0
+            \add@feature{#2}{\PhZeroAsymp}{\z}
+            \add@feature{#1}{\MagZeroAsymp}{\z}
+          \else
+            \add@feature{#2}{\PhZero}{\z}
+            \add@feature{#1}{\MagZero}{\z}
+          \fi
+        \fi
+      }
+    \fi
+    \ifnum\pdf@strcmp{\feature}{p}=0
+      \foreach \p in \values {
+        \ifnum\pdf@strcmp{#3}{linear}=0
+          \add@feature{#2}{\PhPoleLin}{\p}
+          \add@feature{#1}{\MagPoleLin}{\p}
+        \else
+          \ifnum\pdf@strcmp{#3}{asymptotic}=0
+            \add@feature{#2}{\PhPoleAsymp}{\p}
+            \add@feature{#1}{\MagPoleAsymp}{\p}
+          \else
+            \add@feature{#2}{\PhPole}{\p}
+            \add@feature{#1}{\MagPole}{\p}
+          \fi
+        \fi
+      }
+    \fi
+    \ifnum\pdf@strcmp{\feature}{k}=0
+      \ifnum\pdf@strcmp{#3}{linear}=0
+        \add@feature{#2}{\PhKLin}{\values}
+        \add@feature{#1}{\MagKLin}{\values}
+      \else
+        \ifnum\pdf@strcmp{#3}{asymptotic}=0
+          \add@feature{#2}{\PhKAsymp}{\values}
+          \add@feature{#1}{\MagKAsymp}{\values}
+        \else
+          \add@feature{#2}{\PhK}{\values}
+          \add@feature{#1}{\MagK}{\values}
+        \fi
+      \fi
+    \fi
+    \ifnum\pdf@strcmp{\feature}{d}=0
+      \ifnum\pdf@strcmp{#3}{linear}=0
+        \PackageError {bodeplot} {Linear approximation for pure delays is not
+        supported.} {Plot the true Bode plot using `true' instead of `linear'.}
+      \else
+        \ifnum\pdf@strcmp{#3}{asymptotic}=0
+          \PackageError {bodeplot} {Asymptotic approximation for pure delays is not
+          supported.} {Plot the true Bode plot using `true' instead of `asymptotic'.}
+        \else
+          \ifdim\values pt < 0pt
+            \PackageError {bodeplot} {Delay needs to be a positive number.}
+          \fi
+          \add@feature{#2}{\PhDel}{\values}
+          \add@feature{#1}{\MagDel}{\values}
+        \fi
+      \fi
+    \fi
+  }
+}
+\newcommand{\build@TF@plot}[3]{
+  \gdef\num@real{0}
+  \gdef\num@im{0}
+  \gdef\den@real{0}
+  \gdef\den@im{0}
+  \gdef\loop@delay{0}
+  \foreach \feature/\values in {#3} {
+    \ifnum\pdf@strcmp{\feature}{num}=0
+      \foreach \numcoeff [count=\numpow] in \values {
+        \xdef\num@degree{\numpow}
+      }
+      \foreach \numcoeff [count=\numpow] in \values {
+        \pgfmathtruncatemacro{\currentdegree}{\num@degree-\numpow}
+        \ifnum\currentdegree = 0
+          \xdef\num@real{\num@real+\numcoeff}
+        \else
+          \ifodd\currentdegree
+            \xdef\num@im{\num@im+(\numcoeff*(\n@pow{-1}{(\currentdegree-1)/2})*%
+              (\n@pow{t}{\currentdegree}))}
+          \else
+            \xdef\num@real{\num@real+(\numcoeff*(\n@pow{-1}{(\currentdegree)/2})*%
+              (\n@pow{t}{\currentdegree}))}
+          \fi
+        \fi
+      }
+    \fi
+    \ifnum\pdf@strcmp{\feature}{den}=0
+      \foreach \dencoeff [count=\denpow] in \values {
+        \xdef\den@degree{\denpow}
+      }
+      \foreach \dencoeff [count=\denpow] in \values {
+        \pgfmathtruncatemacro{\currentdegree}{\den@degree-\denpow}
+        \ifnum\currentdegree = 0
+          \xdef\den@real{\den@real+\dencoeff}
+        \else
+          \ifodd\currentdegree
+            \xdef\den@im{\den@im+(\dencoeff*(\n@pow{-1}{(\currentdegree-1)/2})*%
+              (\n@pow{t}{\currentdegree}))}
+          \else
+            \xdef\den@real{\den@real+(\dencoeff*(\n@pow{-1}{(\currentdegree)/2})*%
+              (\n@pow{t}{\currentdegree}))}
+          \fi
+        \fi
+      }
+    \fi
+    \ifnum\pdf@strcmp{\feature}{d}=0
+      \xdef\loop@delay{\values}
+    \fi
+  }
+  \xdef#2{((atan2((\num@im),(\num@real))-atan2((\den@im),%
+    (\den@real))-\loop@delay*t)*(\ph@scale))}
+  \xdef#1{(20*log10(sqrt((\n@pow{\num@real}{2})+(\n@pow{\num@im}{2})))-%
+    20*log10(sqrt((\n@pow{\den@real}{2})+(\n@pow{\den@im}{2}))))}
+}
+\newcommand{\parse@opt}[1]{
+  \gdef\optmag@axes{}
+  \gdef\optph@axes{}
+  \gdef\optph@plot{}
+  \gdef\optmag@plot{}
+  \gdef\opt@group{}
+  \gdef\opt@approx{}
+  \gdef\optph@commands{}
+  \gdef\optmag@commands{}
+  \gdef\opt@tikz{}
+  \foreach \obj/\typ/\opt in {#1} {
+    \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{plot}=0
+      \ifnum\pdf@strcmp{\unexpanded\expandafter{\typ}}{mag}=0
+        \xdef\optmag@plot{\unexpanded\expandafter{\opt}}
+      \else
+        \ifnum\pdf@strcmp{\unexpanded\expandafter{\typ}}{ph}=0
+          \xdef\optph@plot{\unexpanded\expandafter{\opt}}
+        \else
+          \xdef\optmag@plot{\unexpanded\expandafter{\opt}}
+          \xdef\optph@plot{\unexpanded\expandafter{\opt}}
+        \fi
+      \fi
+    \else
+      \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{axes}=0
+        \ifnum\pdf@strcmp{\unexpanded\expandafter{\typ}}{mag}=0
+          \xdef\optmag@axes{\unexpanded\expandafter{\opt}}
+        \else
+          \ifnum\pdf@strcmp{\unexpanded\expandafter{\typ}}{ph}=0
+            \xdef\optph@axes{\unexpanded\expandafter{\opt}}
+          \else
+            \xdef\optmag@axes{\unexpanded\expandafter{\opt}}
+            \xdef\optph@axes{\unexpanded\expandafter{\opt}}
+          \fi
+        \fi
+      \else
+        \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{group}=0
+          \xdef\opt@group{\unexpanded\expandafter{\opt}}
+        \else
+          \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{approx}=0
+            \xdef\opt@approx{\unexpanded\expandafter{\opt}}
+          \else
+            \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{commands}=0
+              \ifnum\pdf@strcmp{\unexpanded\expandafter{\typ}}{ph}=0
+                \xdef\optph@commands{\unexpanded\expandafter{\opt}}
+              \else
+                \xdef\optmag@commands{\unexpanded\expandafter{\opt}}
+              \fi
+            \else
+              \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{tikz}=0
+                \xdef\opt@tikz{\unexpanded\expandafter{\opt}}
+              \else
+                \xdef\optmag@plot{\unexpanded\expandafter{\optmag@plot},
+                  \unexpanded\expandafter{\obj}}
+                \xdef\optph@plot{\unexpanded\expandafter{\optph@plot},
+                  \unexpanded\expandafter{\obj}}
+              \fi
+            \fi
+          \fi
+        \fi
+      \fi
+    \fi
+  }
+}
+\newcommand{\parse@env@opt}[1]{
+  \gdef\opt@axes{}
+  \gdef\opt@tikz{}
+  \foreach \obj/\opt in {#1} {
+    \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{axes}=0
+      \xdef\opt@axes{\unexpanded\expandafter{\opt}}
+    \else
+      \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{tikz}=0
+        \xdef\opt@tikz{\unexpanded\expandafter{\opt}}
+      \else
+        \xdef\opt@axes{\unexpanded\expandafter{\opt@axes},
+          \unexpanded\expandafter{\obj}}
+      \fi
+    \fi
+  }
+}
+\newcommand{\NyquistZPK}[4][]{
+  \parse@N@opt{#1}
+  \gdef\func@mag{}
+  \gdef\func@ph{}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]}
+  \temp@cmd
+  \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}
+    \edef\temp@cmd{\noexpand\begin{axis}[
+      bode@style,
+      domain=#3*\freq@scale:#4*\freq@scale,
+      height=5cm,
+      xlabel={$\Re$},
+      ylabel={$\Im$},
+      samples=500,
+      \unexpanded\expandafter{\opt@axes}
+    ]}
+    \temp@cmd
+      \addplot [only marks,mark=+,thick,red] (-1 , 0);
+      \edef\temp@cmd{\noexpand\addplot [variable=t, thick, \unexpanded\expandafter{\opt@plot}]}
+      \if@pgfarg
+        \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos((\func@ph)/(\ph@scale))},
+          {\n@pow{10}{((\func@mag)/20)}*sin((\func@ph)/(\ph@scale))} );
+        \opt@commands
+      \else
+        \stepcounter{gnuplot@id}
+        \temp@cmd gnuplot [parametric, gnuplot@prefix] {
+          \n@pow{10}{((\func@mag)/20)}*cos((\func@ph)/(\ph@scale)),
+          \n@pow{10}{((\func@mag)/20)}*sin((\func@ph)/(\ph@scale))
+        };
+        \opt@commands
+      \fi
+    \end{axis}
+  \end{tikzpicture}
+}
+\AtBeginDocument{%
+  \if@babel
+  \let\Orig@NyquistZPK\NyquistZPK
+  \renewcommand{\NyquistZPK}{%
+    \expandafter\shorthandoff\expandafter{\shorthand@list}
+    \NyquistZPK@Shorthandoff
+  }
+  \newcommand{\NyquistZPK@Shorthandoff}[4][]{%
+    \Orig@NyquistZPK[#1]{#2}{#3}{#4}
+    \expandafter\shorthandon\expandafter{\shorthand@list}
+  }
+  \fi
+}
+\newcommand{\NyquistTF}[4][]{
+  \parse@N@opt{#1}
+  \gdef\func@mag{}
+  \gdef\func@ph{}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]}
+  \temp@cmd
+    \build@TF@plot{\func@mag}{\func@ph}{#2}
+    \edef\temp@cmd{\noexpand\begin{axis}[
+      bode@style,
+      domain=#3*\freq@scale:#4*\freq@scale,
+      height=5cm,
+      xlabel={$\Re$},
+      ylabel={$\Im$},
+      samples=500,
+      \unexpanded\expandafter{\opt@axes}
+    ]}
+    \temp@cmd
+      \addplot [only marks, mark=+, thick, red] (-1 , 0);
+      \edef\temp@cmd{\noexpand\addplot [variable=t, thick, \unexpanded\expandafter{\opt@plot}]}
+      \if@pgfarg
+        \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos((\func@ph)/(\ph@scale))},
+          {\n@pow{10}{((\func@mag)/20)}*sin((\func@ph)/(\ph@scale))} );
+        \opt@commands
+      \else
+        \stepcounter{gnuplot@id}
+        \temp@cmd gnuplot [parametric, gnuplot@prefix] {
+          \n@pow{10}{((\func@mag)/20)}*cos((\func@ph)/(\ph@scale)),
+          \n@pow{10}{((\func@mag)/20)}*sin((\func@ph)/(\ph@scale))
+        };
+        \opt@commands
+      \fi
+    \end{axis}
+  \end{tikzpicture}
+}
+\AtBeginDocument{%
+  \if@babel
+  \let\Orig@NyquistTF\NyquistTF
+  \renewcommand{\NyquistTF}{%
+    \expandafter\shorthandoff\expandafter{\shorthand@list}
+    \NyquistTF@Shorthandoff
+  }
+  \newcommand{\NyquistTF@Shorthandoff}[4][]{%
+    \Orig@NyquistTF[#1]{#2}{#3}{#4}
+    \expandafter\shorthandon\expandafter{\shorthand@list}
+  }
+  \fi
+}
+\newcommand{\addNyquistZPKPlot}[2][]{
+  \gdef\func@mag{}
+  \gdef\func@ph{}
+  \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}
+  \if@pgfarg
+    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos((\func@ph)/(\ph@scale))},
+      {\n@pow{10}{((\func@mag)/20)}*sin((\func@ph)/(\ph@scale))} );
+  \else
+    \stepcounter{gnuplot@id}
+    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \temp@cmd gnuplot [parametric, gnuplot@prefix] {
+      \n@pow{10}{((\func@mag)/20)}*cos((\func@ph)/(\ph@scale)),
+      \n@pow{10}{((\func@mag)/20)}*sin((\func@ph)/(\ph@scale))
+    };
+  \fi
+}
+\newcommand{\addNyquistTFPlot}[2][]{
+  \gdef\func@mag{}
+  \gdef\func@ph{}
+  \build@TF@plot{\func@mag}{\func@ph}{#2}
+  \if@pgfarg
+    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \temp@cmd ( {\n@pow{10}{((\func@mag)/20)}*cos((\func@ph)/(\ph@scale))},
+      {\n@pow{10}{((\func@mag)/20)}*sin((\func@ph)/(\ph@scale))} );
+  \else
+    \stepcounter{gnuplot@id}
+    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \temp@cmd gnuplot [parametric, gnuplot@prefix]{
+      \n@pow{10}{((\func@mag)/20)}*cos((\func@ph)/(\ph@scale)),
+      \n@pow{10}{((\func@mag)/20)}*sin((\func@ph)/(\ph@scale))
+    };
+  \fi
+}
+\AtBeginDocument{%
+  \if@babel
+    \AddToHook{env/NyquistPlot/begin}{\expandafter\shorthandoff\expandafter{\shorthand@list}}
+    \AddToHook{env/NyquistPlot/end}{\expandafter\shorthandon\expandafter{\shorthand@list}}
+  \fi
+}
+\NewDocumentEnvironment{NyquistPlot}{O{}mm+b}{
+  \parse@env@opt{#1}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]}
+  \temp@cmd
+    \edef\temp@cmd{\noexpand\begin{axis}[
+      bode@style,
+      height=5cm,
+      domain=#2:#3,
+      xlabel={$\Re$},
+      ylabel={$\Im$},
+      \unexpanded\expandafter{\opt@axes}
+    ]}
+    \temp@cmd
+      \addplot [only marks,mark=+,thick,red] (-1 , 0);
+      #4
+    \end{axis}
+  \end{tikzpicture}
+}{}
+\newcommand{\parse@N@opt}[1]{
+  \gdef\opt@axes{}
+  \gdef\opt@plot{}
+  \gdef\opt@commands{}
+  \gdef\opt@tikz{}
+  \foreach \obj/\opt in {#1} {
+    \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{axes}=0
+      \xdef\opt@axes{\unexpanded\expandafter{\opt}}
+    \else
+      \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{plot}=0
+        \xdef\opt@plot{\unexpanded\expandafter{\opt}}
+      \else
+        \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{commands}=0
+          \xdef\opt@commands{\unexpanded\expandafter{\opt}}
+        \else
+          \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{tikz}=0
+            \xdef\opt@tikz{\unexpanded\expandafter{\opt}}
+          \else
+            \xdef\opt@plot{\unexpanded\expandafter{\opt@plot},
+              \unexpanded\expandafter{\obj}}
+          \fi
+        \fi
+      \fi
+    \fi
+  }
+}
+\newcommand{\NicholsZPK}[4][]{
+  \parse@N@opt{#1}
+  \gdef\func@mag{}
+  \gdef\func@ph{}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]}
+  \temp@cmd
+  \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}
+    \edef\temp@cmd{\noexpand\begin{axis}[
+      ph@x@label,
+      bode@style,
+      domain=#3*\freq@scale:#4*\freq@scale,
+      height=5cm,
+      ylabel={Gain (dB)},
+      samples=500,
+      \unexpanded\expandafter{\opt@axes}
+    ]}
+    \temp@cmd
+      \edef\temp@cmd{\noexpand\addplot [variable=t,thick,\opt@plot]}
+      \if@pgfarg
+        \temp@cmd ( {\func@ph} , {\func@mag} );
+        \opt@commands
+      \else
+        \stepcounter{gnuplot@id}
+        \temp@cmd gnuplot [raw gnuplot, gnuplot@prefix]
+        { set table $meta;
+          set logscale x 10;
+          set dummy t;
+          set samples \pgfkeysvalueof{/pgfplots/samples};
+          set trange [#3*\freq@scale:#4*\freq@scale];
+          plot '+' using (\func@mag) : ((\func@ph)/(\ph@scale));
+          unset logscale x;
+          set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
+          plot "$meta" using ($2*\ph@scale):($1);
+        };
+        \opt@commands
+      \fi
+    \end{axis}
+  \end{tikzpicture}
+}
+\AtBeginDocument{%
+  \if@babel
+  \let\Orig@NicholsZPK\NicholsZPK
+  \renewcommand{\NicholsZPK}{%
+    \expandafter\shorthandoff\expandafter{\shorthand@list}
+    \NicholsZPK@Shorthandoff
+  }
+  \newcommand{\NicholsZPK@Shorthandoff}[4][]{%
+    \Orig@NicholsZPK[#1]{#2}{#3}{#4}
+    \expandafter\shorthandon\expandafter{\shorthand@list}
+  }
+  \fi
+}
+\newcommand{\NicholsTF}[4][]{
+  \parse@N@opt{#1}
+  \gdef\func@mag{}
+  \gdef\func@ph{}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]}
+  \temp@cmd
+    \build@TF@plot{\func@mag}{\func@ph}{#2}
+    \edef\temp@cmd{\noexpand\begin{axis}[
+      ph@x@label,
+      bode@style,
+      domain=#3*\freq@scale:#4*\freq@scale,
+      height=5cm,
+      ylabel={Gain (dB)},
+      samples=500,
+      \unexpanded\expandafter{\opt@axes}
+    ]}
+    \temp@cmd
+      \edef\temp@cmd{\noexpand\addplot [variable=t,thick, \opt@plot]}
+      \if@pgfarg
+        \temp@cmd ( {\n@mod{\func@ph}{2*pi*\ph@scale}} , {\func@mag} );
+        \opt@commands
+      \else
+        \stepcounter{gnuplot@id}
+        \temp@cmd gnuplot [raw gnuplot, gnuplot@prefix]
+          { set table $meta1;
+            set logscale x 10;
+            set dummy t;
+            set samples \pgfkeysvalueof{/pgfplots/samples};
+            set trange [#3*\freq@scale:#4*\freq@scale];
+            plot '+' using (\func@mag) : ((\func@ph)/(\ph@scale));
+            unset logscale x;
+            set table $meta2;
+            plot "$meta1" using ($1):($2) smooth unwrap;
+            set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
+            plot "$meta2" using ($2*\ph@scale):($1);
+          };
+        \opt@commands
+      \fi
+    \end{axis}
+  \end{tikzpicture}
+}
+\AtBeginDocument{
+  \if@babel
+    \let\Orig@NicholsTF\NicholsTF
+    \renewcommand{\NicholsTF}{%
+      \expandafter\shorthandoff\expandafter{\shorthand@list}
+      \NicholsTF@Shorthandoff
+    }
+    \newcommand{\NicholsTF@Shorthandoff}[4][]{%
+      \Orig@NicholsTF[#1]{#2}{#3}{#4}
+      \expandafter\shorthandon\expandafter{\shorthand@list}
+    }
+    \AddToHook{env/NicholsChart/begin}{\expandafter\shorthandoff\expandafter{\shorthand@list}}
+    \AddToHook{env/NicholsChart/end}{\expandafter\shorthandon\expandafter{\shorthand@list}}
+  \fi
+}
+\NewDocumentEnvironment{NicholsChart}{O{}mm+b}{
+  \parse@env@opt{#1}
+  \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]}
+  \temp@cmd
+    \edef\temp@cmd{\noexpand\begin{axis}[
+      ph@x@label,
+      bode@style,
+      domain=#2:#3,
+      height=5cm,
+      ylabel={Gain (dB)},
+      \unexpanded\expandafter{\opt@axes}
+    ]}
+    \temp@cmd
+      #4
+    \end{axis}
+  \end{tikzpicture}
+}{}
+\newcommand{\addNicholsZPKChart}[2][]{
+  \gdef\func@mag{}
+  \gdef\func@ph{}
+  \build@ZPK@plot{\func@mag}{\func@ph}{}{#2}
+  \if@pgfarg
+    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \temp@cmd ( {\func@ph} , {\func@mag} );
+  \else
+    \stepcounter{gnuplot@id}
+    \addplot [#1] gnuplot [raw gnuplot, gnuplot@prefix]
+    { set table $meta;
+      set logscale x 10;
+      set dummy t;
+      set samples \pgfkeysvalueof{/pgfplots/samples};
+      set trange [\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale];
+      plot '+' using (\func@mag) : ((\func@ph)/(\ph@scale));
+      unset logscale x;
+      set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
+      plot "$meta" using ($2*\ph@scale):($1);
+    };
+  \fi
+}
+\newcommand{\addNicholsTFChart}[2][]{
+  \gdef\func@mag{}
+  \gdef\func@ph{}
+  \build@TF@plot{\func@mag}{\func@ph}{#2}
+  \if@pgfarg
+    \edef\temp@cmd{\noexpand\addplot [domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale, variable=t, #1]}
+    \temp@cmd ( {\n@mod{\func@ph}{2*pi*\ph@scale}} , {\func@mag} );
+  \else
+    \stepcounter{gnuplot@id}
+    \addplot [#1] gnuplot [raw gnuplot, gnuplot@prefix]
+    { set table $meta1;
+      set logscale x 10;
+      set dummy t;
+      set samples \pgfkeysvalueof{/pgfplots/samples};
+      set trange [\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale];
+      plot '+' using (\func@mag) : ((\func@ph)/(\ph@scale));
+      unset logscale x;
+      set table $meta2;
+      plot "$meta1" using ($1):($2) smooth unwrap;
+      set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
+      plot "$meta2" using ($2*\ph@scale):($1);
+    };
+  \fi
+}
+\endinput
+%%
+%% End of file `bodeplot.sty'.
