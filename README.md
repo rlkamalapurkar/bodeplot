@@ -7,7 +7,7 @@ Author: Rushikesh Kamalapurkar ([rlkamalapurkar@gmail.com](mailto:rlkamalapurkar
 License: [LPPL-1.3c](https://github.com/rlkamalapurkar/bodeplot/blob/main/LICENSE)
 
 ## Limitations
- 1 Before version 1.2, in `pgf` mode, the package set `trig format plots` to `rad` globally. Version 1.2 onwards, this option is passed to each `addplot` command individually so it does not affect non-`bodeplot` plots. To roll back to pre-v1.2 behavior, load the package with `\usepackage[pgf]{bodeplot}[=2024-02-06]`.
+ 1. Before version 1.2, in `pgf` mode, the package set `trig format plots` to `rad` globally. Version 1.2 onwards, this option is passed to each `addplot` command individually so it does not affect non-`bodeplot` plots. To roll back to pre-v1.2 behavior, load the package with `\usepackage[pgf]{bodeplot}[=2024-02-06]`.
  2. TF commands are wrapped between -180 and 180 degrees in `pgf` mode.
  3. Version 1.0.8 and newer store `gnuplot` temporary files in the working directory. Use class option `declutter` to restore pre-v1.0.8 behavior. Option `declutter` can cause errors if used with a `tikzexternalize` prefix.
 
