@@ -15,11 +15,11 @@ License: [LPPL-1.3c](https://github.com/rlkamalapurkar/bodeplot/blob/main/LICENS
 1) `latex bodeplot.ins` to generate `bodeplot.sty`
 2) To compile documentation (needs `gnuplot` on system PATH):
 ```
-pdflatex bodeplot.dtx --shell-escape
+pdflatex --shell-escape bodeplot.dtx
 makeindex -s gind.ist bodeplot.idx
 makeindex -s gglo.ist -o bodeplot.gls bodeplot.glo
-pdflatex bodeplot.dtx --shell-escape
-pdflatex bodeplot.dtx --shell-escape
+pdflatex --shell-escape bodeplot.dtx
+pdflatex --shell-escape bodeplot.dtx
 ```
 ## Added functionality over `bodegraph`
  - New `\BodeZPK` and `\BodeTF` commands to generate Bode plots of any transfer function given either poles, zeros, gain, and delay, or numerator and denominator coefficients and delay
@@ -57,4 +57,16 @@ pdflatex bodeplot.dtx --shell-escape
 }
 {0.001} % frequency range start
 {100} % frequency range end
+```
+## Basic pole-zero map commands 
+*See package documentation for a full list of options.*
+ - Given Zeros and Poles (gain and delay are ignored):
+```
+\PoleZeroMapZPK 
+{% 
+  z/{0,{-0.1,-0.5},{-0.1,0.5}}, % zeros at s = 0, s = -0.1 - 0.5j, and s = -0.1 + 0.5j
+  p/{{-0.5,-10},{-0.5,10}}, % poles at s = -0.5 - 10j, and s = -0.5 + 10j
+  k/10, % gain
+  d/0.01, % delay
+}
 ```
