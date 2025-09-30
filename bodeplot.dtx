@@ -18,8 +18,8 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2018/04/01]
 %<package>\DeclareRelease{}{2024-02-06}{bodeplot-2024-02-06.sty}
-%<package>\DeclareCurrentRelease{}{2025/09/26}
-%<package>\ProvidesPackage{bodeplot}[2025/09/26 v2.0 Generate Bode, Nichols, Nyquist, and pole-zero plots]
+%<package>\DeclareCurrentRelease{}{2025/09/30}
+%<package>\ProvidesPackage{bodeplot}[2025/09/30 v2.1 Generate Bode, Nichols, Nyquist, and pole-zero plots]
 %<package>\RequirePackage{pdftexcmds}
 %<package>\RequirePackage{ifplatform}
 %<package>\RequirePackage{xparse}
@@ -76,7 +76,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{2725}
+% \CheckSum{2883}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
 % \changes{v1.0.4}{2021/11/05}{Fixed unintended optional argument macro expansion}
@@ -88,11 +88,13 @@
 % \changes{v1.1.1}{2022/07/31}{Enable Hz and rad units}
 % \changes{v1.1.7}{2024/02/06}{Detect and turn off shorthands to improve `babel' compatibility}
 % \changes{v1.2}{2024/04/18}{Removed global option to process pgf commands in radians}
+% \changes{v2.0}{2025/09/25}{Added pole zero maps}
+% \changes{v2.1}{2025/09/30}{Added an environment and macros to add multiple transfer functions to a single Bode plot}
 %
 % \GetFileInfo{bodeplot.sty}
 % \DoNotIndex{\newcommand,\xdef,\gdef,\def,\edef,\addplot,\approx,\arabic,\opt,\typ,\obj,\else,\if@pgfarg,\if@Hzarg,\if@radarg,\if@declutterarg,\if@babel,\fi,\begin,\end,\feature,\footnotesize,\draw,\detokenize,\DeclareOption,\foreach,\ifdim,\ifodd,\Im,\Re,\let,\newif,\nextgroupplot,\noexpand,\expandafter,\unexpanded,\PackageError,\PackageWarning,\relax,\RequirePackage,\tikzset,\pgfmathsetmacro,\pgfmathtruncatemacro,\ProcessOptions}
 %
-% \title{The \textsf{bodeplot} package\\version 2.0}
+% \title{The \textsf{bodeplot} package\\version 2.1}
 % \author{Rushikesh Kamalapurkar \\ \texttt{rlkamalapurkar@gmail.com}}
 %
 % \maketitle
@@ -261,6 +263,31 @@ Individual gain and phase plots with more customization
 \end{LTXexample}
 \end{minipage}
 
+\hrulefill
+
+Multiple transfer functions in a single Bode plot using the |BodePlot| environment and the |\addBodePlot| macro introduced in v2.1.
+
+\begin{LTXexample}[pos=r,hsep=20pt,width=0.5\textwidth]
+\begin{BodePlot}{0.01}{100}
+  \addBodePlot[red,thick]{zpk}{%
+    z/{0,{-0.1,-0.5},{-0.1,0.5}},
+    p/{{-5,-10},{-5,10}},
+    k/10%
+  }
+  \addBodePlot[black,thick,linear]{zpk}{%
+    z/{0,{-0.1,-0.5},{-0.1,0.5}},
+    p/{{-5,-10},{-5,10}},
+    k/10%
+  }
+  \addBodePlot[blue,dashed]{tf}{%
+    num/{10,2,2.6,0},
+    den/{1,1,100.25}%
+  }
+\end{BodePlot}
+\end{LTXexample}
+
+\hrulefill
+\clearpage
 \hrulefill
 
 Nichols chart
@@ -462,6 +489,8 @@ Pole-zero map (symmetric log scale)
 }
 \end{LTXexample}}
 
+\hrulefill
+
 \clearpage
 
 % \iffalse
@@ -644,6 +673,18 @@ Pole-zero map (symmetric log scale)
 % |\addBodeComponentPlot|\oarg{plot-options}\marg{plot-command}
 %
 % \noindent Generates a single parametric function corresponding to the mandatory argument |plot-command| and passes it to the |\addplot| macro. The plot command can be any parametric function that uses |t| as the independent variable. The parametric function must be |gnuplot| compatible (or |pgfplots| compatible if the package is loaded using the |pgf| option, \textbf{with angles passed to trigonometric functions in radian}). The intended use of this macro is to plot the parametric functions generated using the basic component macros described in Section \ref{sec:BasicComponents} below.
+%
+% \DescribeMacro{\addBodePlot}
+% |\addBodePlot|\oarg{plot-options}\marg{system-type}\marg{system-data}
+%
+% \noindent Unified macro to add Bode plots for both ZPK and TF system representations. Unlike the |\addBodeZPKPlots| and |\addBodeTFPlots| macros, this macro can only be used inside a |BodePlot| environment. \textbf{It will not function if used in a generic |semilogxaxis| environment or in the |BodeMagPlot| and |BodePhPlot| environments.} The second mandatory argument |system-type| should be either |zpk| or |tf| to specify the system representation. For ZPK systems, the |system-data| has the same format as |\addBodeZPKPlots|. For TF systems, it has the same format as |\addBodeTFPlot|. The optional arguments are the same as the |\addBodeTfPlot| macro, with two additions. Passing |linear| or |asymptotic| options will generate linear or asymptotic approximations if the system representation is ZPK. These two options are ignored for TF systems. \changes{v2.1}{2025/09/26}{Added unified Bode plot macro supporting both ZPK and TF systems}
+%
+% \DescribeEnv{BodePlot}
+% |\begin{BodePlot}|\oarg{obj1/\marg{opt1},obj2/\marg{opt2},...}\\
+% \hspace*{3em}\marg{min-frequency}\marg{max-frequency}\\
+% \hspace*{2em}|\addBodePlot...|\\
+% \hspace*{1.5em}|\end{BodePlot}|\\
+% Version 2.1 revives the the deprecated |BodePlot| environment exclusively to host multiple instances of the new unified |\addBodePlot| macro. The |\addBodeZPKPlots| and |\addBodeTFPlots| macros \textbf{will not function inside this environment.} The purpose is to plot a Bode plot that contains several different transfer functions. The optional argument is the same as the original |\BodeZPK| macro, supporting |plot/|, |axes/|, |group/|, |tikz/| options with |mag| and |ph| sub-types. \changes{v2.1}{2025/09/26}{Enhanced BodePlot environment with unified plot command collection}
 %
 % \subsubsection{Basic components up to first order\label{sec:BasicComponents}}
 %
@@ -1597,6 +1638,48 @@ Pole-zero map (symmetric log scale)
 }
 %    \end{macrocode}
 %\end{macro}
+% \begin{macro}{\addBodePlot}
+% Unified macro to add Bode plots supporting both ZPK and TF system representations. Automatically generates both magnitude and phase plot commands for later insertion.\changes{v2.1}{2025/09/26}{Added unified Bode plot macro supporting both ZPK and TF systems}
+%    \begin{macrocode}
+\newcommand{\addBodePlot}[3][]{
+  \parse@add@Bode@opt{#1}
+  \gdef\plot@macro{}
+  \gdef\temp@macro{}
+  \ifnum\pdf@strcmp{#2}{zpk}=0
+    \build@ZPK@plot{\plot@macro}{\temp@macro}{\opt@approx}{#3}
+  \else
+    \ifnum\pdf@strcmp{#2}{tf}=0
+      \build@TF@plot{\plot@macro}{\temp@macro}{#3}
+    \else
+      \PackageError {bodeplot} {Unknown system representation `#2'.}
+      {Supported representations are `zpk' and `tf'.}
+    \fi
+  \fi   
+  \if@pgfarg
+    \xdef\plot@a@cmd{\unexpanded\expandafter{\plot@a@cmd}\noexpand\addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}, variable=t, thick, trig format plots=rad, \opt@plot] {\plot@macro};}
+    \xdef\plot@b@cmd{\unexpanded\expandafter{\plot@b@cmd}\noexpand\addplot [freq@filter, domain=\freq@scale*\pgfkeysvalueof{/pgfplots/domain}, variable=t, thick, trig format plots=rad, \opt@plot] {\temp@macro};}
+  \else
+    \stepcounter{gnuplot@id}
+    \edef\gnu@id{\arabic{gnuplot@id}}
+    \build@gnu@plot{\plot@macro}{\gnu@id}
+    \xdef\plot@a@cmd{\unexpanded\expandafter{\plot@a@cmd}\noexpand\addplot [variable=t, thick, \opt@plot]\gnu@cmd}
+    \stepcounter{gnuplot@id}
+    \edef\gnu@id{\arabic{gnuplot@id}}
+    \ifnum\pdf@strcmp{#2}{zpk}=0
+      \build@gnu@plot{\temp@macro}{\gnu@id}
+      \else
+        \ifnum\pdf@strcmp{#2}{tf}=0
+          \build@gnu@unwrap@plot{\temp@macro}{\gnu@id}
+        \else
+          \PackageError {bodeplot} {Unknown system representation `#2'.}
+          {Supported representations are `zpk' and `tf'.}
+        \fi
+      \fi
+    \xdef\plot@b@cmd{\unexpanded\expandafter{\plot@b@cmd}\noexpand\addplot [variable=t, thick, \opt@plot]\gnu@cmd}
+  \fi
+}
+%    \end{macrocode}
+%\end{macro}
 % \begin{environment}{BodePhPlot}
 % An environment to host phase plot macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bode@style| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments. The body of the environment is grabbed as a macro to maintain compatibility with externalization in |tikz|.\changes{v1.1.0}{2022/07/20}{Added separate environments for phase and magnitude plots}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEnviron' command from the `environ' package to fix conflicts with externalization}\changes{v1.1.5}{2024/01/11}{Defined using the `NewDocumentEnvironment' command from the `xparse' package and added a hook to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of active characters instead of manually entering them.}
 %    \begin{macrocode}
@@ -1658,30 +1741,33 @@ Pole-zero map (symmetric log scale)
 %    \end{macrocode}
 % \end{environment}
 % \begin{environment}{BodePlot}
-% Same as |BodeMagPlot|. The |BodePlot| environment is deprecated as of v1.1.0, please use the |BodePhPlot| and |BodeMagPlot| environments instead.\changes{v1.0.3}{2021/11/03}{Added tikz option to environments}\changes{v1.1.0}{2022/02/20}{Deprecated BodePlot environment}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEnviron' command from the `environ' package to fix conflicts with externalization}\changes{v1.1.5}{2024/01/11}{Defined using the `NewDocumentEnvironment' command from the `xparse' package and added a hook to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of active characters instead of manually entering them.}
+% Enhanced version of the |BodePlot| environment that works with the unified |\addBodePlot| macro. Creates a grouped plot with magnitude on top and phase on bottom, automatically collecting and inserting plot commands generated by |\addBodePlot| calls within the environment body.\changes{v1.0.3}{2021/11/03}{Added tikz option to environments}\changes{v1.1.0}{2022/02/20}{Deprecated BodePlot environment}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEnviron' command from the `environ' package to fix conflicts with externalization}\changes{v1.1.5}{2024/01/11}{Defined using the `NewDocumentEnvironment' command from the `xparse' package and added a hook to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of active characters instead of manually entering them}\changes{v2.1}{2025/09/26}{Enhanced BodePlot environment with unified plot command collection}
 %    \begin{macrocode}
-\AtBeginDocument{%
-  \if@babel
-    \AddToHook{env/BodePlot/begin}{\expandafter\shorthandoff\expandafter{\shorthand@list}}
-    \AddToHook{env/BodePlot/end}{\expandafter\shorthandon\expandafter{\shorthand@list}}
-  \fi
-}
 \NewDocumentEnvironment{BodePlot}{O{}mm+b}{
-  \parse@env@opt{#1}
+  \gdef\plot@a@cmd{}
+  \gdef\plot@b@cmd{}
+  \parse@opt{#1}
   \edef\temp@cmd{\noexpand\begin{tikzpicture} [\unexpanded\expandafter{\opt@tikz}]}
   \temp@cmd
-    \edef\temp@cmd{\noexpand\begin{semilogxaxis}[
+    \edef\temp@cmd{\noexpand\begin{groupplot}[
       bode@style,
-      freq@label,
-      xmin={#2},
-      xmax={#3},
-      domain=#2:#3,
+      xmin=#2,
+      xmax=#3,
+      domain=#2*\freq@scale:#3*\freq@scale,
       height=2.5cm,
-      \unexpanded\expandafter{\opt@axes}
+      xmode=log,
+      group style = {group size = 1 by 2,vertical sep=0.25cm},
+      \opt@group
     ]}
     \temp@cmd
       #4
-    \end{semilogxaxis}
+      \edef\temp@mag@cmd{\noexpand\nextgroupplot [ylabel={Gain (dB)}, xmajorticks=false, \optmag@axes]}
+      \edef\temp@ph@cmd{\noexpand\nextgroupplot [ph@y@label, freq@label, \optph@axes]}
+      \temp@mag@cmd
+      \plot@a@cmd
+      \temp@ph@cmd
+      \plot@b@cmd
+    \end{groupplot}
   \end{tikzpicture}
 }{}
 %    \end{macrocode}
@@ -1926,6 +2012,61 @@ Pole-zero map (symmetric log scale)
 }
 %    \end{macrocode}
 % \end{macro}
+% \begin{macro}{\parse@add@Bode@opt}
+% Parses options for the unified |\addBodePlot| macro. Handles |linear| and |asymptotic| approximation options plus general plot styling options.\changes{v2.1}{2025/09/26}{Added option parser for unified Bode plot macro}
+%    \begin{macrocode}
+\newcommand{\parse@add@Bode@opt}[1]{
+  \gdef\opt@plot{}
+  \gdef\opt@approx{}
+  \foreach \obj/\opt in {#1} {
+    \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{linear}=0
+      \xdef\opt@approx{\unexpanded\expandafter{\opt}}
+    \else
+      \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{asymptotic}=0
+        \xdef\opt@approx{\unexpanded\expandafter{\opt}}
+      \else
+        \xdef\opt@plot{\unexpanded\expandafter{\opt@plot},
+          \unexpanded\expandafter{\obj}}
+      \fi
+    \fi
+  }
+}
+%    \end{macrocode}
+%\end{macro}
+% \begin{macro}{\build@gnu@plot}
+% Helper macro to assemble a general |gnuplot| invocation for parametric plots.\changes{v2.1}{2025/09/26}{Added general gnuplot helper macro}
+%    \begin{macrocode}
+\newcommand{\build@gnu@plot}[2]{
+  \xdef\gnu@cmd{ gnuplot [raw gnuplot, id=#2, prefix=\bodeplot@prefix]
+    { set table $meta;
+      set dummy t;
+      set logscale x 10;
+      set xrange [\pgfkeysvalueof{/pgfplots/domain}];
+      set samples \pgfkeysvalueof{/pgfplots/samples};
+      plot #1;
+      set table "\bodeplot@prefix#2.table";
+      plot "$meta" using ($1/(\freq@scale)):($2);
+    };}
+}
+%    \end{macrocode}
+%\end{macro}
+% \begin{macro}{\build@gnu@unwrap@plot}
+% Helper macro to assemble a |gnuplot| invocation with phase unwrapping for TF phase plots.\changes{v2.1}{2025/09/26}{Added gnuplot helper macro with phase unwrapping}
+%    \begin{macrocode}
+\newcommand{\build@gnu@unwrap@plot}[2]{
+  \xdef\gnu@cmd{ gnuplot [raw gnuplot, id=#2, prefix=\bodeplot@prefix]
+    { set table $meta;
+      set dummy t;
+      set logscale x 10;
+      set trange [\pgfkeysvalueof{/pgfplots/domain}];
+      set samples \pgfkeysvalueof{/pgfplots/samples};
+      plot '+' using (t) : ((#1)/(\ph@scale)) smooth unwrap;
+      set table "\bodeplot@prefix#2.table";
+      plot "$meta" using ($1/(\freq@scale)):($2*\ph@scale);
+    };}
+}
+%    \end{macrocode}
+%\end{macro}
 % \subsection{Nyquist plots}
 % \subsubsection{User macros}
 % \begin{macro}{\NyquistZPK}
