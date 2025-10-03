@@ -983,15 +983,23 @@ Pole-zero map (symmetric log scale)
 %    \begin{macrocode}
   \newcounter{gnuplot@id}
   \setcounter{gnuplot@id}{0}
+  \gdef\user@prefix{}
   \if@declutterarg
     \edef\bodeplot@prefix{gnuplot/\jobname}
   \else
     \edef\bodeplot@prefix{\jobname}
   \fi
+  \newcommand{\get@prefix}{%
+    \ifx\user@prefix\@empty
+      \bodeplot@prefix
+    \else
+      \user@prefix
+    \fi
+  }
   \tikzset{
     gnuplot@prefix/.style={
       id=\arabic{gnuplot@id},
-      prefix=\bodeplot@prefix
+      prefix=\get@prefix
     }
   }
 %    \end{macrocode}
@@ -1960,10 +1968,14 @@ Pole-zero map (symmetric log scale)
               \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{tikz}=0
                 \xdef\opt@tikz{\unexpanded\expandafter{\opt}}
               \else
-                \xdef\optmag@plot{\unexpanded\expandafter{\optmag@plot},
-                  \unexpanded\expandafter{\obj}}
-                \xdef\optph@plot{\unexpanded\expandafter{\optph@plot},
-                  \unexpanded\expandafter{\obj}}
+                \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{prefix}=0
+                  \xdef\user@prefix{\unexpanded\expandafter{\typ}}
+                \else
+                  \xdef\optmag@plot{\unexpanded\expandafter{\optmag@plot},
+                    \unexpanded\expandafter{\obj}}
+                  \xdef\optph@plot{\unexpanded\expandafter{\optph@plot},
+                    \unexpanded\expandafter{\obj}}
+                \fi
               \fi
             \fi
           \fi
@@ -1987,8 +1999,12 @@ Pole-zero map (symmetric log scale)
       \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{tikz}=0
         \xdef\opt@tikz{\unexpanded\expandafter{\opt}}
       \else
-        \xdef\opt@axes{\unexpanded\expandafter{\opt@axes},
-          \unexpanded\expandafter{\obj}}
+        \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{prefix}=0
+          \xdef\user@prefix{\unexpanded\expandafter{\opt}}
+        \else
+          \xdef\opt@axes{\unexpanded\expandafter{\opt@axes},
+            \unexpanded\expandafter{\obj}}
+        \fi
       \fi
     \fi
   }
@@ -2020,14 +2036,14 @@ Pole-zero map (symmetric log scale)
 % Helper macro to assemble a general |gnuplot| invocation for parametric plots.\changes{v2.1}{2025/09/26}{Added general gnuplot helper macro}
 %    \begin{macrocode}
 \newcommand{\build@gnu@plot}[3][1]{
-  \xdef\gnu@cmd{ gnuplot [raw gnuplot, id=#3, prefix=\bodeplot@prefix]
+  \xdef\gnu@cmd{ gnuplot [raw gnuplot, id=#3, prefix=\get@prefix]
     { set table $meta;
       set dummy t;
       set logscale x 10;
       set xrange [#1*\pgfkeysvalueof{/pgfplots/domain}*#1];
       set samples \pgfkeysvalueof{/pgfplots/samples};
       plot #2;
-      set table "\bodeplot@prefix#3.table";
+      set table "\get@prefix#3.table";
       plot "$meta" using ($1/(\freq@scale)):($2);
     };}
 }
@@ -2037,14 +2053,14 @@ Pole-zero map (symmetric log scale)
 % Helper macro to assemble a |gnuplot| invocation with phase unwrapping for TF phase plots.\changes{v2.1}{2025/09/26}{Added gnuplot helper macro with phase unwrapping}
 %    \begin{macrocode}
 \newcommand{\build@gnu@unwrap@plot}[3][1]{
-  \xdef\gnu@cmd{ gnuplot [raw gnuplot, id=#3, prefix=\bodeplot@prefix]
+  \xdef\gnu@cmd{ gnuplot [raw gnuplot, id=#3, prefix=\get@prefix]
     { set table $meta;
       set dummy t;
       set logscale x 10;
       set trange [#1*\pgfkeysvalueof{/pgfplots/domain}*#1];
       set samples \pgfkeysvalueof{/pgfplots/samples};
       plot '+' using (t) : ((#2)/(\ph@scale)) smooth unwrap;
-      set table "\bodeplot@prefix#3.table";
+      set table "\get@prefix#3.table";
       plot "$meta" using ($1/(\freq@scale)):($2*\ph@scale);
     };}
 }
@@ -2282,8 +2298,12 @@ Pole-zero map (symmetric log scale)
             \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{scale}=0
               \xdef\opt@scale{\unexpanded\expandafter{\opt}}
             \else
-              \xdef\opt@plot{\unexpanded\expandafter{\opt@plot},
-                \unexpanded\expandafter{\obj}}
+              \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{prefix}=0
+                \xdef\user@prefix{\unexpanded\expandafter{\opt}}
+              \else
+                \xdef\opt@plot{\unexpanded\expandafter{\opt@plot},
+                  \unexpanded\expandafter{\obj}}
+              \fi
             \fi
           \fi
         \fi
@@ -2330,7 +2350,7 @@ Pole-zero map (symmetric log scale)
           set trange [#3*\freq@scale:#4*\freq@scale];
           plot '+' using (\func@mag) : ((\func@ph)/(\ph@scale));
           unset logscale x;
-          set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
+          set table "\get@prefix\arabic{gnuplot@id}.table";
           plot "$meta" using ($2*\ph@scale):($1);
         };
         \opt@commands
@@ -2391,7 +2411,7 @@ Pole-zero map (symmetric log scale)
             unset logscale x;
             set table $meta2;
             plot "$meta1" using ($1):($2) smooth unwrap;
-            set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
+            set table "\get@prefix\arabic{gnuplot@id}.table";
             plot "$meta2" using ($2*\ph@scale):($1);
           };
         \opt@commands
@@ -2465,7 +2485,7 @@ Pole-zero map (symmetric log scale)
       set trange [\freq@scale*\pgfkeysvalueof{/pgfplots/domain}*\freq@scale];
       plot '+' using (\func@mag) : ((\func@ph)/(\ph@scale));
       unset logscale x;
-      set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
+      set table "\get@prefix\arabic{gnuplot@id}.table";
       plot "$meta" using ($2*\ph@scale):($1);
     };
   \fi
@@ -2496,7 +2516,7 @@ Pole-zero map (symmetric log scale)
       unset logscale x;
       set table $meta2;
       plot "$meta1" using ($1):($2) smooth unwrap;
-      set table "\bodeplot@prefix\arabic{gnuplot@id}.table";
+      set table "\get@prefix\arabic{gnuplot@id}.table";
       plot "$meta2" using ($2*\ph@scale):($1);
     };
   \fi
