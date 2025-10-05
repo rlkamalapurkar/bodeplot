@@ -979,15 +979,25 @@ Pole-zero map (symmetric log scale)
 \else
   \newcommand{\n@pow}[2]{(#1)**(#2)}
 %    \end{macrocode}
-% Then, we create a counter so that a new data table is generated and for each new plot. If the plot macros have not changed, the tables, once generated, can be reused by |gnuplot|, which reduces compilation time. The |declutter| option is used to enable the |gnuplot| directory to declutter the working directory.
+% Then, we create a counter so that a new data table is generated and for each new plot. If the plot macros have not changed, the tables, once generated, can be reused by |gnuplot|, which reduces compilation time. The |declutter| option is used to enable the |gnuplot| directory to declutter the working directory. The |gnuplot| prefix is set to be the name of the tex file unless the user supplies a prefix through the |prefix| option. \changes{v2.1}{2025/10/02}{Added a new helper command to allow the user to set per-plot gnuplot file names to address feature request \#14}
 %    \begin{macrocode}
   \newcounter{gnuplot@id}
   \setcounter{gnuplot@id}{0}
-  \if@declutterarg
-    \edef\bodeplot@prefix{gnuplot/\jobname}
-  \else
-    \edef\bodeplot@prefix{\jobname}
-  \fi
+  \newcommand{\bodeplot@prefix}{%
+    \ifx\user@prefix\@empty
+      \if@declutterarg
+        gnuplot/\jobname
+      \else
+        \jobname
+      \fi
+    \else
+      \if@declutterarg
+        gnuplot/\user@prefix
+      \else
+        \user@prefix
+      \fi
+    \fi
+  }
   \tikzset{
     gnuplot@prefix/.style={
       id=\arabic{gnuplot@id},
@@ -1919,6 +1929,7 @@ Pole-zero map (symmetric log scale)
   \gdef\optph@commands{}
   \gdef\optmag@commands{}
   \gdef\opt@tikz{}
+  \gdef\user@prefix{}
   \foreach \obj/\typ/\opt in {#1} {
     \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{plot}=0
       \ifnum\pdf@strcmp{\unexpanded\expandafter{\typ}}{mag}=0
@@ -1960,10 +1971,15 @@ Pole-zero map (symmetric log scale)
               \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{tikz}=0
                 \xdef\opt@tikz{\unexpanded\expandafter{\opt}}
               \else
-                \xdef\optmag@plot{\unexpanded\expandafter{\optmag@plot},
-                  \unexpanded\expandafter{\obj}}
-                \xdef\optph@plot{\unexpanded\expandafter{\optph@plot},
-                  \unexpanded\expandafter{\obj}}
+                \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{prefix}=0
+                  \xdef\user@prefix{\unexpanded\expandafter{\opt}}
+                \else
+                  \xdef\user@prefix{}
+                  \xdef\optmag@plot{\unexpanded\expandafter{\optmag@plot},
+                    \unexpanded\expandafter{\obj}}
+                  \xdef\optph@plot{\unexpanded\expandafter{\optph@plot},
+                    \unexpanded\expandafter{\obj}}
+                \fi
               \fi
             \fi
           \fi
@@ -1980,6 +1996,7 @@ Pole-zero map (symmetric log scale)
 \newcommand{\parse@env@opt}[1]{
   \gdef\opt@axes{}
   \gdef\opt@tikz{}
+  \gdef\user@prefix{}
   \foreach \obj/\opt in {#1} {
     \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{axes}=0
       \xdef\opt@axes{\unexpanded\expandafter{\opt}}
@@ -1987,8 +2004,13 @@ Pole-zero map (symmetric log scale)
       \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{tikz}=0
         \xdef\opt@tikz{\unexpanded\expandafter{\opt}}
       \else
-        \xdef\opt@axes{\unexpanded\expandafter{\opt@axes},
-          \unexpanded\expandafter{\obj}}
+        \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{prefix}=0
+          \xdef\user@prefix{\unexpanded\expandafter{\opt}}
+        \else
+          \xdef\user@prefix{}
+          \xdef\opt@axes{\unexpanded\expandafter{\opt@axes},
+            \unexpanded\expandafter{\obj}}
+        \fi
       \fi
     \fi
   }
@@ -2265,6 +2287,7 @@ Pole-zero map (symmetric log scale)
   \gdef\opt@plot{}
   \gdef\opt@commands{}
   \gdef\opt@tikz{}
+  \gdef\user@prefix{}
   \gdef\opt@scale{linear}
   \foreach \obj/\opt in {#1} {
     \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{axes}=0
@@ -2282,8 +2305,13 @@ Pole-zero map (symmetric log scale)
             \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{scale}=0
               \xdef\opt@scale{\unexpanded\expandafter{\opt}}
             \else
-              \xdef\opt@plot{\unexpanded\expandafter{\opt@plot},
+              \ifnum\pdf@strcmp{\unexpanded\expandafter{\obj}}{prefix}=0
+                \xdef\user@prefix{\unexpanded\expandafter{\opt}}
+              \else
+                \xdef\user@prefix{}
+                \xdef\opt@plot{\unexpanded\expandafter{\opt@plot},
                 \unexpanded\expandafter{\obj}}
+              \fi
             \fi
           \fi
         \fi
