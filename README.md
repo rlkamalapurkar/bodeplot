@@ -32,41 +32,54 @@ pdflatex --shell-escape bodeplot.dtx
  - Support for `deg` (default) and `rad` (package option `rad` or `pgf` key `phase unit=rad` for per-plot change) phase units.
  - Support for linear and asymptotic approximation of magnitude and phase plots of any transfer function given poles, zeros, and gain.
 
-## Basic Bode/Nyquist/Nichols commands 
-*See package documentation for a full list of commands, environments, and options.*
- - Given Zeros, Poles, Gain, and Delay (asymptotic and linear approximation available for systems without delay):
-```
-\BodeZPK % (OR \NicholsZPK[samples=1000] OR NyquistZPK[samples=1000])
-{% 
-  z/{0,{-0.1,-0.5},{-0.1,0.5}}, % zeros at s = 0, s = -0.1 - 0.5j, and s = -0.1 + 0.5j
-  p/{{-0.5,-10},{-0.5,10}}, % poles at s = -0.5 - 10j, and s = -0.5 + 10j
-  k/10, % gain
-  d/0.01, % delay
-}
-{0.01} % frequency range start
-{100} % frequency range end
-```
+## Basic Bode/Nyquist/Nichols commands
+*See package documentation for the complete key reference, command list, and environment options.*
 
- - Given Numerator and denominator coefficients and delay (does not support approximation):
-```
-\BodeTF % (OR \NicholsTF[samples=1000] OR NyquistTF[samples=1000])
-{%
-  num/{10,2,2.6,0}, % numerator coefficients
-  den/{1,1,100.25}, % denominator coefficients
-  d/0.01, % delay
+Starting v3.0, all plotting commands use a simplified PGF-style key/value syntax. 
+
+- Zeros–poles–gain (ZPK) form with optional delay:
+```latex
+\BodeZPK[%
+  domain=0.01:100,
+  samples=1000,
+  mag plot={blue, thick},
+  ph plot={green, thick},
+  phase unit=rad%
+]{%
+  zeros={0,-0.1-0.5i,-0.1+0.5i},
+  poles={-0.5-10i,-0.5+10i},
+  gain=10,
+  delay=0.01%
 }
-{0.001} % frequency range start
-{100} % frequency range end
 ```
-## Basic pole-zero map commands 
-*See package documentation for a full list of options.*
- - Given Zeros and Poles (gain and delay are ignored):
+  Use the same interface with `\NicholsZPK[...]` or `\NyquistZPK[...]` to generate Nichols and Nyquist plots. Approximation options ( `linear`, `asymptotic`) are available for systems without delays through the `approx=...` key.
+
+- Transfer-function (TF) form:
+```latex
+\BodeTF[%
+  domain=0.001:100,
+  samples=1000,
+  frequency unit=Hz%
+]{%
+  numerator={10,2,2.6,0},
+  denominator={1,1,100.25},
+  delay=0.01%
+}
 ```
-\PoleZeroMapZPK 
-{% 
-  z/{0,{-0.1,-0.5},{-0.1,0.5}}, % zeros at s = 0, s = -0.1 - 0.5j, and s = -0.1 + 0.5j
-  p/{{-0.5,-10},{-0.5,10}}, % poles at s = -0.5 - 10j, and s = -0.5 + 10j
-  k/10, % gain
-  d/0.01, % delay
+  The TF syntax is shared by `\NicholsTF[...]` and `\NyquistTF[...]`.
+
+## Basic pole-zero map commands (v3.0 interface)
+*See package documentation for the full list of keys.*
+
+- Given zeros and poles (gain and delay are ignored by the plot):
+```latex
+\PoleZeroMapZPK[%
+  axes={width=6cm, height=6cm},
+  plot={blue, thick}%
+]{%
+  zeros={0,-0.1-0.5i,-0.1+0.5i},
+  poles={-0.5-10i,-0.5+10i},
+  gain=10,
+  delay=0.01%
 }
 ```
