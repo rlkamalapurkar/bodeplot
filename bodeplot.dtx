@@ -18,8 +18,8 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2018/04/01]
 %<package>\DeclareRelease{}{2024-02-06}{bodeplot-2024-02-06.sty}
-%<package>\DeclareCurrentRelease{}{2025/10/21}
-%<package>\ProvidesPackage{bodeplot}[2025/10/21 v3.0 Generate Bode, Nichols, Nyquist, and pole-zero plots]
+%<package>\DeclareCurrentRelease{}{2025/11/21}
+%<package>\ProvidesPackage{bodeplot}[2025/11/21 v3.0.1 Generate Bode, Nichols, Nyquist, and pole-zero plots]
 %<package>\RequirePackage{pdftexcmds}
 %<package>\RequirePackage{ifplatform}
 %<package>\RequirePackage{xparse}
@@ -79,7 +79,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{4511}
+% \CheckSum{4512}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
 % \changes{v1.0.4}{2021/11/05}{Fixed unintended optional argument macro expansion}
@@ -2531,7 +2531,7 @@ Pole-zero map (symmetric log scale)
 %    \end{macrocode}
 %\end{macro}
 % \begin{environment}{BodePhPlot}
-% An environment to host phase plot macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bp@style| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments. The body of the environment is grabbed as a macro to maintain compatibility with externalization in |tikz|.\changes{v1.1.0}{2022/07/20}{Added separate environments for phase and magnitude plots}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEnviron' command from the `environ' package to fix conflicts with externalization}\changes{v1.1.5}{2024/01/11}{Defined using the `NewDocumentEnvironment' command from the `xparse' package and added a hook to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of active characters instead of manually entering them.}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}
+% An environment to host phase plot macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bp@style| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments. The body of the environment is grabbed as a macro to maintain compatibility with externalization in |tikz|.\changes{v1.1.0}{2022/07/20}{Added separate environments for phase and magnitude plots}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEnviron' command from the `environ' package to fix conflicts with externalization}\changes{v1.1.5}{2024/01/11}{Defined using the `NewDocumentEnvironment' command from the `xparse' package and added a hook to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of active characters instead of manually entering them.}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}\changes{v3.0.1}{2025/10/21}{Fixed a typo to resolve issue \#17}
 %    \begin{macrocode}
 \AtBeginDocument{%
   \if@babel
@@ -2539,7 +2539,7 @@ Pole-zero map (symmetric log scale)
       \expandafter\shorthandoff\expandafter{\bp@short@list}
     }
     \AddToHook{env/BodePhPlot/end}{%
-      expandafter\shorthandon\expandafter{\bp@short@list}
+      \expandafter\shorthandon\expandafter{\bp@short@list}
     }
   \fi
 }
