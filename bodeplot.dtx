@@ -18,8 +18,8 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2018/04/01]
 %<package>\DeclareRelease{}{2024-02-06}{bodeplot-2024-02-06.sty}
-%<package>\DeclareCurrentRelease{}{2025/11/21}
-%<package>\ProvidesPackage{bodeplot}[2025/11/21 v3.0.1 Generate Bode, Nichols, Nyquist, and pole-zero plots]
+%<package>\DeclareCurrentRelease{}{2025/11/24}
+%<package>\ProvidesPackage{bodeplot}[2025/11/24 v3.0.2 Generate Bode, Nichols, Nyquist, and pole-zero plots]
 %<package>\RequirePackage{pdftexcmds}
 %<package>\RequirePackage{ifplatform}
 %<package>\RequirePackage{xparse}
@@ -71,15 +71,13 @@
 \begin{document}
   \DocInput{bodeplot.dtx}
   \PrintIndex
-  
   \clearpage
-  
   \PrintChanges
  \end{document}
 %</driver>
 % \fi
 %
-% \CheckSum{4512}
+% \CheckSum{4517}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
 % \changes{v1.0.4}{2021/11/05}{Fixed unintended optional argument macro expansion}
@@ -99,7 +97,7 @@
 % \GetFileInfo{bodeplot.sty}
 % \DoNotIndex{\newcommand,\xdef,\gdef,\def,\edef,\addplot,\approx,\arabic,\opt,\typ,\obj,\feature,\values,\value,\z,\p,\y,\n,\d,\numcoeff,\numpow,\dencoeff,\denpow,\zcnt,\pcnt,\else,\fi,\iffalse,\begin,\end,\footnotesize,\draw,\detokenize,\DeclareOption,\foreach,\ifdim,\ifodd,\Im,\Re,\let,\newif,\nextgroupplot,\noexpand,\expandafter,\unexpanded,\PackageError,\PackageWarning,\relax,\RequirePackage,\tikzset,\pgfkeys,\pgfkeysalso,\pgfkeyscurrentkey,\pgfkeyscurrentvalue,\pgfkeysgetvalue,\pgfkeysnovalue,\pgfkeyssetvalue,\pgfkeysvalueof,\pgfmathfloattofixed,\pgfmathfloattoint,\pgfmathparse,\pgfmathresult,\pgfmathsetmacro,\pgfmathtruncatemacro,\pgfplotsset,\pgfutil@ifempty,\ProcessOptions,\ExplSyntaxOn,\ExplSyntaxOff,\@empty,\empty,\ifnum,\ifwindows,\ifx,\immediate,\jobname,\newcounter,\NewDocumentCommand,\NewDocumentEnvironment,\pdf@strcmp,\global,\g@add@to@macro,\endgroup,\begingroup,\~,\-,\@ifpackageloaded,\setcounter,\shorthandoff,\shorthandon,\stepcounter,\write,\MakePrivateLetters,\do,\tick,\lccode,\ifcat,\ifbabelshorthand,\AddToHook,\AtBeginDocument}
 %
-% \title{The \textsf{bodeplot} package\\version 3.0}
+% \title{The \textsf{bodeplot} package\\version 3.0.2}
 % \author{Rushikesh Kamalapurkar \\ \texttt{rlkamalapurkar@gmail.com}}
 %
 % \maketitle
@@ -2809,7 +2807,7 @@ Pole-zero map (symmetric log scale)
 %    \end{macrocode}
 %\end{macro}
 % \begin{macro}{\bp@fix@add@opt}
-% Processes options for addplot commands, organizing by approximation type. \changes{v3.0}{2025/10/21}{Added option processor for add commands}
+% Processes options for addplot commands, organizing by approximation type. \changes{v3.0}{2025/10/21}{Added option processor for add commands}\changes{v3.0.2}{2025/10/24}{Added a conditional to avoid always plotting the true plot, fixes issue \#18}
 %    \begin{macrocode}
 \NewDocumentCommand{\bp@fix@add@opt}{ m }{%
   \gdef\bp@add@O{}
@@ -2835,8 +2833,10 @@ Pole-zero map (symmetric log scale)
     \fi
     \fi
   }
-  \xdef\bp@add@O{\unexpanded\expandafter{\bp@add@O}%
-  true/{\unexpanded\expandafter{\bp@add@tmp}}}
+  \ifx\bp@add@tmp\@empty\else
+    \xdef\bp@add@O{\unexpanded\expandafter{\bp@add@O}%
+    true/{\unexpanded\expandafter{\bp@add@tmp}}}
+  \fi
 }
 %    \end{macrocode}
 %\end{macro}
