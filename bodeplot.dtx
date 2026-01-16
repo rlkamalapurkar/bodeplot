@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% Copyright (C) 2021-2025 by Rushikesh Kamalapurkar <rlkamalapurkar@gmail.com>
+% Copyright (C) 2021-2026 by Rushikesh Kamalapurkar <rlkamalapurkar@gmail.com>
 % -----------------------------------------------------------
 %
 % This file may be distributed and/or modified under the conditions of
@@ -18,8 +18,8 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2018/04/01]
 %<package>\DeclareRelease{}{2024-02-06}{bodeplot-2024-02-06.sty}
-%<package>\DeclareCurrentRelease{}{2025/11/24}
-%<package>\ProvidesPackage{bodeplot}[2025/11/24 v3.0.2 Generate Bode, Nichols, Nyquist, and pole-zero plots]
+%<package>\DeclareCurrentRelease{}{2026/01/15}
+%<package>\ProvidesPackage{bodeplot}[2026/01/15 v3.0.3 Generate Bode, Nichols, Nyquist, and pole-zero plots]
 %<package>\RequirePackage{pdftexcmds}
 %<package>\RequirePackage{ifplatform}
 %<package>\RequirePackage{xparse}
@@ -77,7 +77,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{4517}
+% \CheckSum{4647}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
 % \changes{v1.0.4}{2021/11/05}{Fixed unintended optional argument macro expansion}
@@ -93,11 +93,12 @@
 % \changes{v2.1}{2025/09/30}{Added an environment and macros to add multiple transfer functions to a single Bode plot}
 % \changes{v2.1.1}{2025/10/04}{Added a new option |prefix| to enable per-plot custom file names for gnuplot tables}
 % \changes{v3.0}{2025/10/21}{Improved the interface to enable PGF-style options and more natural syntax for complex numbers in zeros and poles}
+% \changes{v3.0.3}{2026/01/15}{Improved complex number parser to support arbitrary pgfmath expressions in real and imaginary parts, addresses issue \#19.}
 %
 % \GetFileInfo{bodeplot.sty}
 % \DoNotIndex{\newcommand,\xdef,\gdef,\def,\edef,\addplot,\approx,\arabic,\opt,\typ,\obj,\feature,\values,\value,\z,\p,\y,\n,\d,\numcoeff,\numpow,\dencoeff,\denpow,\zcnt,\pcnt,\else,\fi,\iffalse,\begin,\end,\footnotesize,\draw,\detokenize,\DeclareOption,\foreach,\ifdim,\ifodd,\Im,\Re,\let,\newif,\nextgroupplot,\noexpand,\expandafter,\unexpanded,\PackageError,\PackageWarning,\relax,\RequirePackage,\tikzset,\pgfkeys,\pgfkeysalso,\pgfkeyscurrentkey,\pgfkeyscurrentvalue,\pgfkeysgetvalue,\pgfkeysnovalue,\pgfkeyssetvalue,\pgfkeysvalueof,\pgfmathfloattofixed,\pgfmathfloattoint,\pgfmathparse,\pgfmathresult,\pgfmathsetmacro,\pgfmathtruncatemacro,\pgfplotsset,\pgfutil@ifempty,\ProcessOptions,\ExplSyntaxOn,\ExplSyntaxOff,\@empty,\empty,\ifnum,\ifwindows,\ifx,\immediate,\jobname,\newcounter,\NewDocumentCommand,\NewDocumentEnvironment,\pdf@strcmp,\global,\g@add@to@macro,\endgroup,\begingroup,\~,\-,\@ifpackageloaded,\setcounter,\shorthandoff,\shorthandon,\stepcounter,\write,\MakePrivateLetters,\do,\tick,\lccode,\ifcat,\ifbabelshorthand,\AddToHook,\AtBeginDocument}
 %
-% \title{The \textsf{bodeplot} package\\version 3.0.2}
+% \title{The \textsf{bodeplot} package\\version 3.0.3}
 % \author{Rushikesh Kamalapurkar \\ \texttt{rlkamalapurkar@gmail.com}}
 %
 % \maketitle
@@ -498,7 +499,7 @@ Pole-zero map (symmetric log scale)
 %
 % \noindent Plots the Bode plot of a transfer function given in ZPK format using the |groupplot| environment. 
 %
-% \noindent\textbf{zpk-spec:} A pgfkeys-style specification using keys |zeros={...}|, |poles={...}|, |gain=...|, and |delay=...| within the |/bodeplot/zpk/| family. Zeros and poles are comma-separated lists with complex poles and zeros entered using the format |a+bi|.
+% \noindent\textbf{zpk-spec:} A pgfkeys-style specification using keys |zeros={...}|, |poles={...}|, |gain=...|, and |delay=...| within the |/bodeplot/zpk/| family. Zeros and poles are comma-separated lists with complex poles and zeros entered using the format |a+bi|, where |a| and |b| can be arbitrary pgfmath/gnuplot expressions. The parser starts by detecting the trailing |i| and then finds the first top-level |+| or |-|. Everything between the |i| and the |+| or |-| is treated as the imaginary part, and everything before that is treated as the real part. If no |+| or |-| is found, the entire string except the trailing |i| is treated as the imaginary part and the real part is assumed to be zero. If the |gain| key is not specified, it is assumed to be 1. If the |delay| key is not specified, it is assumed to be zero.
 %
 % \noindent\textbf{options:} The optional argument supports a comma-separated list of options in the form |key=value|. The following keys are supported:
 % \begin{itemize}
@@ -871,7 +872,7 @@ Pole-zero map (symmetric log scale)
 %
 % \noindent Generates the Nyquist diagram of a transfer function given in ZPK form and marks the critical point $(-1,0)$ with a thick red $+$. 
 % 
-% \noindent \textbf{zpk-spec:} Same as the |\BodeZPK| macro. Provide zeros, poles, gain, and optional delay with the pgfkeys-style format |zeros={...},poles={...},gain=...,delay=...|. Complex numbers are written as |a+bi|. The macro assumes unit gain and zero delay when those keys are omitted.
+% \noindent \textbf{zpk-spec:} Same as the |\BodeZPK| macro. Provide zeros, poles, gain, and optional delay with the pgfkeys-style format |zeros={...},poles={...},gain=...,delay=...|. Complex numbers are written as |a+bi|, where |a| and |b| can be arbitrary pgfmath/gnuplot expressions. The macro assumes unit gain and zero delay when those keys are omitted.
 %
 % \noindent \textbf{options:}
 % \begin{itemize}
@@ -1073,7 +1074,7 @@ Pole-zero map (symmetric log scale)
 % \DescribeMacro{\PoleZeroMapZPK}
 % |\PoleZeroMapZPK| \oarg{options}\marg{zpk-spec}
 %
-% \noindent Plots the pole-zero map of a transfer function given in ZPK format, similar to MATLAB's |pzmap| function. The poles are marked with red 'x' symbols and the zeros are marked with blue 'o' symbols. The mandatory argument supports both the current |zeros={...},poles={...},gain=...| format with complex numbers expressed as |a+ib| and the legacy format |z/{zeros},p/{poles},k/{gain}| with complex numbers expressed as |{a,b}|. Note that the delay parameter |d| is ignored since delays do not affect pole-zero locations. The optional argument supports the same tuples as |\NyquistZPK|.\changes{v2.0}{2025/09/26}{Added pole-zero map functionality}
+% \noindent Plots the pole-zero map of a transfer function given in ZPK format, similar to MATLAB's |pzmap| function. The poles are marked with red 'x' symbols and the zeros are marked with blue 'o' symbols. The mandatory argument supports both the current |zeros={...},poles={...},gain=...| format with complex numbers expressed as |a+bi| (where |a| and |b| can be arbitrary pgfmath/gnuplot expressions) and the legacy format |z/{zeros},p/{poles},k/{gain}| with complex numbers expressed as |{a,b}|. Note that the delay parameter |d| is ignored since delays do not affect pole-zero locations. The optional argument supports the same tuples as |\NyquistZPK|.\changes{v2.0}{2025/09/26}{Added pole-zero map functionality}
 %
 % The |scale={log}| option enables symmetric logarithmic (symlog) scaling for both axes. This is particularly useful for systems with poles and zeros spanning multiple decades. The symlog scaling preserves the sign of coordinates while applying logarithmic scaling to their magnitude, allowing visualization of both positive and negative values on the same plot.
 %
@@ -2732,7 +2733,7 @@ Pole-zero map (symmetric log scale)
 % \end{environment}
 % \subsubsection{Internal macros}
 % \begin{macro}{\bp@parse@complex}
-% Parses complex numbers in various formats (e.g., |1+2i|, |3-4i|, |5|, |i|). Uses expl3 regex to extract real and imaginary parts. Sets |\bp@realpart|, |\bp@imagpart|, and |\bp@complex|. \changes{v3.0}{2025/10/21}{Added complex number parser for new interface}
+% Parses complex numbers in the format |a+bi| where |a| and |b| can be arbitrary pgfmath/gnuplot expressions. The scans to the left starting from the trailing |i| and finds the first top-level |+| or |-|, i.e., the first such operator not inside braces or parentheses. Everything between the |i| and the |+| or |-| is treated as the imaginary part, and everything else is treated as the real part. Sets |\bp@realpart|, |\bp@imagpart|, and |\bp@complex|. \changes{v3.0}{2025/10/21}{Added complex number parser for new interface}\changes{v3.0.3}{2026/01/15}{Rewritten to support arbitrary expressions with nested braces and parentheses}
 %    \begin{macrocode}
 \ExplSyntaxOn
 \tl_new:N \l_real_tl
@@ -2740,43 +2741,187 @@ Pole-zero map (symmetric log scale)
 \tl_new:N \bp@complex
 \tl_new:N \bp@realpart
 \tl_new:N \bp@imagpart
+
+% Variables for the complex number parser
+\tl_new:N \l__bp_input_tl
+\tl_new:N \l__bp_before_tl
+\tl_new:N \l__bp_after_tl
+\tl_new:N \l__bp_sep_tl
+\int_new:N \l__bp_pos_int
+\int_new:N \l__bp_seppos_int
+\int_new:N \l__bp_paren_int
+\bool_new:N \l__bp_found_bool
+
+% Generate V variant for tl_if_single_token
+\prg_generate_conditional_variant:Nnn \tl_if_single_token:n { V } { TF, T, F }
+
 \NewDocumentCommand{\bp@parse@complex}{m}{
-  \tl_set:No \l_tmpa_tl {#1}
-  \tl_remove_all:Nn \l_tmpa_tl { ~ }
+  \tl_set:Nx \l__bp_input_tl {#1}
+  \tl_remove_all:Nn \l__bp_input_tl { ~ }
   
-  \regex_match:nVTF { i } \l_tmpa_tl
-    {%
-      \regex_extract_once:nVNTF { ^([+\-]?[0-9.]+)([+\-][0-9.]+)i$ } \l_tmpa_tl \l_tmpa_seq
-        {%
-          \seq_pop_left:NN \l_tmpa_seq \l_tmpb_tl
-          \seq_pop_left:NN \l_tmpa_seq \l_real_tl
-          \seq_pop_left:NN \l_tmpa_seq \l_imag_tl
-        }
-        {%
-          \regex_extract_once:nVNTF { ^([+\-]?[0-9.]*)i$ } \l_tmpa_tl \l_tmpa_seq
-            {
-              \seq_pop_left:NN \l_tmpa_seq \l_tmpb_tl
-              \seq_pop_left:NN \l_tmpa_seq \l_imag_tl
-              \tl_set:Nn \l_real_tl {0}
-              \tl_if_empty:NT \l_imag_tl { \tl_set:Nn \l_imag_tl {1} }
-              \str_if_eq:VnT \l_imag_tl {+} { \tl_set:Nn \l_imag_tl {1} }
-              \str_if_eq:VnT \l_imag_tl {-} { \tl_set:Nn \l_imag_tl {-1} }
-            }
-            {
-              \tl_set:Nn \l_real_tl {0}
-              \tl_set:Nn \l_imag_tl {0}
-            }
-        }
-    }
-    {%
-      \tl_set_eq:NN \l_real_tl \l_tmpa_tl
-      \tl_set:Nn \l_imag_tl {0}
-    }
+  % Check if it ends with 'i'
+  \regex_match:nVTF { i$ } \l__bp_input_tl
+    { \__bp_parse_complex_with_i: }
+    { \__bp_parse_real_only: }
   
   \tl_gset_eq:NN \bp@realpart \l_real_tl
   \tl_gset_eq:NN \bp@imagpart \l_imag_tl
   \tl_gset:Nx \bp@complex { { { \l_real_tl } , { \l_imag_tl } } }
 }
+
+% Parse a pure real number (no trailing i)
+\cs_new_protected:Npn \__bp_parse_real_only:
+  {
+    \__bp_unwrap_braces:N \l__bp_input_tl
+    \tl_set_eq:NN \l_real_tl \l__bp_input_tl
+    \tl_set:Nn \l_imag_tl {0}
+  }
+
+% Parse a complex number (has trailing i)
+\cs_new_protected:Npn \__bp_parse_complex_with_i:
+  {
+    % Remove trailing 'i'
+    \regex_replace_once:nnN { i$ } {} \l__bp_input_tl
+    
+    % Find the last + or - at depth 0 (but not at position 0)
+    \__bp_find_separator:
+    
+    \bool_if:NTF \l__bp_found_bool
+      { \__bp_split_at_separator: }
+      { \__bp_parse_pure_imaginary: }
+  }
+
+% Parse pure imaginary (no separator found)
+\cs_new_protected:Npn \__bp_parse_pure_imaginary:
+  {
+    \tl_set:Nn \l_real_tl {0}
+    \__bp_set_signed_value:NN \l_imag_tl \l__bp_input_tl
+  }
+
+% Set target to value with sign handling
+\cs_new_protected:Npn \__bp_set_signed_value:NN #1#2
+  {
+    \tl_if_empty:NTF #2
+      { \tl_set:Nn #1 {1} }
+      {
+        \tl_set:Nx \l_tmpa_tl { \tl_head:N #2 }
+        \str_if_eq:VnTF \l_tmpa_tl {-}
+          {
+            \tl_set:Nx \l_tmpb_tl { \tl_tail:N #2 }
+            \tl_if_empty:NTF \l_tmpb_tl
+              { \tl_set:Nn #1 {-1} }
+              {
+                \__bp_unwrap_braces:N \l_tmpb_tl
+                \tl_set:Nx #1 { -( \l_tmpb_tl ) }
+              }
+          }
+          {
+            \str_if_eq:VnTF \l_tmpa_tl {+}
+              {
+                \tl_set:Nx \l_tmpb_tl { \tl_tail:N #2 }
+                \tl_if_empty:NTF \l_tmpb_tl
+                  { \tl_set:Nn #1 {1} }
+                  {
+                    \__bp_unwrap_braces:N \l_tmpb_tl
+                    \tl_set_eq:NN #1 \l_tmpb_tl
+                  }
+              }
+              {
+                \__bp_unwrap_braces:N #2
+                \tl_set_eq:NN #1 #2
+              }
+          }
+      }
+  }
+
+% Helper to unwrap a single braced group
+\cs_new_protected:Npn \__bp_unwrap_braces:N #1
+  {
+    \tl_if_single_token:VF #1
+      {
+        \tl_set:Nx \l_tmpc_tl { \tl_count:N #1 }
+        \int_compare:nNnT { \l_tmpc_tl } = {1}
+          { \tl_set:Nx #1 { \exp_after:wN \use:n #1 } }
+      }
+  }
+
+% Process one token/group to find separator
+\cs_new_protected:Npn \__bp_process_item:n #1
+  {
+    \tl_if_single_token:nTF {#1}
+      {
+        % Track parenthesis depth
+        \token_if_eq_charcode:NNT #1 ( { \int_incr:N \l__bp_paren_int }
+        \token_if_eq_charcode:NNT #1 ) { \int_decr:N \l__bp_paren_int }
+        % Only consider separators at position > 0 and paren depth 0
+        \int_compare:nNnT { \l__bp_pos_int } > {0}
+          {
+            \int_compare:nNnT { \l__bp_paren_int } = {0}
+              {
+                \bool_lazy_or:nnT
+                  { \token_if_eq_charcode_p:NN #1 + }
+                  { \token_if_eq_charcode_p:NN #1 - }
+                  {
+                    \bool_set_true:N \l__bp_found_bool
+                    \int_set_eq:NN \l__bp_seppos_int \l__bp_pos_int
+                    \tl_set:Nn \l__bp_sep_tl {#1}
+                  }
+              }
+          }
+      }
+      { }
+    \int_incr:N \l__bp_pos_int
+  }
+
+% Find the last + or - at depth 0
+\cs_new_protected:Npn \__bp_find_separator:
+  {
+    \bool_set_false:N \l__bp_found_bool
+    \int_zero:N \l__bp_pos_int
+    \int_zero:N \l__bp_paren_int
+    \tl_map_function:NN \l__bp_input_tl \__bp_process_item:n
+  }
+
+% Collect items for splitting
+\cs_new_protected:Npn \__bp_collect_item:n #1
+  {
+    \int_compare:nNnTF { \l__bp_pos_int } < { \l__bp_seppos_int }
+      { \tl_put_right:Nn \l__bp_before_tl {#1} }
+      {
+        \int_compare:nNnF { \l__bp_pos_int } = { \l__bp_seppos_int }
+          { \tl_put_right:Nn \l__bp_after_tl {#1} }
+      }
+    \int_incr:N \l__bp_pos_int
+  }
+
+% Split the input at the separator position
+\cs_new_protected:Npn \__bp_split_at_separator:
+  {
+    \tl_clear:N \l__bp_before_tl
+    \tl_clear:N \l__bp_after_tl
+    \int_zero:N \l__bp_pos_int
+    
+    \tl_map_function:NN \l__bp_input_tl \__bp_collect_item:n
+    
+    \__bp_unwrap_braces:N \l__bp_before_tl
+    \__bp_unwrap_braces:N \l__bp_after_tl
+    
+    \tl_if_empty:NTF \l__bp_before_tl
+      { \tl_set:Nn \l_real_tl {0} }
+      { \tl_set_eq:NN \l_real_tl \l__bp_before_tl }
+    
+    \tl_if_empty:NTF \l__bp_after_tl
+      {
+        \str_if_eq:VnTF \l__bp_sep_tl {-}
+          { \tl_set:Nn \l_imag_tl {-1} }
+          { \tl_set:Nn \l_imag_tl {1} }
+      }
+      {
+        \str_if_eq:VnTF \l__bp_sep_tl {-}
+          { \tl_set:Nx \l_imag_tl { -( \l__bp_after_tl ) } }
+          { \tl_set_eq:NN \l_imag_tl \l__bp_after_tl }
+      }
+  }
 %    \end{macrocode}
 %\end{macro}
 % \begin{macro}{\bp_if_contains:nnTF}
