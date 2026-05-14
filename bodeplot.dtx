@@ -18,8 +18,8 @@
 % \iffalse
 %<package>\NeedsTeXFormat{LaTeX2e}[2018/04/01]
 %<package>\DeclareRelease{}{2024-02-06}{bodeplot-2024-02-06.sty}
-%<package>\DeclareCurrentRelease{}{2026/01/15}
-%<package>\ProvidesPackage{bodeplot}[2026/01/15 v3.0.3 Generate Bode, Nichols, Nyquist, and pole-zero plots]
+%<package>\DeclareCurrentRelease{}{2026/05/14}
+%<package>\ProvidesPackage{bodeplot}[2026/05/14 v3.0.4 Generate Bode, Nichols, Nyquist, and pole-zero plots]
 %<package>\RequirePackage{pdftexcmds}
 %<package>\RequirePackage{ifplatform}
 %<package>\RequirePackage{xparse}
@@ -70,14 +70,17 @@
 \RecordChanges
 \begin{document}
   \DocInput{bodeplot.dtx}
+  \clearpage
+  \addcontentsline{toc}{section}{Index}
   \PrintIndex
   \clearpage
+  \addcontentsline{toc}{section}{Change History}
   \PrintChanges
  \end{document}
 %</driver>
 % \fi
 %
-% \CheckSum{4647}
+% \CheckSum{4651}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
 % \changes{v1.0.4}{2021/11/05}{Fixed unintended optional argument macro expansion}
@@ -93,12 +96,11 @@
 % \changes{v2.1}{2025/09/30}{Added an environment and macros to add multiple transfer functions to a single Bode plot}
 % \changes{v2.1.1}{2025/10/04}{Added a new option |prefix| to enable per-plot custom file names for gnuplot tables}
 % \changes{v3.0}{2025/10/21}{Improved the interface to enable PGF-style options and more natural syntax for complex numbers in zeros and poles}
-% \changes{v3.0.3}{2026/01/15}{Improved complex number parser to support arbitrary pgfmath expressions in real and imaginary parts, addresses issue \#19.}
 %
 % \GetFileInfo{bodeplot.sty}
 % \DoNotIndex{\newcommand,\xdef,\gdef,\def,\edef,\addplot,\approx,\arabic,\opt,\typ,\obj,\feature,\values,\value,\z,\p,\y,\n,\d,\numcoeff,\numpow,\dencoeff,\denpow,\zcnt,\pcnt,\else,\fi,\iffalse,\begin,\end,\footnotesize,\draw,\detokenize,\DeclareOption,\foreach,\ifdim,\ifodd,\Im,\Re,\let,\newif,\nextgroupplot,\noexpand,\expandafter,\unexpanded,\PackageError,\PackageWarning,\relax,\RequirePackage,\tikzset,\pgfkeys,\pgfkeysalso,\pgfkeyscurrentkey,\pgfkeyscurrentvalue,\pgfkeysgetvalue,\pgfkeysnovalue,\pgfkeyssetvalue,\pgfkeysvalueof,\pgfmathfloattofixed,\pgfmathfloattoint,\pgfmathparse,\pgfmathresult,\pgfmathsetmacro,\pgfmathtruncatemacro,\pgfplotsset,\pgfutil@ifempty,\ProcessOptions,\ExplSyntaxOn,\ExplSyntaxOff,\@empty,\empty,\ifnum,\ifwindows,\ifx,\immediate,\jobname,\newcounter,\NewDocumentCommand,\NewDocumentEnvironment,\pdf@strcmp,\global,\g@add@to@macro,\endgroup,\begingroup,\~,\-,\@ifpackageloaded,\setcounter,\shorthandoff,\shorthandon,\stepcounter,\write,\MakePrivateLetters,\do,\tick,\lccode,\ifcat,\ifbabelshorthand,\AddToHook,\AtBeginDocument}
 %
-% \title{The \textsf{bodeplot} package\\version 3.0.3}
+% \title{The \textsf{bodeplot} package\\version 3.0.4}
 % \author{Rushikesh Kamalapurkar \\ \texttt{rlkamalapurkar@gmail.com}}
 %
 % \maketitle
@@ -2313,7 +2315,7 @@ Pole-zero map (symmetric log scale)
   \end{tikzpicture}
 }
 %    \end{macrocode}
-% The following code handles active characters to avoid conflicts with `babel.'\changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}
+% The following code handles active characters to avoid conflicts with `babel.'\changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}\changes{v3.0.4}{2026/05/14}{Fixed babel wrapper command argument specification for grabbing arguments}
 %    \begin{macrocode}
 \AtBeginDocument{%
   \if@babel
@@ -2322,7 +2324,7 @@ Pole-zero map (symmetric log scale)
     \expandafter\shorthandoff\expandafter{\bp@short@list}
     \BodeZPK@Shorthandoff
   }
-  \newcommand{\BodeZPK@Shorthandoff}[4][]{%
+  \NewDocumentCommand{\BodeZPK@Shorthandoff}{ O{} m G{} G{} }{%
     \Orig@BodeZPK[#1]{#2}{#3}{#4}
     \expandafter\shorthandon\expandafter{\bp@short@list}
   }
@@ -2408,7 +2410,7 @@ Pole-zero map (symmetric log scale)
   \end{tikzpicture}
 }
 %    \end{macrocode}
-% The following code handles active characters to avoid conflicts with `babel.'\changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}
+% The following code handles active characters to avoid conflicts with `babel.'\changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}\changes{v3.0.4}{2026/05/14}{Fixed babel wrapper command argument specification for grabbing arguments}
 %    \begin{macrocode}
 \AtBeginDocument{
   \if@babel
@@ -2417,7 +2419,7 @@ Pole-zero map (symmetric log scale)
     \expandafter\shorthandoff\expandafter{\bp@short@list}
     \BodeTF@Shorthandoff
   }
-  \newcommand{\BodeTF@Shorthandoff}[4][]{%
+  \NewDocumentCommand{\BodeTF@Shorthandoff}{ O{} m G{} G{} }{%
     \Orig@BodeTF[#1]{#2}{#3}{#4}
     \expandafter\shorthandon\expandafter{\bp@short@list}
   }
@@ -3421,7 +3423,7 @@ Pole-zero map (symmetric log scale)
   \end{tikzpicture}
 }
 %    \end{macrocode}
-% The following code handles active characters to avoid conflicts with `babel.'\changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}
+% The following code handles active characters to avoid conflicts with `babel.'\changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}\changes{v3.0.4}{2026/05/14}{Fixed babel wrapper command argument specification for grabbing arguments}
 %    \begin{macrocode}
 \AtBeginDocument{%
   \if@babel
@@ -3430,7 +3432,7 @@ Pole-zero map (symmetric log scale)
     \expandafter\shorthandoff\expandafter{\bp@short@list}
     \NyquistZPK@Shorthandoff
   }
-  \newcommand{\NyquistZPK@Shorthandoff}[4][]{%
+  \NewDocumentCommand{\NyquistZPK@Shorthandoff}{ O{} m G{} G{} }{%
     \Orig@NyquistZPK[#1]{#2}{#3}{#4}
     \expandafter\shorthandon\expandafter{\bp@short@list}
   }
@@ -3491,7 +3493,7 @@ Pole-zero map (symmetric log scale)
   \end{tikzpicture}
 }
 %    \end{macrocode}
-% The following code handles active characters to avoid conflicts with `babel.'\changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}
+% The following code handles active characters to avoid conflicts with `babel.'\changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}\changes{v3.0.4}{2026/05/14}{Fixed babel wrapper command argument specification for grabbing arguments}
 %    \begin{macrocode}
 \AtBeginDocument{%
   \if@babel
@@ -3500,7 +3502,7 @@ Pole-zero map (symmetric log scale)
     \expandafter\shorthandoff\expandafter{\bp@short@list}
     \NyquistTF@Shorthandoff
   }
-  \newcommand{\NyquistTF@Shorthandoff}[4][]{%
+  \NewDocumentCommand{\NyquistTF@Shorthandoff}{ O{} m G{} G{} }{%
     \Orig@NyquistTF[#1]{#2}{#3}{#4}
     \expandafter\shorthandon\expandafter{\bp@short@list}
   }
@@ -3706,7 +3708,7 @@ Pole-zero map (symmetric log scale)
     \expandafter\shorthandoff\expandafter{\bp@short@list}
     \NicholsZPK@Shorthandoff
   }
-  \newcommand{\NicholsZPK@Shorthandoff}[4][]{%
+  \NewDocumentCommand{\NicholsZPK@Shorthandoff}{ O{} m G{} G{} }{%
     \Orig@NicholsZPK[#1]{#2}{#3}{#4}
     \expandafter\shorthandon\expandafter{\bp@short@list}
   }
@@ -3772,6 +3774,8 @@ Pole-zero map (symmetric log scale)
     \end{axis}
   \end{tikzpicture}
 }
+% The following code handles active characters to avoid conflicts with `babel.' \changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}\changes{v3.0.4}{2026/05/14}{Fixed babel wrapper command argument specification for grabbing arguments}
+%    \begin{macrocode}
 \AtBeginDocument{
   \if@babel
     \let\Orig@NicholsTF\NicholsTF
@@ -3779,7 +3783,7 @@ Pole-zero map (symmetric log scale)
       \expandafter\shorthandoff\expandafter{\bp@short@list}
       \NicholsTF@Shorthandoff
     }
-    \newcommand{\NicholsTF@Shorthandoff}[4][]{%
+    \NewDocumentCommand{\NicholsTF@Shorthandoff}{ O{} m G{} G{} }{%
       \Orig@NicholsTF[#1]{#2}{#3}{#4}
       \expandafter\shorthandon\expandafter{\bp@short@list}
     }

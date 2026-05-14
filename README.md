@@ -15,11 +15,11 @@ License: [LPPL-1.3c](https://github.com/rlkamalapurkar/bodeplot/blob/main/LICENS
 1) `latex bodeplot.ins` to generate `bodeplot.sty`
 2) To compile documentation (needs `gnuplot` on system PATH):
 ```
-pdflatex --shell-escape bodeplot.dtx
+lualatex --shell-escape bodeplot.dtx
 makeindex -s gind.ist bodeplot.idx
 makeindex -s gglo.ist -o bodeplot.gls bodeplot.glo
-pdflatex --shell-escape bodeplot.dtx
-pdflatex --shell-escape bodeplot.dtx
+lualatex --shell-escape bodeplot.dtx
+lualatex --shell-escape bodeplot.dtx
 ```
 ## Added functionality over `bodegraph`
  - New `\BodeZPK` and `\BodeTF` commands to generate Bode plots of any transfer function given either poles, zeros, gain, and delay, or numerator and denominator coefficients and delay
