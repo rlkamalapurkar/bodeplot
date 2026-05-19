@@ -19,7 +19,7 @@
 %<package>\NeedsTeXFormat{LaTeX2e}[2018/04/01]
 %<package>\DeclareRelease{}{2024-02-06}{bodeplot-2024-02-06.sty}
 %<package>\DeclareCurrentRelease{}{2026/05/14}
-%<package>\ProvidesPackage{bodeplot}[2026/05/14 v3.0.4 Generate Bode, Nichols, Nyquist, and pole-zero plots]
+%<package>\ProvidesPackage{bodeplot}[2026/05/18 v3.1 Generate Bode, Nichols, Nyquist, and pole-zero plots]
 %<package>\RequirePackage{pdftexcmds}
 %<package>\RequirePackage{ifplatform}
 %<package>\RequirePackage{xparse}
@@ -80,7 +80,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{4651}
+% \CheckSum{4912}
 %
 % \changes{v1.0}{2021/10/25}{Initial release}
 % \changes{v1.0.4}{2021/11/05}{Fixed unintended optional argument macro expansion}
@@ -96,11 +96,13 @@
 % \changes{v2.1}{2025/09/30}{Added an environment and macros to add multiple transfer functions to a single Bode plot}
 % \changes{v2.1.1}{2025/10/04}{Added a new option |prefix| to enable per-plot custom file names for gnuplot tables}
 % \changes{v3.0}{2025/10/21}{Improved the interface to enable PGF-style options and more natural syntax for complex numbers in zeros and poles}
+% \changes{v3.1}{2026/05/19}{Fixed |foreach| iteration when |zeros| or |poles| are passed as macros to |BodeZPK|; |pgffor| was treating the unexpanded macro token as a single list item causing incorrect or empty Bode plots}
+% \changes{v3.1}{2026/05/19}{Added |bp@tf@to@zpk| and companion |AtBeginDocument| Python helper-script writer; converts polynomial TF coefficients to ZPK form via |python3| and |scipy.signal.tf2zpk| under |--shell-escape|}
 %
 % \GetFileInfo{bodeplot.sty}
 % \DoNotIndex{\newcommand,\xdef,\gdef,\def,\edef,\addplot,\approx,\arabic,\opt,\typ,\obj,\feature,\values,\value,\z,\p,\y,\n,\d,\numcoeff,\numpow,\dencoeff,\denpow,\zcnt,\pcnt,\else,\fi,\iffalse,\begin,\end,\footnotesize,\draw,\detokenize,\DeclareOption,\foreach,\ifdim,\ifodd,\Im,\Re,\let,\newif,\nextgroupplot,\noexpand,\expandafter,\unexpanded,\PackageError,\PackageWarning,\relax,\RequirePackage,\tikzset,\pgfkeys,\pgfkeysalso,\pgfkeyscurrentkey,\pgfkeyscurrentvalue,\pgfkeysgetvalue,\pgfkeysnovalue,\pgfkeyssetvalue,\pgfkeysvalueof,\pgfmathfloattofixed,\pgfmathfloattoint,\pgfmathparse,\pgfmathresult,\pgfmathsetmacro,\pgfmathtruncatemacro,\pgfplotsset,\pgfutil@ifempty,\ProcessOptions,\ExplSyntaxOn,\ExplSyntaxOff,\@empty,\empty,\ifnum,\ifwindows,\ifx,\immediate,\jobname,\newcounter,\NewDocumentCommand,\NewDocumentEnvironment,\pdf@strcmp,\global,\g@add@to@macro,\endgroup,\begingroup,\~,\-,\@ifpackageloaded,\setcounter,\shorthandoff,\shorthandon,\stepcounter,\write,\MakePrivateLetters,\do,\tick,\lccode,\ifcat,\ifbabelshorthand,\AddToHook,\AtBeginDocument}
 %
-% \title{The \textsf{bodeplot} package\\version 3.0.4}
+% \title{The \textsf{bodeplot} package\\version 3.1}
 % \author{Rushikesh Kamalapurkar \\ \texttt{rlkamalapurkar@gmail.com}}
 %
 % \maketitle
@@ -2333,81 +2335,98 @@ Pole-zero map (symmetric log scale)
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\BodeTF}
-% Implementation of this macro is very similar to the |\BodeZPK| macro above. The only difference is the lack of linear and asymptotic plots and slightly different parsing of the mandatory arguments. \changes{v1.0.3}{2021/11/03}{Added Tikz option} \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in gnuplot mode}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.4}{2023/10/12}{Changed phase wrapping in pgf mode}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}
+% Implementation of this macro is very similar to the |\BodeZPK| macro above. The only difference is the lack of linear and asymptotic plots and slightly different parsing of the mandatory arguments. \changes{v1.0.3}{2021/11/03}{Added Tikz option} \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in gnuplot mode}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.4}{2023/10/12}{Changed phase wrapping in pgf mode}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}\changes{v3.1}{2026/05/19}{To avoid wrapping in pgf mode, use python to convert tf to zpk if available. If python is not available, fall back to the legacy implementation.}\changes{v3.1}{2026/05/19}{In pgf mode, legacy 4-argument calls now forward frequency limits via domain options when dispatching to \cs{BodeZPK}.}
 %    \begin{macrocode}
 \NewDocumentCommand{\BodeTF}{ O{} m G{} G{} }{%
-  \pgfutil@ifempty{#3}{%
-    \pgfkeys{/bodeplot/.cd, reset}
-    \pgfkeys{/bodeplot/.cd, #1}
-    \pgfkeysgetvalue{/bodeplot/@axes/mag}{\bp@mag@axes}
-    \pgfkeysgetvalue{/bodeplot/@axes/ph}{\bp@ph@axes}
-    \pgfkeysgetvalue{/bodeplot/@group}{\bp@group}
-    \pgfkeysgetvalue{/bodeplot/@approx}{\bp@approx}
-    \pgfkeysgetvalue{/bodeplot/@commands/mag}{\bp@mag@commands}
-    \pgfkeysgetvalue{/bodeplot/@commands/ph}{\bp@ph@commands}
-    \pgfkeysgetvalue{/bodeplot/@tikz}{\bp@tikz}
-    \pgfkeysgetvalue{/bodeplot/@prefix}{\bp@user@prefix}
-    \bp@tf@new@to@legacy{#2}
-  }{%
-    \if@radarg
-      \pgfkeys{/bodeplot/phase unit=rad}
+  \if@pgfarg
+    \bp@tf@to@zpk{#2}{\bp@tmp@zpk}{\bp@tmp@status}
+    \ifnum\pdf@strcmp{\bp@tmp@status}{true}=0
+      \pgfutil@ifempty{#3}{%
+        \BodeZPK[#1]{\bp@tmp@zpk}%
+      }{%
+        \BodeZPK[domain=#3:#4,#1]{\bp@tmp@zpk}%
+      }%
+      \def\bp@fallback{false}
     \else
-      \pgfkeys{/bodeplot/phase unit=deg}
+      \def\bp@fallback{true}
     \fi
-    \if@hzarg
-      \pgfkeys{/bodeplot/frequency unit=Hz}
-    \else
-      \pgfkeys{/bodeplot/frequency unit=rad}
-    \fi
-    \bp@parse@opt{#1}
-    \edef\bp@legacy{#2}
-    \edef\bp@domain@start{#3}
-    \edef\bp@domain@end{#4}
-  }%
-  \edef\bp@cmd{\noexpand\begin{tikzpicture}
-    [\unexpanded\expandafter{\bp@tikz}]}
-  \bp@cmd
-    \gdef\bp@mag{}
-    \gdef\bp@ph{}
-    \bp@TF@plot{\bp@mag}{\bp@ph}{\bp@legacy}
-    \edef\bp@cmd{\noexpand\begin{groupplot}[
-      bp@style,
-      xmin=\bp@domain@start,
-      xmax=\bp@domain@end,
-      domain=\bp@domain@start*\bp@freq@scale:\bp@domain@end*\bp@freq@scale,
-      height=2.5cm,
-      xmode=log,
-      group style = {group size = 1 by 2,vertical sep=0.25cm},
-      \unexpanded\expandafter{\bp@group}
-    ]}
-    \bp@cmd
-      \edef\bp@mag@cmd{\noexpand\nextgroupplot
-        [ylabel={Gain (dB)}, xmajorticks=false, \bp@mag@axes]
-      \noexpand\addplot [bp@freq@filter, variable=t, thick, 
-        \unexpanded\expandafter{\bp@mag@plot}]}
-      \edef\bp@ph@cmd{\noexpand\nextgroupplot
-        [bp@ph@y@label, bp@freq@label, \bp@ph@axes]
-      \noexpand\addplot [bp@freq@filter, variable=t, thick, trig format plots=rad,
-        \unexpanded\expandafter{\bp@ph@plot}]}
-      \if@pgfarg
-        \bp@mag@cmd {\bp@mag};
-        \bp@mag@commands
-        \bp@ph@cmd {\n@mod{\bp@ph}{2*pi*\bp@ph@scale}};
-        \bp@ph@commands
+  \else
+    \def\bp@fallback{true}
+  \fi
+  \ifnum\pdf@strcmp{\bp@fallback}{true}=0
+    \pgfutil@ifempty{#3}{%
+      \pgfkeys{/bodeplot/.cd, reset}
+      \pgfkeys{/bodeplot/.cd, #1}
+      \pgfkeysgetvalue{/bodeplot/@axes/mag}{\bp@mag@axes}
+      \pgfkeysgetvalue{/bodeplot/@axes/ph}{\bp@ph@axes}
+      \pgfkeysgetvalue{/bodeplot/@group}{\bp@group}
+      \pgfkeysgetvalue{/bodeplot/@approx}{\bp@approx}
+      \pgfkeysgetvalue{/bodeplot/@commands/mag}{\bp@mag@commands}
+      \pgfkeysgetvalue{/bodeplot/@commands/ph}{\bp@ph@commands}
+      \pgfkeysgetvalue{/bodeplot/@tikz}{\bp@tikz}
+      \pgfkeysgetvalue{/bodeplot/@prefix}{\bp@user@prefix}
+      \bp@tf@new@to@legacy{#2}
+    }{%
+      \if@radarg
+        \pgfkeys{/bodeplot/phase unit=rad}
       \else
-        \stepcounter{bp@gnuplot@id}
-        \edef\gnu@id{\arabic{bp@gnuplot@id}}
-        \bp@gnu@plot{\bp@mag}{\gnu@id}
-        \expandafter\bp@mag@cmd\bp@gnu@cmd
-        \bp@mag@commands
-        \stepcounter{bp@gnuplot@id}
-        \edef\gnu@id{\arabic{bp@gnuplot@id}}
-        \bp@gnu@unwrap@plot{\bp@ph}{\gnu@id}
-        \expandafter\bp@ph@cmd\bp@gnu@cmd
-        \bp@ph@commands
+        \pgfkeys{/bodeplot/phase unit=deg}
       \fi
-    \end{groupplot}
-  \end{tikzpicture}
+      \if@hzarg
+        \pgfkeys{/bodeplot/frequency unit=Hz}
+      \else
+        \pgfkeys{/bodeplot/frequency unit=rad}
+      \fi
+      \bp@parse@opt{#1}
+      \edef\bp@legacy{#2}
+      \edef\bp@domain@start{#3}
+      \edef\bp@domain@end{#4}
+    }%
+    \edef\bp@cmd{\noexpand\begin{tikzpicture}
+      [\unexpanded\expandafter{\bp@tikz}]}
+    \bp@cmd
+      \gdef\bp@mag{}
+      \gdef\bp@ph{}
+      \bp@TF@plot{\bp@mag}{\bp@ph}{\bp@legacy}
+      \edef\bp@cmd{\noexpand\begin{groupplot}[
+        bp@style,
+        xmin=\bp@domain@start,
+        xmax=\bp@domain@end,
+        domain=\bp@domain@start*\bp@freq@scale:\bp@domain@end*\bp@freq@scale,
+        height=2.5cm,
+        xmode=log,
+        group style = {group size = 1 by 2,vertical sep=0.25cm},
+        \unexpanded\expandafter{\bp@group}
+      ]}
+      \bp@cmd
+        \edef\bp@mag@cmd{\noexpand\nextgroupplot
+          [ylabel={Gain (dB)}, xmajorticks=false, \bp@mag@axes]
+        \noexpand\addplot [bp@freq@filter, variable=t, thick, 
+          \unexpanded\expandafter{\bp@mag@plot}]}
+        \edef\bp@ph@cmd{\noexpand\nextgroupplot
+          [bp@ph@y@label, bp@freq@label, \bp@ph@axes]
+        \noexpand\addplot [bp@freq@filter, variable=t, thick, trig format plots=rad,
+          \unexpanded\expandafter{\bp@ph@plot}]}
+        \if@pgfarg
+          \bp@mag@cmd {\bp@mag};
+          \bp@mag@commands
+          \bp@ph@cmd {\n@mod{\bp@ph}{2*pi*\bp@ph@scale}};
+          \bp@ph@commands
+        \else
+          \stepcounter{bp@gnuplot@id}
+          \edef\gnu@id{\arabic{bp@gnuplot@id}}
+          \bp@gnu@plot{\bp@mag}{\gnu@id}
+          \expandafter\bp@mag@cmd\bp@gnu@cmd
+          \bp@mag@commands
+          \stepcounter{bp@gnuplot@id}
+          \edef\gnu@id{\arabic{bp@gnuplot@id}}
+          \bp@gnu@unwrap@plot{\bp@ph}{\gnu@id}
+          \expandafter\bp@ph@cmd\bp@gnu@cmd
+          \bp@ph@commands
+        \fi
+      \end{groupplot}
+    \end{tikzpicture}
+  \fi
 }
 %    \end{macrocode}
 % The following code handles active characters to avoid conflicts with `babel.'\changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}\changes{v3.0.4}{2026/05/14}{Fixed babel wrapper command argument specification for grabbing arguments}
@@ -2428,17 +2447,18 @@ Pole-zero map (symmetric log scale)
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\addBodeZPKPlots}
-% This macro is designed to issue multiple |\addplot| macros for the same set of poles, zeros, gain, and delay. All of the work is done by the |\bp@ZPK@plot| macro. \changes{v1.0.1}{2021/10/29}{Improved optional argument handling.}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}
+% This macro is designed to issue multiple |\addplot| macros for the same set of poles, zeros, gain, and delay. All of the work is done by the |\bp@ZPK@plot| macro. \changes{v1.0.1}{2021/10/29}{Improved optional argument handling.}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}\changes{v3.1}{2026/05/19}{Pre-expand \marg{zpk-spec} and expand it before \cs{bp@contains@equal} so macro-valued specs route correctly.}
 %    \begin{macrocode}
 \NewDocumentCommand{\addBodeZPKPlots}{ O{} m m }{%
-  \bp@contains@equal{#3}{
+  \edef\bp@spec@arg{#3}%
+  \expandafter\bp@contains@equal\expandafter{\bp@spec@arg}{
     \pgfkeys{/bodeplot/add/.cd, reset}
     \pgfkeys{/bodeplot/add/.cd, #1}
-    \bp@zpk@new@to@legacy{#3}
+    \bp@zpk@new@to@legacy{\bp@spec@arg}
     \expandafter\bp@fix@add@opt\expandafter{\bp@add@O}
   }{
     \bp@fix@add@opt{#1}
-    \edef\bp@legacy{#3}
+    \edef\bp@legacy{\bp@spec@arg}
   }
   \foreach \approx/\opt in \bp@add@O {
     \ifx\approx\@empty\else
@@ -2466,15 +2486,16 @@ Pole-zero map (symmetric log scale)
   }
 }
 %    \end{macrocode}
-%\end{macro}
+% \end{macro}
 % \begin{macro}{\addBodeTFPlot}
-% This macro is designed to issues a single |\addplot| macros for the set of coefficients and delay. All of the work is done by the |\bp@TF@plot| macro.  \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in gnuplot mode}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}\changes{v1.1.4}{2023/10/12}{Changed phase wrapping in pgf mode}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}
+% This macro is designed to issues a single |\addplot| macros for the set of coefficients and delay. All of the work is done by the |\bp@TF@plot| macro.  \changes{v1.1.0}{2022/07/06}{Fixed phase wrapping in gnuplot mode}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}\changes{v1.1.4}{2023/10/12}{Changed phase wrapping in pgf mode}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}\changes{v3.1}{2026/05/19}{Pre-expand \marg{tf-spec} and expand it before \cs{bp@contains@equal} so macro-valued specs route correctly.}
 %    \begin{macrocode}
 \NewDocumentCommand{\addBodeTFPlot}{ O{} m m }{%
-  \bp@contains@equal{#3}{
-    \bp@tf@new@to@legacy{#3}
+  \edef\bp@spec@arg{#3}%
+  \expandafter\bp@contains@equal\expandafter{\bp@spec@arg}{
+    \bp@tf@new@to@legacy{\bp@spec@arg}
   }{
-    \edef\bp@legacy{#3}
+    \edef\bp@legacy{\bp@spec@arg}
   }
   \gdef\bp@plot{}
   \gdef\bp@tmp{}
@@ -2511,7 +2532,20 @@ Pole-zero map (symmetric log scale)
   \fi
 }
 %    \end{macrocode}
-%\end{macro}
+% \end{macro}
+% \begin{macro}{\addBodeTFPlots}
+% Similar to |\addBodeZPKPlots| but for systems specified in the TF format. This macro converts the TF specification to ZPK format internally using Python via |--shell-escape| and then calls |\addBodeZPKPlots| to generate the plots. If Python with the |scipy| and |numpy| libraries is not available on the shell, the package returns an error message. \changes{v3.1}{2026/05/19}{Added support for linear and asymptotic approximations when using the TF format.}
+%    \begin{macrocode}
+\NewDocumentCommand{\addBodeTFPlots}{ O{} m m }{%
+  \bp@tf@to@zpk{#3}{\bp@tmp@zpk}{\bp@tmp@status}
+  \ifnum\pdf@strcmp{\bp@tmp@status}{true}=0
+    \addBodeZPKPlots[#1]{#2}{\bp@tmp@zpk}
+  \else
+    \PackageError{bodeplot}{The |\addBodeTFPlots| macro enables linear and asymptotic approximation plots, but requires Python with the scipy and numpy libraries. Please ensure that Python is installed and accessible via --shell-escape. If Python is not available, use |\addBodeTFPlot| to generate plots without approximation.}{}
+  \fi
+}
+%    \end{macrocode}
+% \end{macro}
 % \begin{macro}{\addBodeComponentPlot}
 % This macro is designed to create a single |\addplot| macro capable of plotting linear combinations of the basic components described in Section \ref{sec:BasicComponents}. The only work to do here is to handle the |pgf| package option.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}\changes{v3.0}{2025/10/21}{Updated to use \textbackslash bp@prefix for consistency}
 %    \begin{macrocode}
@@ -2530,7 +2564,7 @@ Pole-zero map (symmetric log scale)
   \fi
 }
 %    \end{macrocode}
-%\end{macro}
+% \end{macro}
 % \begin{environment}{BodePhPlot}
 % An environment to host phase plot macros that pass parametric functions to |\addplot| macros. Uses the defaults specified in |bp@style| to create a shortcut that includes the |tikzpicture| and |semilogaxis| environments. The body of the environment is grabbed as a macro to maintain compatibility with externalization in |tikz|.\changes{v1.1.0}{2022/07/20}{Added separate environments for phase and magnitude plots}\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.2}{2022/10/29}{Defined using the `NewEnviron' command from the `environ' package to fix conflicts with externalization}\changes{v1.1.5}{2024/01/11}{Defined using the `NewDocumentEnvironment' command from the `xparse' package and added a hook to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of active characters instead of manually entering them.}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}\changes{v3.0.1}{2025/10/21}{Fixed a typo to resolve issue \#17}
 %    \begin{macrocode}
@@ -3105,12 +3139,15 @@ Pole-zero map (symmetric log scale)
 %    \end{macrocode}
 %\end{macro}
 % \begin{macro}{\bp@zpk@new@to@legacy}
-% Converts the pgfkeys interface format to the legacy ZPK format. Parses complex zeros and poles using |\bp@parse@complex|. \changes{v3.0}{2025/10/21}{Added converter from new to legacy ZPK interface}
+% Converts the pgfkeys interface format to the legacy ZPK format. Parses complex zeros and poles using |\bp@parse@complex|. \changes{v3.0}{2025/10/21}{Added converter from new to legacy ZPK interface}\changes{v3.1}{2026/05/19}{Added |edef| before |foreach| loops so that macro-valued |zeros| and |poles| arguments are fully expanded to character tokens before |pgffor| iterates over them}\changes{v3.1}{2026/05/19}{Pre-expand the entire \marg{spec} argument via |edef| before the |pgfkeys| call so that a macro-valued spec (e.g., the output of |bp@tf@to@zpk|) is expanded to character tokens and pgfkeys can split it on commas correctly}
 %    \begin{macrocode}
 \NewDocumentCommand{\bp@zpk@new@to@legacy}{ m }{%
-  \pgfkeys{/bodeplot/zpk/.cd, reset}
-  \pgfkeys{/bodeplot/zpk/.cd, #1}
+  % Pre-expand #1 so pgfkeys sees character tokens (not a macro token).
+  % This allows passing a macro whose expansion is a key=value list.
+  \edef\bp@zpknl@spec{/bodeplot/zpk/.cd, reset, #1}%
+  \expandafter\pgfkeys\expandafter{\bp@zpknl@spec}
   \pgfkeysgetvalue{/bodeplot/zpk/@zeros}{\bp@z}
+  \edef\bp@z{\bp@z}%
   \gdef\bp@z@list{}
   \ifx\bp@z\@empty\else
     \foreach \z in \bp@z {
@@ -3119,6 +3156,7 @@ Pole-zero map (symmetric log scale)
     }
   \fi
   \pgfkeysgetvalue{/bodeplot/zpk/@poles}{\bp@p}
+  \edef\bp@p{\bp@p}%
   \gdef\bp@p@list{}
   \ifx\bp@p\@empty\else
     \foreach \p in \bp@p {
@@ -3133,11 +3171,12 @@ Pole-zero map (symmetric log scale)
 %    \end{macrocode}
 %\end{macro}
 % \begin{macro}{\bp@tf@new@to@legacy}
-% Converts the pgfkeys interface format to the legacy TF format. \changes{v3.0}{2025/10/21}{Added converter from new to legacy TF interface}
+% Converts the pgfkeys interface format to the legacy TF format. \changes{v3.0}{2025/10/21}{Added converter from new to legacy TF interface}\changes{v3.1}{2026/05/19}{Pre-expand the entire \marg{spec} argument via |edef| before the |pgfkeys| call so that a macro-valued spec is expanded to character tokens and pgfkeys can split it on commas correctly}
 %    \begin{macrocode}
 \NewDocumentCommand{\bp@tf@new@to@legacy}{ m }{%
-  \pgfkeys{/bodeplot/tf/.cd, reset}
-  \pgfkeys{/bodeplot/tf/.cd, #1}
+  % Pre-expand #1 so pgfkeys sees character tokens (not a macro token).
+  \edef\bp@tfnl@spec{/bodeplot/tf/.cd, reset, #1}%
+  \expandafter\pgfkeys\expandafter{\bp@tfnl@spec}
   \pgfkeysgetvalue{/bodeplot/tf/@numerator}{\bp@num}
   \pgfkeysgetvalue{/bodeplot/tf/@denominator}{\bp@den}
   \pgfkeysgetvalue{/bodeplot/tf/@delay}{\bp@d}
@@ -3156,6 +3195,122 @@ Pole-zero map (symmetric log scale)
   \xdef\bp@legacy{num/{\bp@num@list},den/{\bp@den@list},d/\bp@d}
 }
 %    \end{macrocode}
+%\end{macro}
+% \begin{macro}{\bp@tztpk@outfile}
+% \begin{macro}{\bp@tf@to@zpk}
+% Converts a transfer-function specification to zero-pole-gain (ZPK) form
+% by invoking a |python3| helper script via |--shell-escape|.
+%
+% At the start of the document the package registers an |\AtBeginDocument|
+% hook that writes a six-line Python driver to |\jobname-tf2zpk.py|.
+% The script is intentionally written as a set of zero-indented one-liners
+% so that TeX's space-collapsing rules inside |\write| arguments do not
+% corrupt Python indentation.  Characters that would require a backslash
+% in TeX (|\|, |{|, |}|) and the newline character are obtained at runtime
+% using |chr(92)|, |chr(123)|, |chr(125)|, and |chr(10)|, so that no
+% |\detokenize| wrapper is needed for any line.
+%
+% |\bp@tf@to@zpk| accepts a TF specification in either the new pgfkeys
+% format (e.g.\ |numerator={2,10},denominator={1,3,2},delay=0|) or the
+% legacy slash format (e.g.\ |num/{2,10},den/{1,3,2},d/0|), mirroring
+% the two interfaces accepted by |\BodeTF|.  The numerator and denominator
+% coefficient lists are extracted and passed to the Python helper as
+% comma-separated strings.
+%
+% On success the macro |\edef|s into the caller-supplied output control
+% sequence a ZPK specification string in the new pgfkeys format, e.g.\
+% |zeros={-5.0},poles={-2.0,-1.0},gain=2.000000,delay=|.  The delay
+% value is taken from the TF spec and passed through unchanged; if no
+% delay was specified it is the empty string, which the ZPK pgfkeys
+% family treats as zero.  The result can be passed to |\BodeZPK| via
+% |\expandafter|:
+% \begin{quote}
+%   |\expandafter\BodeZPK\expandafter|\oarg{opts}|\expandafter{|\meta{output-cs}|}|
+% \end{quote}
+% \noindent and directly to |\bp@zpk@new@to@legacy| or |\bp@ZPK@plot|
+% via the same |\expandafter| idiom for internal use.
+%
+% \medskip\noindent\textbf{Usage:}
+% \begin{quote}
+%   |\bp@tf@to@zpk|\marg{tf-spec}\marg{\textbackslash zpk-cs}%
+%   \marg{\textbackslash status}
+% \end{quote}
+% \begin{description}
+%   \item[\textit{tf-spec}] Transfer-function specification in either the
+%     pgfkeys format accepted by |\BodeTF| (new interface) or the legacy
+%     slash format (legacy interface).
+%   \item[\textit{\textbackslash zpk-cs}] Control sequence |\edef|-bound
+%     on success to a ZPK spec string in the format accepted by |\BodeZPK|:
+%     |zeros={|\ldots|},poles={|\ldots|},gain=|\ldots|,delay=|\ldots.
+%   \item[\textit{\textbackslash status}] Control sequence |\def|-bound to
+%     |true| on success, or |false| if the Python script did not produce
+%     an output file (|python3| unavailable, missing dependencies, or no
+%     |--shell-escape|).
+% \end{description}
+% \changes{v3.1}{2026/05/19}{Added |bp@tf@to@zpk| and companion Python
+%   helper-script writer; converts polynomial TF coefficients to ZPK form
+%   via |python3| and |scipy.signal.tf2zpk| invoked under |--shell-escape|}
+% \changes{v3.1}{2026/05/19}{Redesigned |bp@tf@to@zpk| to accept the
+%   full TF spec in either new or legacy format and output a single ZPK
+%   spec macro instead of separate gain/poles/zeros control sequences}
+%    \begin{macrocode}
+\newcommand*{\bp@tztpk@outfile}{\jobname-tf2zpk-out.tex}
+\AtBeginDocument{%
+  \newwrite\bp@tztpk@file
+  \immediate\openout\bp@tztpk@file=\jobname-tf2zpk.py
+  \immediate\write\bp@tztpk@file{import sys,numpy as np}
+  \immediate\write\bp@tztpk@file{from scipy.signal import tf2zpk}
+  \immediate\write\bp@tztpk@file{bs,lb,rb=chr(92),chr(123),chr(125)}
+  \immediate\write\bp@tztpk@file{fmt=lambda arr:",".join([str(round(c.real,6)) if abs(round(c.imag,6))<1e-5 else str(round(c.real,6))+("+"+str(round(c.imag,6)) if round(c.imag,6)>=0 else str(round(c.imag,6)))+"i" for c in arr])}
+  \immediate\write\bp@tztpk@file{try: num=[float(x) for x in sys.argv[1].split(",")]; den=[float(x) for x in sys.argv[2].split(",")]; z,p,k=tf2zpk(num,den); nl=chr(10); f=open(sys.argv[3],"w"); f.write(bs+"def"+bs+"zpkGain"+lb+format(k,".6f")+rb+nl); f.write(bs+"def"+bs+"zpkZeros"+lb+fmt(z)+rb+nl); f.write(bs+"def"+bs+"zpkPoles"+lb+fmt(p)+rb+nl); f.close()}
+  \immediate\write\bp@tztpk@file{except Exception as e: sys.stderr.write(str(e))}
+  \immediate\closeout\bp@tztpk@file
+}
+\NewDocumentCommand{\bp@tf@to@zpk}{ m m m }{%
+  % Step 1: Extract numerator, denominator, and delay from the TF spec.
+  % Supports both the new pgfkeys format (numerator={...},denominator={...},
+  % delay=...) and the legacy slash format (num/{...},den/{...},d/...).
+  \bp@contains@equal{#1}{%
+    % New pgfkeys format
+    \pgfkeys{/bodeplot/tf/.cd, reset}%
+    \pgfkeys{/bodeplot/tf/.cd, #1}%
+    \pgfkeysgetvalue{/bodeplot/tf/@numerator}{\bp@tztpk@num}%
+    \pgfkeysgetvalue{/bodeplot/tf/@denominator}{\bp@tztpk@den}%
+    \pgfkeysgetvalue{/bodeplot/tf/@delay}{\bp@tztpk@d}%
+  }{%
+    % Legacy slash format
+    \gdef\bp@tztpk@num{}\gdef\bp@tztpk@den{}\gdef\bp@tztpk@d{}%
+    \edef\bp@tztpk@list{#1}%
+    \foreach \bp@tztpk@feat/\bp@tztpk@val in \bp@tztpk@list {%
+      \ifnum\pdf@strcmp{\bp@tztpk@feat}{num}=0
+        \xdef\bp@tztpk@num{\bp@tztpk@val}%
+      \fi
+      \ifnum\pdf@strcmp{\bp@tztpk@feat}{den}=0
+        \xdef\bp@tztpk@den{\bp@tztpk@val}%
+      \fi
+      \ifnum\pdf@strcmp{\bp@tztpk@feat}{d}=0
+        \xdef\bp@tztpk@d{\bp@tztpk@val}%
+      \fi
+    }%
+  }%
+  % Step 2: Invoke the Python helper.
+  \ifwindows
+    \immediate\write18{if exist "\bp@tztpk@outfile" del /f "\bp@tztpk@outfile"}%
+  \else
+    \immediate\write18{rm -f "\bp@tztpk@outfile"}%
+  \fi
+  \immediate\write18{python3 "\jobname-tf2zpk.py" "\bp@tztpk@num" "\bp@tztpk@den" "\bp@tztpk@outfile"}%
+  % Step 3: Build the ZPK spec and set status.
+  \IfFileExists{\bp@tztpk@outfile}{%
+    \input{\bp@tztpk@outfile}%
+    \edef#2{zeros={\zpkZeros},poles={\zpkPoles},gain=\zpkGain,delay=\bp@tztpk@d}%
+    \def#3{true}%
+  }{%
+    \def#3{false}%
+  }%
+}
+%    \end{macrocode}
+%\end{macro}
 %\end{macro}
 % \begin{macro}{\bp@TF@plot}
 % Builds magnitude and phase plot expressions from transfer function representation. \changes{v3.0}{2025/10/21}{Changed macro name from |build@TF@plot| to |bp@TF@plot| for consistency}
@@ -3511,10 +3666,12 @@ Pole-zero map (symmetric log scale)
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\addNyquistZPKPlot}
-% Adds Nyquist plot of a transfer function in ZPK form with dual interface support. Converts magnitude and phase to real and imaginary parts for parametric plotting.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}
+% Adds Nyquist plot of a transfer function in ZPK form with dual interface support. Converts magnitude and phase to real and imaginary parts for parametric plotting.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}\changes{v3.1}{2026/05/19}{Pre-expand \marg{zpk-spec} via |edef| before |bp@contains@equal| routing so that a macro-valued spec is accepted}\changes{v3.1}{2026/05/19}{Use \cs{expandafter} when calling \cs{bp@contains@equal} so the pre-expanded spec is tested as character tokens.}
 %    \begin{macrocode}
 \NewDocumentCommand{\addNyquistZPKPlot}{ O{} m }{%
-  \bp@contains@equal{#2}{\bp@zpk@new@to@legacy{#2}}{\edef\bp@legacy{#2}}%
+  \edef\bp@spec@arg{#2}%
+  \expandafter\bp@contains@equal\expandafter{\bp@spec@arg}{%
+    \bp@zpk@new@to@legacy{\bp@spec@arg}}{\edef\bp@legacy{\bp@spec@arg}}%
   \gdef\bp@mag{}\gdef\bp@ph{}%
   \bp@ZPK@plot{\bp@mag}{\bp@ph}{}{\bp@legacy}%
   \if@pgfarg
@@ -3536,10 +3693,12 @@ Pole-zero map (symmetric log scale)
 %    \end{macrocode}
 %\end{macro}
 % \begin{macro}{\addNyquistTFPlot}
-% Adds Nyquist plot of a transfer function in TF form with dual interface support. Converts magnitude and phase to real and imaginary parts for parametric plotting.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}
+% Adds Nyquist plot of a transfer function in TF form with dual interface support. Converts magnitude and phase to real and imaginary parts for parametric plotting.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}\changes{v3.1}{2026/05/19}{Pre-expand \marg{tf-spec} via |edef| before |bp@contains@equal| routing so that a macro-valued spec is accepted}\changes{v3.1}{2026/05/19}{Use \cs{expandafter} when calling \cs{bp@contains@equal} so the pre-expanded spec is tested as character tokens.}
 %    \begin{macrocode}
 \NewDocumentCommand{\addNyquistTFPlot}{ O{} m }{%
-  \bp@contains@equal{#2}{\bp@tf@new@to@legacy{#2}}{\edef\bp@legacy{#2}}%
+  \edef\bp@spec@arg{#2}%
+  \expandafter\bp@contains@equal\expandafter{\bp@spec@arg}{%
+    \bp@tf@new@to@legacy{\bp@spec@arg}}{\edef\bp@legacy{\bp@spec@arg}}%
   \gdef\bp@mag{}\gdef\bp@ph{}%
   \bp@TF@plot{\bp@mag}{\bp@ph}{\bp@legacy}%
   \if@pgfarg
@@ -3717,63 +3876,81 @@ Pole-zero map (symmetric log scale)
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\NicholsTF}
-% \changes{v1.0.3}{2021/11/03}{Added commands and tikz options}\changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}
+% \changes{v1.0.3}{2021/11/03}{Added commands and tikz options}\changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}\changes{v3.1}{2026/05/19}{To avoid wrapping in pgf mode, use python to convert tf to zpk if available. If python is not available, fall back to the legacy implementation.}\changes{v3.1}{2026/05/19}{In pgf mode, legacy 4-argument calls now forward frequency limits via domain options when dispatching to \cs{NicholsZPK}.}
 %    \begin{macrocode}
 \NewDocumentCommand{\NicholsTF}{ O{} m G{} G{} }{%
-  \pgfutil@ifempty{#3}{%
-    \pgfkeys{/bodeplot/nichols/.cd, reset}
-    \pgfkeys{/bodeplot/nichols/.cd, #1}
-    \pgfkeysgetvalue{/bodeplot/nichols/@axes}{\bp@axes}
-    \pgfkeysgetvalue{/bodeplot/nichols/@commands}{\bp@commands}
-    \pgfkeysgetvalue{/bodeplot/nichols/@tikz}{\bp@tikz}
-    \pgfkeysgetvalue{/bodeplot/nichols/@prefix}{\bp@user@prefix}
-    \bp@tf@new@to@legacy{#2}
-  }{%
-    \bp@parse@N@opt{#1}
-    \edef\bp@legacy{#2}
-    \edef\bp@domain@start{#3}
-    \edef\bp@domain@end{#4}
-  }%
-  \gdef\bp@mag{}\gdef\bp@ph{}%
-  \edef\bp@cmd{\noexpand\begin{tikzpicture}
-  [\unexpanded\expandafter{\bp@tikz}]}\bp@cmd
-  \bp@TF@plot{\bp@mag}{\bp@ph}{\bp@legacy}%
-  \edef\bp@cmd{\noexpand\begin{axis}[
-      bp@ph@x@label,
-      bp@style,
-      domain=\bp@domain@start*\bp@freq@scale:\bp@domain@end*\bp@freq@scale,
-      height=5cm,
-      ylabel={Gain (dB)},
-      samples=500,
-      \unexpanded\expandafter{\bp@axes}
-    ]}
-    \bp@cmd
-      \edef\bp@cmd{\noexpand\addplot
-      [variable=t, thick, trig format plots=rad, 
-      \unexpanded\expandafter{\bp@plot}]}%
-      \if@pgfarg
-        \bp@cmd ( {\n@mod{\bp@ph}{2*pi*\bp@ph@scale}} , {\bp@mag} );
-        \bp@commands
-      \else
-        \stepcounter{bp@gnuplot@id}
-        \bp@cmd gnuplot [raw gnuplot, bp@gnu@prefix]
-          { set table $meta1;
-            set logscale x 10;
-            set dummy t;
-            set samples \pgfkeysvalueof{/pgfplots/samples};
-            set trange [\bp@domain@start*\bp@freq@scale:\bp@domain@end*\bp@freq@scale];
-            plot '+' using (\bp@mag) : ((\bp@ph)/(\bp@ph@scale));
-            unset logscale x;
-            set table $meta2;
-            plot "$meta1" using ($1):($2) smooth unwrap;
-            set table "\bp@prefix\arabic{bp@gnuplot@id}.table";
-            plot "$meta2" using ($2*\bp@ph@scale):($1);
-          };
-        \bp@commands
-      \fi
-    \end{axis}
-  \end{tikzpicture}
+  \if@pgfarg
+    \bp@tf@to@zpk{#2}{\bp@tmp@zpk}{\bp@tmp@status}
+    \ifnum\pdf@strcmp{\bp@tmp@status}{true}=0
+      \pgfutil@ifempty{#3}{%
+        \NicholsZPK[#1]{\bp@tmp@zpk}%
+      }{%
+        \NicholsZPK[domain=#3:#4,#1]{\bp@tmp@zpk}%
+      }%
+      \def\bp@fallback{false}
+    \else
+      \def\bp@fallback{true}
+    \fi
+  \else
+    \def\bp@fallback{true}
+  \fi
+  \ifnum\pdf@strcmp{\bp@fallback}{true}=0
+    \pgfutil@ifempty{#3}{%
+      \pgfkeys{/bodeplot/nichols/.cd, reset}
+      \pgfkeys{/bodeplot/nichols/.cd, #1}
+      \pgfkeysgetvalue{/bodeplot/nichols/@axes}{\bp@axes}
+      \pgfkeysgetvalue{/bodeplot/nichols/@commands}{\bp@commands}
+      \pgfkeysgetvalue{/bodeplot/nichols/@tikz}{\bp@tikz}
+      \pgfkeysgetvalue{/bodeplot/nichols/@prefix}{\bp@user@prefix}
+      \bp@tf@new@to@legacy{#2}
+    }{%
+      \bp@parse@N@opt{#1}
+      \edef\bp@legacy{#2}
+      \edef\bp@domain@start{#3}
+      \edef\bp@domain@end{#4}
+    }%
+    \gdef\bp@mag{}\gdef\bp@ph{}%
+    \edef\bp@cmd{\noexpand\begin{tikzpicture}
+    [\unexpanded\expandafter{\bp@tikz}]}\bp@cmd
+    \bp@TF@plot{\bp@mag}{\bp@ph}{\bp@legacy}%
+    \edef\bp@cmd{\noexpand\begin{axis}[
+        bp@ph@x@label,
+        bp@style,
+        domain=\bp@domain@start*\bp@freq@scale:\bp@domain@end*\bp@freq@scale,
+        height=5cm,
+        ylabel={Gain (dB)},
+        samples=500,
+        \unexpanded\expandafter{\bp@axes}
+      ]}
+      \bp@cmd
+        \edef\bp@cmd{\noexpand\addplot
+        [variable=t, thick, trig format plots=rad, 
+        \unexpanded\expandafter{\bp@plot}]}%
+        \if@pgfarg
+          \bp@cmd ( {\n@mod{\bp@ph}{2*pi*\bp@ph@scale}} , {\bp@mag} );
+          \bp@commands
+        \else
+          \stepcounter{bp@gnuplot@id}
+          \bp@cmd gnuplot [raw gnuplot, bp@gnu@prefix]
+            { set table $meta1;
+              set logscale x 10;
+              set dummy t;
+              set samples \pgfkeysvalueof{/pgfplots/samples};
+              set trange [\bp@domain@start*\bp@freq@scale:\bp@domain@end*\bp@freq@scale];
+              plot '+' using (\bp@mag) : ((\bp@ph)/(\bp@ph@scale));
+              unset logscale x;
+              set table $meta2;
+              plot "$meta1" using ($1):($2) smooth unwrap;
+              set table "\bp@prefix\arabic{bp@gnuplot@id}.table";
+              plot "$meta2" using ($2*\bp@ph@scale):($1);
+            };
+          \bp@commands
+        \fi
+      \end{axis}
+    \end{tikzpicture}
+  \fi
 }
+%    \end{macrocode}
 % The following code handles active characters to avoid conflicts with `babel.' \changes{v1.1.5}{2024/01/11}{Added code to handle active characters}\changes{v1.1.7}{2024/02/06}{Use auto-generated list of shorthands instead of manually specifying them}\changes{v3.0.4}{2026/05/14}{Fixed babel wrapper command argument specification for grabbing arguments}
 %    \begin{macrocode}
 \AtBeginDocument{
@@ -3828,10 +4005,12 @@ Pole-zero map (symmetric log scale)
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\addNicholsZPKChart}
-% Generates Nichols chart for ZPK system with dual interface support. Plots phase vs magnitude.\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}
+% Generates Nichols chart for ZPK system with dual interface support. Plots phase vs magnitude.\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}\changes{v3.1}{2026/05/19}{Pre-expand \marg{zpk-spec} via |edef| before |bp@contains@equal| routing so that a macro-valued spec is accepted}\changes{v3.1}{2026/05/19}{Use \cs{expandafter} when calling \cs{bp@contains@equal} so the pre-expanded spec is tested as character tokens.}
 %    \begin{macrocode}
 \NewDocumentCommand{\addNicholsZPKChart}{ O{} m }{%
-  \bp@contains@equal{#2}{\bp@zpk@new@to@legacy{#2}}{\edef\bp@legacy{#2}}%
+  \edef\bp@spec@arg{#2}%
+  \expandafter\bp@contains@equal\expandafter{\bp@spec@arg}{%
+    \bp@zpk@new@to@legacy{\bp@spec@arg}}{\edef\bp@legacy{\bp@spec@arg}}%
   \gdef\bp@mag{}\gdef\bp@ph{}%
   \bp@ZPK@plot{\bp@mag}{\bp@ph}{}{\bp@legacy}%
   \if@pgfarg
@@ -3857,10 +4036,12 @@ Pole-zero map (symmetric log scale)
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}{\addNicholsTFChart}
-% Generates Nichols chart for TF system with dual interface support. Plots phase vs magnitude with phase unwrapping.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}\changes{v1.1.4}{2023/10/12}{Changed phase wrapping in pgf mode}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}
+% Generates Nichols chart for TF system with dual interface support. Plots phase vs magnitude with phase unwrapping.\changes{v1.1.1}{2022/07/31}{Enabled `Hz' and `rad' units for frequency and phase, respectively}\changes{v1.1.3}{2022/11/02}{Changed implementation to respect user-supplied domain}\changes{v1.1.4}{2023/10/12}{Changed phase wrapping in pgf mode}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}\changes{v3.1}{2026/05/19}{Pre-expand \marg{tf-spec} via |edef| before |bp@contains@equal| routing so that a macro-valued spec is accepted}\changes{v3.1}{2026/05/19}{Use \cs{expandafter} when calling \cs{bp@contains@equal} so the pre-expanded spec is tested as character tokens.}
 %    \begin{macrocode}
 \NewDocumentCommand{\addNicholsTFChart}{ O{} m }{%
-  \bp@contains@equal{#2}{\bp@tf@new@to@legacy{#2}}{\edef\bp@legacy{#2}}%
+  \edef\bp@spec@arg{#2}%
+  \expandafter\bp@contains@equal\expandafter{\bp@spec@arg}{%
+    \bp@tf@new@to@legacy{\bp@spec@arg}}{\edef\bp@legacy{\bp@spec@arg}}%
   \gdef\bp@mag{}\gdef\bp@ph{}%
   \bp@TF@plot{\bp@mag}{\bp@ph}{\bp@legacy}%
   \if@pgfarg
@@ -3890,10 +4071,11 @@ Pole-zero map (symmetric log scale)
 % \subsection{Pole-zero maps}
 % \subsubsection{User macros}
 % \begin{macro}{\PoleZeroMapZPK}
-% Creates a pole-zero map similar to MATLAB's |pzmap| function. Poles are plotted as 'x' markers and zeros as 'o' markers on the complex s-plane. The gain parameter is ignored since it does not affect pole-zero locations, and delay is also ignored since it does not add poles or zeros. \changes{v2.0}{2025/09/26}{Added pole-zero map functionality}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}
+% Creates a pole-zero map similar to MATLAB's |pzmap| function. Poles are plotted as 'x' markers and zeros as 'o' markers on the complex s-plane. The gain parameter is ignored since it does not affect pole-zero locations, and delay is also ignored since it does not add poles or zeros. \changes{v2.0}{2025/09/26}{Added pole-zero map functionality}\changes{v3.0}{2025/10/21}{Added a pgfkeys-based simplified user interface}\changes{v3.1}{2026/05/19}{Pre-expand \marg{zpk-spec} via |edef| before |bp@contains@equal| routing so that a macro-valued spec is accepted}\changes{v3.1}{2026/05/19}{Use \cs{expandafter} when calling \cs{bp@contains@equal} so the pre-expanded spec is tested as character tokens.}
 %    \begin{macrocode}
 \NewDocumentCommand{\PoleZeroMapZPK}{ O{} m }{%
-\bp@contains@equal{#2}{%
+\edef\bp@spec@arg{#2}%
+\expandafter\bp@contains@equal\expandafter{\bp@spec@arg}{%
     \pgfkeys{/bodeplot/pzmap/.cd, reset}
     \pgfkeys{/bodeplot/pzmap/.cd, #1}
     \pgfkeysgetvalue{/bodeplot/pzmap/@axes}{\bp@axes}
@@ -3902,10 +4084,10 @@ Pole-zero map (symmetric log scale)
     \pgfkeysgetvalue{/bodeplot/pzmap/@tikz}{\bp@tikz}
     \pgfkeysgetvalue{/bodeplot/pzmap/@prefix}{\bp@user@prefix}
     \pgfkeysgetvalue{/bodeplot/pzmap/@scale}{\bp@scale}
-    \bp@zpk@new@to@legacy{#2}
+    \bp@zpk@new@to@legacy{\bp@spec@arg}
   }{%
     \bp@parse@N@opt{#1}
-    \edef\bp@legacy{#2}
+    \edef\bp@legacy{\bp@spec@arg}
   }%
   \ifnum\pdf@strcmp{\bp@scale}{log}=0
     \bp@min@real@ZPK{\bp@legacy}
@@ -4052,6 +4234,35 @@ Pole-zero map (symmetric log scale)
   }
   \newcommand{\PoleZeroMapZPK@Shorthandoff}[2][]{%
     \Orig@PoleZeroMapZPK[#1]{#2}
+    \expandafter\shorthandon\expandafter{\bp@short@list}
+  }
+  \fi
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\PoleZeroMapTF}
+% Similar to |\PoleZeroMapZPK| but for the system specified in the TF format. This macro converts the TF specification to ZPK format internally using Python via |--shell-escape| and then calls |\PoleZeroMapZPK| to generate the plot. If Python with the |scipy| and |numpy| libraries is not available on the shell, the package returns an error message. \changes{v3.1}{2026/05/19}{Added support for pole-zero maps with TF specifications using Python.}
+%    \begin{macrocode}
+\NewDocumentCommand{\PoleZeroMapTF}{ O{} m }{%
+  \bp@tf@to@zpk{#2}{\bp@tmp@zpk}{\bp@tmp@status}
+  \ifnum\pdf@strcmp{\bp@tmp@status}{true}=0
+    \PoleZeroMapZPK[#1]{\bp@tmp@zpk}
+  \else
+    \PackageError{bodeplot}{Python with scipy and numpy is required to convert TF to ZPK for pole-zero map. Please ensure Python is installed and accessible via --shell-escape.}{}
+  \fi
+}
+%    \end{macrocode}
+% The following code handles active characters to avoid conflicts with `babel.'
+%    \begin{macrocode}
+\AtBeginDocument{%
+  \if@babel
+  \let\Orig@PoleZeroMapTF\PoleZeroMapTF
+  \renewcommand{\PoleZeroMapTF}{%
+    \expandafter\shorthandoff\expandafter{\bp@short@list}
+    \PoleZeroMapTF@Shorthandoff
+  }
+  \newcommand{\PoleZeroMapTF@Shorthandoff}[2][]{%
+    \Orig@PoleZeroMapTF[#1]{#2}
     \expandafter\shorthandon\expandafter{\bp@short@list}
   }
   \fi
