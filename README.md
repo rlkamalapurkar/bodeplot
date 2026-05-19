@@ -7,9 +7,9 @@ Author: Rushikesh Kamalapurkar ([rlkamalapurkar@gmail.com](mailto:rlkamalapurkar
 License: [LPPL-1.3c](https://github.com/rlkamalapurkar/bodeplot/blob/main/LICENSE)
 
 ## New features:
- v3.0 - All plotting commands use a simplified PGF-style key/value syntax
- v3.1 - If `Python` with `scipy` and `numpy` is available with `--shell-escape` then pole zero maps can be plotted for systems in `TF` format using `\PoleZeroMapTF` and the `\BodeTF` and `\addBodeTFPlots` commands support linear and asymptotic approximations.
- v3.1 - If `Python` with `scipy` and `numpy` is available with `--shell-escape` then the phase plots in `pgf` mode are no longer wrapped.
+ 1. (v3.0) - All plotting commands use a simplified PGF-style key/value syntax
+ 2. (v3.1) - If `Python` with `scipy` and `numpy` is available with `--shell-escape` then pole zero maps can be plotted for systems in `TF` format using `\PoleZeroMapTF` and the `\BodeTF` and `\addBodeTFPlots` commands support linear and asymptotic approximations.
+ 2. (v3.1) - If `Python` with `scipy` and `numpy` is available with `--shell-escape` then the phase plots in `pgf` mode are no longer wrapped.
 
 ## Limitations
  1. TF commands are wrapped between -180 and 180 degrees in `pgf` mode unless `Python` with `scipy` and `numpy` is available with `--shell-escape`.
